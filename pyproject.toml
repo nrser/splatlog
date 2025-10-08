@@ -1,58 +1,66 @@
-[tool.poetry]
+[project]
 name = "splatlog"
 version = "0.3.5-dev"
 description = "Python logger that accepts ** values and prints 'em out."
-authors = [
-  "nrser <neil@neilsouza.com>"
-]
-license = "BSD-3-Clause"
+authors = [{ name = "nrser", email = "neil@neilsouza.com" }]
+requires-python = ">=3.10"
 readme = "README.md"
-homepage = "https://github.com/nrser/splatlog"
-repository = "https://github.com/nrser/splatlog"
-documentation = "http://nrser.com/splatlog"
+license = "BSD-3-Clause"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: BSD License",
 ]
-packages = [
-  {include = "splatlog"},
+dependencies = [
+    "rich>=9",
+    "typeguard==3.0.0b2",
 ]
+
+[project.urls]
+Homepage = "https://github.com/nrser/splatlog"
+Repository = "https://github.com/nrser/splatlog"
+Documentation = "http://nrser.com/splatlog"
+
+[dependency-groups]
+dev = [
+    "black>=22.3.0",
+    "doctor-testerson",
+    # Fails to install due to an issue trying to build PyYAML transitive
+    # dependency, which uses `cython` :/
+    # "doctor-genova",
+]
+notes = ["jupyter>=1.0.0,<2"]
+
+[tool.uv]
+default-groups = [
+    "dev",
+    "notes",
+]
+no-build-isolation-package = ["pyyaml"]
+
+[tool.uv.sources]
+doctor-testerson = { git = "https://github.com/nrser/doctor-testerson.git" }
+doctor-genova = { git = "https://github.com/nrser/doctor-genova.git", tag = "v0.1.0" }
+
+[tool.hatch.build.targets.sdist]
 include = [
-  "LICENSE"
+    "splatlog",
+    "LICENSE",
 ]
 exclude = [
-  "splatlog/_docs.py",
-  "splatlog/_testing.py",
+    "splatlog/_docs.py",
+    "splatlog/_testing.py",
 ]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-rich = ">=9"
-typeguard = "3.0.0b2"
-
-[tool.poetry.group.dev.dependencies]
-black = ">=22.3.0"
-
-# `dr.t` command to run doctests
-[tool.poetry.group.dev.dependencies.doctor-testerson]
-git = "https://github.com/nrser/doctor-testerson.git"
-
-# Can flip to this and `poetry install` to use peer directory version:
-# path = "../doctor-testerson"
-# develop = true
-
-# API documentation generation helpers
-[tool.poetry.group.dev.dependencies.doctor-genova]
-git = "https://github.com/nrser/doctor-genova.git"
-tag = "v0.1.0"
-
-# Can flip to this and `poetry install` to use peer directory version:
-# path = "../doctor-genova"
-# develop = true
-
-[tool.poetry.group.notes.dependencies]
-jupyter = "^1.0.0"
+[tool.hatch.build.targets.wheel]
+include = [
+    "splatlog",
+    "LICENSE",
+]
+exclude = [
+    "splatlog/_docs.py",
+    "splatlog/_testing.py",
+]
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
