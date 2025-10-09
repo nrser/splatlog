@@ -133,3 +133,4 @@ dmypy.json
 
 _site/
 /tmp/
+/docs/apidocs/

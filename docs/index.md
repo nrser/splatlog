@@ -19,10 +19,9 @@ content/features/verbosity
 ```
 
 ```{toctree}
-:maxdepth: 2
 :caption: API Documentation
 
-"fmt_type_hint Examples <content/splatlog/lib/text/fmt_type_hint>"
+apidocs/splatlog/splatlog
 ```
 
 

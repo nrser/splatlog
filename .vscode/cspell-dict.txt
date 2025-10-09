@@ -1,2 +1,3 @@
+apidocs
 AUTOBUILD
 furo

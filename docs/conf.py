@@ -14,7 +14,15 @@ release = "0.3.5"
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ["myst_parser"]
+extensions = [
+    "myst_parser",
+    "autodoc2",
+]
+
+autodoc2_packages = [
+    "../splatlog",
+]
+autodoc2_render_plugin = "myst"
 
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
