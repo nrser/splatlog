@@ -28,12 +28,19 @@ dev = [
     # dependency, which uses `cython` :/
     # "doctor-genova",
 ]
+docs = [
+    "myst-parser>=4.0.1",
+    "sphinx>=8.1.3",
+    "sphinx-autodoc2>=0.5.0",
+    "sphinx-autobuild>=2024.10.3",
+]
 notes = ["jupyter>=1.0.0,<2"]
 
 [tool.uv]
 default-groups = [
     "dev",
     "notes",
+    "docs",
 ]
 no-build-isolation-package = ["pyyaml"]
 
