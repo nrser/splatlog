@@ -2,7 +2,10 @@
 
 pkgs.mkShell {
   buildInputs = with pkgs; [
-    uv # Python
-    gnumake # GNU Make
+    # Python version and package management
+    uv
+    
+    # GNU Make for `docs/Makefile`
+    gnumake
   ];
 }
