@@ -9,4 +9,19 @@
   "cmake.configureOnOpen": false,
   "python.analysis.typeCheckingMode": "basic",
   "python.formatting.provider": "none",
+
+  // Custom dict file for project-specific "words", so that they don't come to
+  // complicate this file.
+  //
+  // When adding a new project-specific word to cSpell you can to choose the
+  // "add <word> to dictionary: splatlog" option.
+  //
+  "cSpell.customDictionaries": {
+    "pm": {
+      "name": "splatlog (project)",
+      "description": "Custom dict for this project",
+      "path": "${workspaceFolder}/.vscode/cspell-dict.txt",
+      "addWords": true
+    }
+  },
 }
