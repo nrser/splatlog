@@ -8,4 +8,9 @@ pkgs.mkShell {
     # GNU Make for `docs/Makefile`
     gnumake
   ];
+
+  shellHook = ''
+    uv sync
+    source .venv/bin/activate
+  '';
 }

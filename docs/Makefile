@@ -9,8 +9,8 @@
 # You can set these variables from the command line, and also
 # from the environment for the first two.
 SPHINX_OPTS    		?=
-SPHINX_BUILD   		?= uv run sphinx-build
-SPHINX_AUTOBUILD	?= uv run sphinx-autobuild
+SPHINX_BUILD   		?= sphinx-build
+SPHINX_AUTOBUILD	?= sphinx-autobuild
 SOURCE_DIR     		= .
 BUILD_DIR      		= _build
 
@@ -39,7 +39,7 @@ clean:
 
 # Serve html docs, watching for source changes and updating on-demand
 watch:
-	@$(SPHINX_AUTOBUILD) "$(SOURCE_DIR)" "$(BUILD_DIR)" $(SPHINX_OPTS) $(O)
+	@$(SPHINX_AUTOBUILD) --watch .. "$(SOURCE_DIR)" "$(BUILD_DIR)" $(SPHINX_OPTS) $(O)
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINX_OPTS).
