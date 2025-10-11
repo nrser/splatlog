@@ -24,9 +24,6 @@ Documentation = "http://nrser.com/splatlog"
 dev = [
     "black>=22.3.0",
     "doctor-testerson",
-    # Fails to install due to an issue trying to build PyYAML transitive
-    # dependency, which uses `cython` :/
-    # "doctor-genova",
 ]
 docs = [
     "myst-parser>=4.0.1",
@@ -47,7 +44,6 @@ no-build-isolation-package = ["pyyaml"]
 
 [tool.uv.sources]
 doctor-testerson = { git = "https://github.com/nrser/doctor-testerson.git" }
-doctor-genova = { git = "https://github.com/nrser/doctor-genova.git", tag = "v0.1.0" }
 
 [tool.hatch.build.targets.sdist]
 include = [
