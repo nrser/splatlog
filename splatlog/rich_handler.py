@@ -1,9 +1,7 @@
-"""Contains the `RichHandler` class.
-"""
+"""Contains the `RichHandler` class."""
 
 from __future__ import annotations
-import re
-from typing import IO, ClassVar, Literal, Mapping, Optional, Union
+from typing import IO, ClassVar, Mapping, Optional, Union
 import logging
 import sys
 
@@ -12,7 +10,6 @@ from rich.console import Console
 from rich.text import Text
 from rich.theme import Theme
 from rich.traceback import Traceback
-from rich.style import Style
 
 from splatlog.lib import fmt
 from splatlog.lib.rich import (
@@ -67,9 +64,7 @@ class RichHandler(SplatHandler):
         )
 
     @classmethod
-    def cast_console(
-        cls, console: RichConsoleCastable, theme: Theme
-    ) -> Console:
+    def cast_console(cls, console: RichConsoleCastable, theme: Theme) -> Console:
         if console is None:
             return Console(file=sys.stderr, theme=theme)
 
@@ -229,9 +224,7 @@ class RichHandler(SplatHandler):
                 ntv_table(src) if isinstance(src, Mapping) else enrich(src),
             )
 
-        output.add_row(
-            Text("msg", style="log.label"), self._get_rich_msg(record)
-        )
+        output.add_row(Text("msg", style="log.label"), self._get_rich_msg(record))
 
         if data := getattr(record, "data", None):
             output.add_row(Text("data", style="log.label"), ntv_table(data))

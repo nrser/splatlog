@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import Any, Callable, Optional, Union, cast
+from typing import Optional, Union, cast
 from collections.abc import Mapping
 
 from splatlog.json.json_formatter import JSONFormatter
@@ -186,7 +186,7 @@ def cast_console_handler(
 
         ```
 
-        Note that in the extremely bizare case where you name a log level
+        Note that in the extremely bizarre case where you name a log level
         `"stdout"` (or `"STDOUT"`) you can not use `"stdout"` to create a
         handler with that level because `"stdout"` will be cast to a
         `RichHandler` with the `RichHandler.console` writing to `sys.stdout`.
