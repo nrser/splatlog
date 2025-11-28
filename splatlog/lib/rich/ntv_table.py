@@ -16,7 +16,6 @@ from rich.table import Table, Column
 from rich.padding import PaddingDimensions
 from rich.box import Box
 
-from .constants import THEME
 from .typings import is_rich
 from .enrich import enrich, enrich_type, enrich_type_of
 
@@ -24,13 +23,11 @@ _T_contra = TypeVar("_T_contra", contravariant=True)
 
 
 class SupportsDunderLT(Protocol[_T_contra]):
-    def __lt__(self, __other: _T_contra) -> bool:
-        ...
+    def __lt__(self, __other: _T_contra) -> bool: ...
 
 
 class SupportsDunderGT(Protocol[_T_contra]):
-    def __gt__(self, __other: _T_contra) -> bool:
-        ...
+    def __gt__(self, __other: _T_contra) -> bool: ...
 
 
 # If we need them in the future...
@@ -46,12 +43,10 @@ class SupportsDunderGT(Protocol[_T_contra]):
 
 #: A type that supports `<` and `>` operations (`__lt__` and `__gt__` methods).
 #:
-#: Coppied from whatever VSCode is using for type definitions since I can't
+#: Copied from whatever VSCode is using for type definitions since I can't
 #: figure out how to import or reference it.
 #:
-SupportsRichComparison: TypeAlias = (
-    SupportsDunderLT[Any] | SupportsDunderGT[Any]
-)
+SupportsRichComparison: TypeAlias = SupportsDunderLT[Any] | SupportsDunderGT[Any]
 
 # If we need it in the future...
 # SupportsRichComparisonT = TypeVar("SupportsRichComparisonT", bound=SupportsRichComparison)
@@ -76,7 +71,7 @@ def ntv_table(
     show_edge: bool = False,
     pad_edge: bool = False,
     sort: bool | Callable[[tuple[str, object]], SupportsRichComparison] = False,
-    **kwds,
+    **rich_table_kwds,
 ) -> Table:
     """
     Create a `rich.table.Table` with (name, type, value) columns from a
@@ -169,13 +164,11 @@ def ntv_table(
         show_footer=show_footer,
         show_edge=show_edge,
         pad_edge=pad_edge,
-        **kwds,
+        **rich_table_kwds,
     )
     if len(headers) == 0:
-        table.add_column(
-            "Name", style=THEME.styles["log.data.name"], min_width=10
-        )
-        # table.add_column("Type", style=THEME.styles["log.data.type"])
+        table.add_column("Name", style="log.data.name", min_width=10)
+        # table.add_column("Type", style="log.data.type")
         table.add_column("Type", min_width=10, max_width=40)
         table.add_column("Value", min_width=10)
 
