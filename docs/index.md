@@ -1,6 +1,8 @@
 # Splatlog Docs
 
-Welcome to the `splatlog` documentation.
+```{include} ../README.md
+:start-line: 3
+```
 
 ```{toctree}
 :maxdepth: 2
