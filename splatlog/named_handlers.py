@@ -16,6 +16,7 @@ from splatlog.typings import (
     ConsoleHandlerCastable,
     RichConsoleCastable,
     NamedHandlerCast,
+    is_rich_console_castable,
 )
 from splatlog.verbosity.verbosity_levels_filter import VerbosityLevelsFilter
 
@@ -238,7 +239,7 @@ def cast_console_handler(
     if isinstance(value, Mapping):
         return RichHandler(**value)
 
-    if satisfies(value, RichConsoleCastable):
+    if is_rich_console_castable(value):
         # NOTE  This `typing.cast` seems to be required because the
         #       `typing.TypeGuard` in `satisfies` does not evaluate correctly
         #       with a complex type such as `RichConsoleCastable`.

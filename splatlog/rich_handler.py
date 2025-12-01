@@ -28,6 +28,7 @@ from splatlog.typings import (
     VerbosityLevelsCastable,
     StdioName,
     RichConsoleCastable,
+    is_stdio_name,
 )
 
 
@@ -64,14 +65,16 @@ class RichHandler(SplatHandler):
         )
 
     @classmethod
-    def cast_console(cls, console: RichConsoleCastable, theme: Theme) -> Console:
+    def cast_console(
+        cls, console: RichConsoleCastable, theme: Theme
+    ) -> Console:
         if console is None:
             return Console(file=sys.stderr, theme=theme)
 
         if isinstance(console, Console):
             return console
 
-        if satisfies(console, StdioName):
+        if is_stdio_name(console):
             return Console(
                 file=(sys.stderr if console == "stderr" else sys.stdout),
                 theme=theme,
@@ -224,7 +227,9 @@ class RichHandler(SplatHandler):
                 ntv_table(src) if isinstance(src, Mapping) else enrich(src),
             )
 
-        output.add_row(Text("msg", style="log.label"), self._get_rich_msg(record))
+        output.add_row(
+            Text("msg", style="log.label"), self._get_rich_msg(record)
+        )
 
         if data := getattr(record, "data", None):
             output.add_row(Text("data", style="log.label"), ntv_table(data))

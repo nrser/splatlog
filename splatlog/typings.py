@@ -19,6 +19,7 @@ from typing import (
 
 from rich.console import Console
 from rich.theme import Theme
+from typeguard import check_type, TypeCheckError
 
 from splatlog.lib.text import fmt
 
@@ -136,7 +137,41 @@ VerbosityLevelsCastable = Mapping[
 # ============================================================================
 
 StdioName = Literal["stdout", "stderr"]
+
+
+def is_stdio_name(value: Any) -> TypeGuard[StdioName]:
+    """\
+    Is `value` a {py:type}`StdioName`?
+
+    > 📝 NOTE Equivalent to {py:func}`splatlog.lib.satisfies`, which (to my
+    > understanding) can not be typed to support type-narrowing over a
+    > {py:type}`typing.Literal`.
+    """
+    try:
+        check_type(value, StdioName)
+    except TypeCheckError:
+        return False
+    return True
+
+
 RichConsoleCastable = Union[None, Console, StdioName, IO[str]]
+
+
+def is_rich_console_castable(value: Any) -> TypeGuard[RichConsoleCastable]:
+    """\
+    Is `value` a {py:type}`StdioName`?
+
+    > 📝 NOTE Equivalent to {py:func}`splatlog.lib.satisfies`, which (to my
+    > understanding) can not be typed to support type-narrowing over a
+    > {py:type}`typing.Union`.
+    """
+    try:
+        check_type(value, RichConsoleCastable)
+    except TypeCheckError:
+        return False
+    return True
+
+
 RichThemeCastable = Union[None, Theme, IO[str]]
 
 # Named Handlers
