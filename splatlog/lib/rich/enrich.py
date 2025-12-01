@@ -7,7 +7,7 @@ from rich.pretty import Pretty
 from rich.highlighter import ReprHighlighter
 from rich.text import Text
 
-from splatlog.lib.text import fmt_routine, BUILTINS_MODULE
+from splatlog.lib.text import fmt_routine
 
 from .enriched_type import EnrichedType
 from .typings import is_rich
@@ -35,18 +35,15 @@ def enrich_type_of(value: object) -> RenderableType:
 
 
 @overload
-def enrich(value: object, inline: Literal[True]) -> Text:
-    ...
+def enrich(value: object, inline: Literal[True]) -> Text: ...
 
 
 @overload
-def enrich(value: object, inline: Literal[False]) -> RenderableType:
-    ...
+def enrich(value: object, inline: Literal[False]) -> RenderableType: ...
 
 
 @overload
-def enrich(value: object) -> RenderableType:
-    ...
+def enrich(value: object) -> RenderableType: ...
 
 
 def enrich(value, inline=False):
