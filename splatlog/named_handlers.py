@@ -8,7 +8,6 @@ from collections.abc import Mapping
 from splatlog.json.json_formatter import JSONFormatter
 from splatlog.lib.collections import partition_mapping
 from splatlog.lib.text import fmt
-from splatlog.lib.typeguard import satisfies
 from splatlog.levels import get_level_value, is_level
 from splatlog.locking import lock
 from splatlog.rich_handler import RichHandler
