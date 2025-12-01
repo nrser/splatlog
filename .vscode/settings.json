@@ -1,21 +1,34 @@
+//////////////////////////////////////////////////////////////////////////////
+// Project Settings for VSCode family of IDEs
+// ===========================================================================
+//
+// Settings for VSCode and VSCode-based IDEs (Cursor, etc.). Mostly about
+// automatically formatting files consistently.
+//
+//////////////////////////////////////////////////////////////////////////////
 {
-  "cSpell.words": [
-    "splatlog"
-  ],
+  // Python
+  // ===========================================================================
+
   "[python]": {
     "editor.formatOnSave": true,
-    "editor.defaultFormatter": "ms-python.black-formatter"
+    "editor.defaultFormatter": "charliermarsh.ruff"
   },
+
+  // CMake
+  // ===========================================================================
+
+  // IDK why CMake tried to get involved, but we don't want it here
   "cmake.configureOnOpen": false,
-  "python.analysis.typeCheckingMode": "basic",
-  "python.formatting.provider": "none",
+
+  // cSpell
+  // ===========================================================================
 
   // Custom dict file for project-specific "words", so that they don't come to
   // complicate this file.
   //
   // When adding a new project-specific word to cSpell you can to choose the
   // "add <word> to dictionary: splatlog" option.
-  //
   "cSpell.customDictionaries": {
     "pm": {
       "name": "splatlog (project)",
@@ -24,4 +37,25 @@
       "addWords": true
     }
   },
+
+  "cursorpyright.analysis.typeCheckingMode": "basic",
+
+  // Jupyter Notebooks
+  // ===========================================================================
+  // 
+  // It's `notebook.`, _not_ `[jupyter].`!
+
+  // Format (code blocks) on save, analogue to `[python].editor.formatOnSave`
+  "notebook.formatOnSave.enabled": true,
+
+  // Format on cell execution as well
+  "notebook.formatOnCellExecution": true,
+
+  // Ruff
+  // ===========================================================================
+  // 
+  // Source code formatter for Python. The new standard, yet again! Does seem to
+  // actually listen about line length, so that's nice.
+
+  "ruff.lineLength": 80,
 }

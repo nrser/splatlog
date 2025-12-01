@@ -2,4 +2,5 @@ apidocs
 AUTOBUILD
 Dunder
 furo
+splatlog
 toctree
