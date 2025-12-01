@@ -2,10 +2,28 @@ from typing import Any, Optional
 from collections.abc import Callable
 from inspect import ismethod, signature, Parameter
 
-from .collections import *
-from .text import *
+# Re-exports
+from .collections import (
+    find as find,
+    each as each,
+    partition_mapping as partition_mapping,
+    group_by as group_by,
+)
+from .text import (
+    is_typing as is_typing,
+    Formatter as Formatter,
+    FmtOpts as FmtOpts,
+    DEFAULT_FMT_OPTS as DEFAULT_FMT_OPTS,
+    fmt as fmt,
+    p as p,
+    fmt_routine as fmt_routine,
+    fmt_type as fmt_type,
+    fmt_type_of as fmt_type_of,
+    fmt_range as fmt_range,
+    fmt_type_hint as fmt_type_hint,
+)
 
-from . import rich
+from . import rich as rich
 
 
 REQUIRABLE_PARAMETER_KINDS = frozenset(

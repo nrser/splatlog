@@ -8,22 +8,30 @@ from __future__ import annotations
 from typing import Any
 
 from rich.console import Console
+from rich.theme import Theme
+from rich.color import Color, ColorType
+from rich.style import Style
 
 # Re-exports
-from .constants import THEME, DEFAULT_CONSOLE
-from .typings import Rich, is_rich
-from .enriched_type import EnrichedType
-from .ntv_table import ntv_table
-from .enrich import REPR_HIGHLIGHTER, enrich, enrich_type, enrich_type_of
-from .inline import Inline
+from .constants import THEME as THEME, DEFAULT_CONSOLE
+from .typings import Rich as Rich, is_rich as is_rich
+from .enriched_type import EnrichedType as EnrichedType
+from .ntv_table import ntv_table as ntv_table
+from .enrich import (
+    REPR_HIGHLIGHTER as REPR_HIGHLIGHTER,
+    enrich as enrich,
+    enrich_type as enrich_type,
+    enrich_type_of as enrich_type_of,
+)
+from .inline import Inline as Inline
 from .formatter import (
-    RichFormatter,
-    RichFormatterConverter,
-    RichFormatterConversions,
-    RichRepr,
-    implements_rich_repr,
-    RichText,
-    implements_rich_text,
+    RichFormatter as RichFormatter,
+    RichFormatterConverter as RichFormatterConverter,
+    RichFormatterConversions as RichFormatterConversions,
+    RichRepr as RichRepr,
+    implements_rich_repr as implements_rich_repr,
+    RichText as RichText,
+    implements_rich_text as implements_rich_text,
 )
 
 
@@ -33,3 +41,46 @@ def capture_riches(
     with console.capture() as capture:
         console.print(*objects, **print_kwds)
     return capture.get()
+
+
+def override_ansi_colors(theme=THEME, **name_color_map: str | Color) -> Theme:
+    """Copy `theme`, overriding styles using ANSI colors named in
+    `name_color_map` with their corresponding values.
+
+    Used to fix display of ANSI named colors in situations where it's difficult
+    to adjust the "terminal" color values (Jupyter notebooks in VSCode
+    extension) but True Color (24-bit color) rendering is available.
+
+    ## Parameters
+
+    -   `theme`: theme to apply overrides to, defaults to the splatlog theme.
+    -   `name_color_map`: mapping of ANSI color names (`"blue"`, `"red"`, etc.)
+        to replacement. The replacement is used as the `color` argument to
+        {py:class}`rich.style.Style`. Typically a hex string like `"#439af4"`.
+
+    ## Example
+
+    ```python
+    from rich.console import Console
+
+    console = Console(
+        theme=override_ansi_colors(blue="#509dea", bright_blue="#439af4")
+    )
+    ```
+    """
+
+    styles: dict[str, Style] = {}
+    for name, style in theme.styles.items():
+        if (
+            isinstance(style, Style)
+            and style.color
+            and style.color.type is ColorType.STANDARD
+            and style.color.name in name_color_map
+        ):
+            styles[name] = Style.chain(
+                style, Style(color=name_color_map[style.color.name])
+            )
+        else:
+            styles[name] = style
+
+    return Theme(styles)
