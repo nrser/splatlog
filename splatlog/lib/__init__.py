@@ -24,6 +24,7 @@ from .text import (
 )
 
 from . import rich as rich
+from .typeguard import satisfies as satisfies
 
 
 REQUIRABLE_PARAMETER_KINDS = frozenset(
