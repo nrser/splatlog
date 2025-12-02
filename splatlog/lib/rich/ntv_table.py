@@ -6,18 +6,22 @@ from typing import (
     Protocol,
     TypeAlias,
     TypeVar,
-    Union,
     cast,
 )
 from inspect import isclass
 from collections.abc import Mapping, Iterable
+import dataclasses as dc
 
 from rich.table import Table, Column
 from rich.padding import PaddingDimensions
 from rich.box import Box
+from rich.console import Console, ConsoleOptions, RenderResult
 
 from .typings import is_rich
 from .enrich import enrich, enrich_type, enrich_type_of
+
+# Typings
+# ============================================================================
 
 _T_contra = TypeVar("_T_contra", contravariant=True)
 
@@ -46,7 +50,9 @@ class SupportsDunderGT(Protocol[_T_contra]):
 #: Copied from whatever VSCode is using for type definitions since I can't
 #: figure out how to import or reference it.
 #:
-SupportsRichComparison: TypeAlias = SupportsDunderLT[Any] | SupportsDunderGT[Any]
+SupportsRichComparison: TypeAlias = (
+    SupportsDunderLT[Any] | SupportsDunderGT[Any]
+)
 
 # If we need it in the future...
 # SupportsRichComparisonT = TypeVar("SupportsRichComparisonT", bound=SupportsRichComparison)
@@ -57,12 +63,99 @@ SupportsRichComparison: TypeAlias = SupportsDunderLT[Any] | SupportsDunderGT[Any
 #: 1.   `collections.abc.Mapping` of `{str: object}` pairs
 #: 2.   `collections.abc.Iterable` of `(str, object)` pairs
 #:
-TableSource = Union[Mapping[str, object], Iterable[tuple[str, object]]]
+TableSource = Mapping[str, object] | Iterable[tuple[str, object]]
+
+
+# Renderable Class
+# ============================================================================
+#
+# To work around failures when rendering a NTV table from `rich.print` and other
+# ways that don't have our additional theme styles available.
+
+
+@dc.dataclass
+class NtvTable:
+    """
+    Renderable that constructs an NTV `Table` at render time so we can resolve
+    styles against the rendering `Console` with graceful fallbacks.
+    """
+
+    source: TableSource
+    headers: tuple[Column | str, ...] = dc.field(default_factory=tuple)
+    box: Box | None = None
+    padding: PaddingDimensions = (0, 1)
+    collapse_padding: bool = True
+    show_header: bool = False
+    show_footer: bool = False
+    show_edge: bool = False
+    pad_edge: bool = False
+    sort: bool | Callable[[tuple[str, object]], SupportsRichComparison] = False
+    rich_table_kwds: dict[str, Any] = dc.field(default_factory=dict)
+
+    def __rich_console__(
+        self, console: Console, options: ConsoleOptions
+    ) -> RenderResult:
+        table = Table(
+            *self.headers,
+            box=self.box,
+            padding=self.padding,
+            collapse_padding=self.collapse_padding,
+            show_header=self.show_header,
+            show_footer=self.show_footer,
+            show_edge=self.show_edge,
+            pad_edge=self.pad_edge,
+            **self.rich_table_kwds,
+        )
+
+        if len(self.headers) == 0:
+            name_style = console.get_style(
+                "log.data.name", default="repr.attrib_name"
+            )
+            table.add_column("Name", style=name_style, min_width=10)
+            # table.add_column("Type", style="log.data.type")
+            table.add_column("Type", min_width=10, max_width=40)
+            table.add_column("Value", min_width=10)
+
+        items = (
+            cast(Iterable[tuple[str, object]], self.source.items())
+            if isinstance(self.source, Mapping)
+            else self.source
+        )
+
+        if self.sort is False:
+            pass
+        elif self.sort is True:
+            items = sorted(items)
+        else:
+            items = sorted(items, key=self.sort)
+
+        for key, value in items:
+            if is_rich(value) and value.__class__.__module__.startswith(
+                "rich."
+            ):
+                rich_value_type = None
+                rich_value = value
+            elif isclass(value):
+                rich_value_type = None
+                rich_value = enrich_type(value)
+            else:
+                rich_value_type = enrich_type_of(value)
+                rich_value = enrich(value)
+            table.add_row(key, rich_value_type, rich_value)
+
+        yield table
+
+
+# Functional API
+# ============================================================================
+#
+# Pre-dates the renderable class, now simply offers a convenient interface
+# similar to the `rich.table.Table` constructor to create a `NtvTable`.
 
 
 def ntv_table(
     source: TableSource,
-    *headers: Union[Column, str],
+    *headers: Column | str,
     box: Optional[Box] = None,
     padding: PaddingDimensions = (0, 1),
     collapse_padding: bool = True,
@@ -71,11 +164,11 @@ def ntv_table(
     show_edge: bool = False,
     pad_edge: bool = False,
     sort: bool | Callable[[tuple[str, object]], SupportsRichComparison] = False,
-    **rich_table_kwds,
-) -> Table:
+    **rich_table_kwds: Any,
+) -> NtvTable:
     """
-    Create a `rich.table.Table` with (name, type, value) columns from a
-    `TableSource` mapping `str` names to `object` values.
+    Create a renderable that prints a `rich.table.Table` with (name, type, value)
+    columns from a `TableSource` mapping `str` names to `object` values.
 
     ##### Parameters #####
 
@@ -102,7 +195,9 @@ def ntv_table(
 
     ##### Returns #####
 
-    A `rich.table.Table` with three columns (name, type, value).
+    A renderable that renders to a `rich.table.Table` with three columns (name,
+    type, value). Styles are resolved at render time with a fallback so it works
+    with `rich.print` even if the default console theme lacks custom styles.
 
     ##### Examples #####
 
@@ -155,8 +250,9 @@ def ntv_table(
         ```
     """
 
-    table = Table(
-        *headers,
+    return NtvTable(
+        source=source,
+        headers=headers,
         box=box,
         padding=padding,
         collapse_padding=collapse_padding,
@@ -164,41 +260,6 @@ def ntv_table(
         show_footer=show_footer,
         show_edge=show_edge,
         pad_edge=pad_edge,
+        sort=sort,
         **rich_table_kwds,
     )
-    if len(headers) == 0:
-        table.add_column("Name", style="log.data.name", min_width=10)
-        # table.add_column("Type", style="log.data.type")
-        table.add_column("Type", min_width=10, max_width=40)
-        table.add_column("Value", min_width=10)
-
-    items = (
-        # I think `cast` is needed here because `Mapping[str, object` and
-        # `Iterable[tuple[str, object]]` actually overlap, as `Mapping` is an
-        # `Iterable` over its keys, introducing a weird
-        # `Iterable[tuple[str, object], Unknown]` type when left to it's own
-        # devices
-        cast(Iterable[tuple[str, object]], source.items())
-        if isinstance(source, Mapping)
-        else source
-    )
-
-    if sort is False:
-        pass
-    elif sort is True:
-        items = sorted(items)
-    else:
-        items = sorted(items, key=sort)
-
-    for key, value in items:
-        if is_rich(value) and value.__class__.__module__.startswith("rich."):
-            rich_value_type = None
-            rich_value = value
-        elif isclass(value):
-            rich_value_type = None
-            rich_value = enrich_type(value)
-        else:
-            rich_value_type = enrich_type_of(value)
-            rich_value = enrich(value)
-        table.add_row(key, rich_value_type, rich_value)
-    return table
