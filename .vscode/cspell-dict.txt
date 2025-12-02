@@ -1,6 +1,9 @@
 apidocs
 AUTOBUILD
+dists
 Dunder
 furo
+Sigstore
 splatlog
+testpypi
 toctree
