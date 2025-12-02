@@ -1,6 +1,6 @@
 [project]
 name = "splatlog"
-version = "0.3.5-dev"
+version = "0.3.5"
 description = "Python logger that accepts ** values and prints 'em out."
 authors = [{ name = "nrser", email = "neil@neilsouza.com" }]
 requires-python = ">=3.10"
