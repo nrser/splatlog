@@ -128,8 +128,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Poetry lock file (since it's a library)
+# Lock files (since it's a library)
 /poetry.lock
+/uv.lock
 
 _site/
 /tmp/
