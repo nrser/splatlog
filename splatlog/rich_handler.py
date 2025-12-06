@@ -26,7 +26,7 @@ from splatlog.typings import (
     Level,
     RichThemeCastable,
     VerbosityLevelsCastable,
-    StdioName,
+    StdoutName,
     RichConsoleCastable,
     is_stdio_name,
 )
@@ -39,7 +39,11 @@ class RichHandler(SplatHandler):
     Output is meant for specifically humans.
     """
 
-    DEFAULT_THEME: ClassVar[Theme] = THEME
+    _default_theme: ClassVar[Theme] = THEME
+
+    @classmethod
+    def set_default_theme(cls, theme: RichThemeCastable) -> None:
+        cls._default_theme = cls.cast_theme(theme)
 
     @classmethod
     def cast_theme(cls, theme: object) -> Theme:
@@ -48,7 +52,7 @@ class RichHandler(SplatHandler):
             # default theme (so that any modifications don't spread to any other
             # instances... which usually doesn't matter, since there is
             # typically only one instance, but it's good practice I guess).
-            return Theme(cls.DEFAULT_THEME.styles)
+            return Theme(cls._default_theme.styles)
 
         if isinstance(theme, Theme):
             # Given a `rich.theme.Theme`, which can be used directly
@@ -57,6 +61,13 @@ class RichHandler(SplatHandler):
         if satisfies(theme, IO[str]):
             # Given an open file to read the theme from
             return Theme.from_file(theme)
+
+        if isinstance(theme, dict):
+            # Given a `dict` layer it over the default `THEME` so it has our
+            # custom styles (if you don't want this pass a `Theme` instance)
+            styles = THEME.styles.copy()
+            styles.update(theme)
+            return Theme(styles, inherit=False)
 
         raise TypeError(
             "Expected `theme` to be {}, given {}: {}".format(
@@ -85,7 +96,7 @@ class RichHandler(SplatHandler):
 
         raise TypeError(
             "expected `console` to be {}, given {}: {}".format(
-                fmt(Union[Console, StdioName, IO[str]]),
+                fmt(Union[Console, StdoutName, IO[str]]),
                 fmt(type(console)),
                 fmt(console),
             )
@@ -98,8 +109,8 @@ class RichHandler(SplatHandler):
         self,
         level: Level = logging.NOTSET,
         *,
-        console: RichConsoleCastable = None,
-        theme: RichThemeCastable = None,
+        console: RichConsoleCastable | None = None,
+        theme: RichThemeCastable | None = None,
         verbosity_levels: Optional[VerbosityLevelsCastable] = None,
         formatter: None | RichFormatter = None,
     ):

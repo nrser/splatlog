@@ -11,6 +11,7 @@ from typing import (
     Optional,
     Sequence,
     Type,
+    TypeAlias,
     TypeGuard,
     Union,
     Mapping,
@@ -18,6 +19,7 @@ from typing import (
 )
 
 from rich.console import Console
+from rich.style import StyleType
 from rich.theme import Theme
 from typeguard import check_type, TypeCheckError
 
@@ -39,20 +41,42 @@ if TYPE_CHECKING:
 # _something_ we're likely to be using.
 #
 
-# The "actual" representation of a log level, per the built-in `logging`
-# package. Log messages with an equal or higher level number than the
-# logger class' level number are emitted; those with a lower log number are
-# ignored.
-LevelValue = int
+LevelValue: TypeAlias = int
+"""
+The operational representation of a log level, per the built-in `logging`
+package. When a {py:class}`logging.Handler` is assigned a level value it acts as
+a _minimum_ — log messages with a lower level value will be ignored.
+"""
 
-LevelName = str
+LevelName: TypeAlias = str
+"""
+A name of a log level, such as `"debug"` or `"info"`.
 
-# This corresponds to the `logging._Level` type in PyLance.
-Level = Union[LevelValue, LevelName]
+Because the Python {py:mod}`logging` system allows custom log levels to be
+introduced this is simply an alias for {py:class}`str`, though only specific
+strings are valid level names.
+
+```{note}
+This type is screwy from a formal perspective —
+```
+
+## See Also
+
+1.  {py:func}`splatlog.levels.is_level_name`
+"""
+
+Level: TypeAlias = LevelValue | LevelName
+"""
+What `splatlog` accepts as a log level; either a {py:type}`LevelValue` or a
+{py:type}`LevelName`.
+
+This corresponds to the `logging._Level` type used for the argument to
+{py:meth}`logging.Logger.setLevel` in PyLance.
+"""
 
 # Verbosity
 # ============================================================================
-#
+
 # Representation of a common "verbose" flag, where the repetition is stored as
 # a count:
 #
@@ -136,10 +160,10 @@ VerbosityLevelsCastable = Mapping[
 # Rich
 # ============================================================================
 
-StdioName = Literal["stdout", "stderr"]
+StdoutName = Literal["stdout", "stderr"]
 
 
-def is_stdio_name(value: Any) -> TypeGuard[StdioName]:
+def is_stdio_name(value: Any) -> TypeGuard[StdoutName]:
     """\
     Is `value` a {py:type}`StdioName`?
 
@@ -148,13 +172,13 @@ def is_stdio_name(value: Any) -> TypeGuard[StdioName]:
     > {py:type}`typing.Literal`.
     """
     try:
-        check_type(value, StdioName)
+        check_type(value, StdoutName)
     except TypeCheckError:
         return False
     return True
 
 
-RichConsoleCastable = Union[None, Console, StdioName, IO[str]]
+RichConsoleCastable = Console | StdoutName | IO[str] | None
 
 
 def is_rich_console_castable(value: Any) -> TypeGuard[RichConsoleCastable]:
@@ -172,23 +196,42 @@ def is_rich_console_castable(value: Any) -> TypeGuard[RichConsoleCastable]:
     return True
 
 
-RichThemeCastable = Union[None, Theme, IO[str]]
+RichThemeCastable = Theme | IO[str] | dict[str, StyleType]
+"""
+
+"""
 
 # Named Handlers
 # ============================================================================
 
+OnConflict: TypeAlias = Literal["raise", "ignore", "replace"]
+
 NamedHandlerCast = Callable[[Any], None | logging.Handler]
+"""
+A function that casts an argument to a {py:class}`logging.Handler` or returns
+`None`.
+
+Once registered by a `name` {py:class}`str` with
+{py:func}`splatlog.named_handlers.register_named_handler` or the
+{py:func}`splatlog.named_handlers.named_handler` decorator you can use the
+`name` in {py:func}`splatlog.setup` same as
+"""
 
 KwdMapping = Mapping[str, Any]
-HandlerCastable = Union[None, logging.Handler, KwdMapping]
 
-ConsoleHandlerCastable = Union[
-    HandlerCastable, bool, RichConsoleCastable, Level
-]
+HandlerCastable = logging.Handler | KwdMapping
+"""
+Types that a
+"""
+
+ConsoleHandlerCastable = HandlerCastable | bool | RichConsoleCastable | Level
+"""
+What can be cast to a `"console"` handler.
+"""
 
 JSONEncoderStyle = Literal["compact", "pretty"]
 
-ExportHandlerCastable = Union[HandlerCastable, str, Path]
+ExportHandlerCastable = HandlerCastable | str | Path
 
 JSONFormatterCastable = Union[
     None, "JSONFormatter", JSONEncoderStyle, KwdMapping

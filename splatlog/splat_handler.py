@@ -1,6 +1,7 @@
 import logging
 from typing import Optional
 
+from splatlog import LevelName
 from splatlog.typings import Level, VerbosityLevelsCastable, VerbosityLevels
 from splatlog.levels import get_level_value
 from splatlog.verbosity import VerbosityLevelsFilter
@@ -35,3 +36,6 @@ class SplatHandler(logging.Handler):
         set_verbosity_levels,
         del_verbosity_levels,
     )
+
+    def get_level_name(self) -> LevelName:
+        return logging.getLevelName(self.level)

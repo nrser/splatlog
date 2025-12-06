@@ -11,23 +11,43 @@ copyright = "2025, nrser"
 author = "nrser"
 release = "0.3.5"
 
-# -- General configuration ---------------------------------------------------
+# General configuration
+# ============================================================================
+#
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
+
+templates_path = ["_templates"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 extensions = [
     "myst_parser",
     "autodoc2",
+    "sphinx.ext.intersphinx",
 ]
+
+# Extension Options
+# ----------------------------------------------------------------------------
+
+### `autodoc2` Options ###
 
 autodoc2_packages = [
     "../splatlog",
 ]
 autodoc2_render_plugin = "myst"
+autodoc2_type_aliases = True
 
-templates_path = ["_templates"]
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+### `sphinx.ext.intersphinx` Options ###
+#
+# https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html#configuration
 
-# -- Options for HTML output -------------------------------------------------
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "rich": ("https://rich.readthedocs.io/en/latest/", None),
+}
+
+# Options for HTML output
+# ----------------------------------------------------------------------------
+#
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = "furo"

@@ -16,6 +16,10 @@ DEBUG = logging.DEBUG  # 10
 NOTSET = logging.NOTSET  # 0
 
 
+def get_level_name(level_value: LevelValue) -> str:
+    return logging.getLevelName(level_value)
+
+
 def get_level_value(level: Level) -> LevelValue:
     """
     Make a `logging` level number from more useful/intuitive things, like string
@@ -143,7 +147,7 @@ def is_level_name(
     name: object, *, case_sensitive: bool = False
 ) -> TypeGuard[LevelName]:
     """
-    ##### Examples #####
+    ## Examples
 
     ```python
     >>> is_level_name("DEBUG")
@@ -162,12 +166,27 @@ def is_level_name(
     if not isinstance(name, str):
         return False
 
-    if isinstance(logging.getLevelName(name), int):
-        return True
+    # `logging` uses upper-case names, so convert to that unless we've been
+    # asked not to
+    if not case_sensitive:
+        name = name.upper()
 
-    if (not case_sensitive) and isinstance(
-        logging.getLevelName(name.upper()), int
-    ):
+    # `logging.getLevelNamesMapping` was added in Python 3.11, providing a much
+    # more sane way to figure out if a string is a level name.
+
+    if hasattr(logging, "getLevelNamesMapping"):
+        return name in logging.getLevelNamesMapping()
+
+    # As of writing (2025-12-03) we `requires-python = ">=3.10"`, so
+    # `logging.getLevelNamesMapping` might not be there. As we already have the
+    # code to do the legacy detection, so it doesn't seem worth bumping the
+    # required python version.
+    #
+    # This is uses a weird (and deprecated, in recent Pythons) way of testing if
+    # `name` is a level name — `logging.getLevelName` will return the
+    # `int` level if `name` is a known level name, otherwise returning
+    # `f"Level {name}`
+    if isinstance(logging.getLevelName(name), int):
         return True
 
     return False
@@ -177,16 +196,21 @@ def is_level_value(value: object) -> TypeGuard[LevelValue]:
     """
     Test if `value` is a level value.
 
-    Specifically, tests if `value` is a _named_ level value — a builtin one
-    like `logging.DEBUG` or a custom one added with `logging.addLevelName`.
+    Specifically, tests if `value` is a _named_ level value — a builtin one like
+    `logging.DEBUG` or a custom one added with `logging.addLevelName`.
 
     Technically, it seems like you can use _any_ `int` as a level value, but it
     seems like it makes things simpler if all `LevelValue` have `LevelName` and
     vice-versa.
 
-    ##### Examples #####
+    We explicitly reject the booleans {py:data}`True` and {py:data}`False`,
+    because `False` in particular is equal to {py:data}`logging.NOTSET` but
+    that's never what you mean by passing it.
+
+    ## Examples
 
     ```python
+
     >>> is_level_value(logging.DEBUG)
     True
 
@@ -198,17 +222,27 @@ def is_level_value(value: object) -> TypeGuard[LevelValue]:
     >>> is_level_value(level_value)
     True
 
+    >>> is_level_value(True)
+    False
+
+    >>> is_level_value(False)
+    False
+
     ```
     """
     return (
         isinstance(value, int)
+        and not (value is True or value is False)
         and logging.getLevelName(value) != f"Level {value}"
     )
 
 
 def is_level(
-    level: object, *, case_sensitive: bool = False
+    value: object, *, case_sensitive: bool = False
 ) -> TypeGuard[Level]:
+    """
+    Is `value` a logging level, in string or integer form? Tests
+    """
     return is_level_name(
-        level, case_sensitive=case_sensitive
-    ) or is_level_value(level)
+        value, case_sensitive=case_sensitive
+    ) or is_level_value(value)

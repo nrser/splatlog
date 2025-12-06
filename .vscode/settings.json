@@ -38,7 +38,22 @@
     }
   },
 
+  // Cursor Pyright
+  // ===========================================================================
+  //
+  // Cursor's own flavor of Microsoft's [Pyright][] extension for Python type
+  // checking.
+  //
+  // [Pyright]: https://github.com/microsoft/pyright
+
+  // Yes, let's enable some type checking. We can't do `"full"`, because that
+  // never works. IDK why `"basic"` got picked, but it seems reasonable, and at
+  // least it's something. TODO try out other ones?
   "cursorpyright.analysis.typeCheckingMode": "basic",
+
+  // Don't automatically prepend `f` to strings when typing `{` in them. Gets in
+  // the way of adding `{py:...}` prefixes to referenced names in docstrings.
+  "cursorpyright.analysis.autoFormatStrings": false,
 
   // Jupyter Notebooks
   // ===========================================================================
@@ -58,4 +73,16 @@
   // actually listen about line length, so that's nice.
 
   "ruff.lineLength": 80,
+
+  "terminal.integrated.profiles.osx": {
+    "zsh": {
+      "path": "/bin/zsh",
+      "args": [],
+      "overrideName": true
+    }
+  },
+
+  "terminal.integrated.defaultProfile.osx": "zsh",
+
+  "python.terminal.activateEnvironment": false
 }

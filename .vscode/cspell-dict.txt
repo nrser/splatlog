@@ -7,3 +7,4 @@ Sigstore
 splatlog
 testpypi
 toctree
+typehints

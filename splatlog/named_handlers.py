@@ -2,8 +2,8 @@
 
 import logging
 from pathlib import Path
-from typing import Optional, Union, cast
-from collections.abc import Mapping
+from typing import Any, Literal, Optional, Union, overload
+from collections.abc import Callable, Mapping
 
 from splatlog.json.json_formatter import JSONFormatter
 from splatlog.lib.collections import partition_mapping
@@ -13,8 +13,9 @@ from splatlog.locking import lock
 from splatlog.rich_handler import RichHandler
 from splatlog.typings import (
     ConsoleHandlerCastable,
-    RichConsoleCastable,
     NamedHandlerCast,
+    ExportHandlerCastable,
+    OnConflict,
     is_rich_console_castable,
 )
 from splatlog.verbosity.verbosity_levels_filter import VerbosityLevelsFilter
@@ -24,7 +25,11 @@ _registry: dict[str, NamedHandlerCast] = {}
 _handlers: dict[str, None | logging.Handler] = {}
 
 
-def check_name(name) -> None:
+def check_name(name: object) -> None:
+    """
+    Raise an `Exception` if `name` is invalid. Right now `name` just need to be
+    a non-empty string.
+    """
     if not isinstance(name, str):
         raise TypeError(
             "named handler names must be `str`, given {}: {}".format(
@@ -35,16 +40,24 @@ def check_name(name) -> None:
         raise ValueError("named handler names can not be empty")
 
 
-def register_named_handler(name: str, cast: NamedHandlerCast):
+def register_named_handler(
+    name: str, cast: NamedHandlerCast, *, on_conflict: OnConflict = "raise"
+):
     check_name(name)
 
     with lock():
         if name in _registry:
-            raise KeyError(
-                "Handler named {} already registered; cast function: {}".format(
-                    fmt(name), fmt(_registry[name])
-                )
-            )
+            match on_conflict:
+                case "raise":
+                    raise KeyError(
+                        "Handler named {} already registered; cast function: {}".format(
+                            fmt(name), fmt(_registry[name])
+                        )
+                    )
+                case "ignore":
+                    return
+                case "replace":
+                    pass
         _registry[name] = cast
 
 
@@ -53,21 +66,66 @@ def get_named_handler_cast(name: str):
     return _registry[name]
 
 
-def named_handler(name: str):
+def named_handler(
+    name: str, *, on_conflict: OnConflict = "raise"
+) -> Callable[[NamedHandlerCast], NamedHandlerCast]:
+    """
+    Create a decorator that registers the decorated function as a named handler
+    cast function, allowing `name` to be used like the `console` and `export`
+    arguments to {py:func}`splatlog.setup.setup`.
+
+    ## Parameters
+
+    -   `name`: name that will be used to configure the handler.
+    -   `on_conflict`: what to do if a handler with `name` is already
+        registered.
+
+    ## Example
+
+    ```python
+    from typing import Any
+    import splatlog
+
+    @splatlog.named_handler("custom")
+    def cast_custom_handler(value: Any):
+        # This allows you
+        if value is None or value is False:
+            return None
+    ```
+    """
+    # Raise an `Exception` if `name` is invalid. Right now `name` just need to
+    # be a non-empty string.
     check_name(name)
 
     def decorator(cast: NamedHandlerCast) -> NamedHandlerCast:
-        register_named_handler(name, cast)
+        register_named_handler(name, cast, on_conflict=on_conflict)
         return cast
 
     return decorator
 
 
-def get_named_handler(name: str) -> Optional[logging.Handler]:
+def get_named_handler(name: str) -> logging.Handler | None:
     return _handlers.get(name)
 
 
-def set_named_handler(name: str, value: object) -> None:
+@overload
+def set_named_handler(
+    name: Literal["console"], value: ConsoleHandlerCastable
+) -> None: ...
+
+
+@overload
+def set_named_handler(
+    name: Literal["export"], value: ExportHandlerCastable
+) -> None: ...
+
+
+@overload
+def set_named_handler(name: str, value: Any) -> None: ...
+
+
+def set_named_handler(name: str, value: Any) -> None:
+    """ """
     check_name(name)
     cast = _registry[name]
     new_handler = cast(value)
@@ -85,6 +143,14 @@ def set_named_handler(name: str, value: object) -> None:
                 root_logger.addHandler(new_handler)
 
             _handlers[name] = new_handler
+
+
+@overload
+def cast_console_handler(value: Literal[True]) -> RichHandler: ...
+
+
+@overload
+def cast_console_handler(value: logging.Handler) -> logging.Handler: ...
 
 
 @named_handler("console")
@@ -105,7 +171,7 @@ def cast_console_handler(
 
         ```
 
-    2.  `False` and `None` cast to `None`.
+    2.  `False` is cast to `None`.
 
         ```python
         >>> cast_console_handler(False) is None
@@ -239,10 +305,7 @@ def cast_console_handler(
         return RichHandler(**value)
 
     if is_rich_console_castable(value):
-        # NOTE  This `typing.cast` seems to be required because the
-        #       `typing.TypeGuard` in `satisfies` does not evaluate correctly
-        #       with a complex type such as `RichConsoleCastable`.
-        return RichHandler(console=cast(RichConsoleCastable, value))
+        return RichHandler(console=value)
 
     if is_level(value):
         return RichHandler(level=value)
