@@ -2,12 +2,14 @@
 
 import logging
 from pathlib import Path
-from typing import Any, Literal, Optional, Union, overload
+from typing import IO, Any, Literal, Optional, Union, overload
 from collections.abc import Callable, Mapping
 
 from splatlog.json.json_formatter import JSONFormatter
+from splatlog.lib import satisfies
 from splatlog.lib.collections import partition_mapping
 from splatlog.lib.text import fmt
+from splatlog.lib.rich import is_to_rich_console
 from splatlog.levels import get_level_value, is_level
 from splatlog.locking import lock
 from splatlog.rich_handler import RichHandler
@@ -16,7 +18,6 @@ from splatlog.typings import (
     NamedHandlerCast,
     ExportHandlerCastable,
     OnConflict,
-    is_rich_console_castable,
 )
 from splatlog.verbosity.verbosity_levels_filter import VerbosityLevelsFilter
 
@@ -218,9 +219,9 @@ def cast_console_handler(
 
         ```
 
-    5.  Anything that `RichHandler` can cast to a `rich.console.Console` (see
-        `RichHandler.cast_console`) is assigned as the console in a new
-        `RichHandler` instance.
+    5.  Anything that we can cast to a `rich.console.Console` (see
+        {py:func}`splatlog.lib.rich.console.cast_console`) is assigned as the
+        console in a new `RichHandler` instance.
 
         ```python
         >>> from io import StringIO
@@ -304,7 +305,7 @@ def cast_console_handler(
     if isinstance(value, Mapping):
         return RichHandler(**value)
 
-    if is_rich_console_castable(value):
+    if is_to_rich_console(value):
         return RichHandler(console=value)
 
     if is_level(value):
@@ -368,6 +369,11 @@ def cast_export_handler(value) -> Optional[logging.Handler]:
 
     if isinstance(value, (str, Path)):
         handler = logging.FileHandler(filename=value)
+        handler.formatter = JSONFormatter()
+        return handler
+
+    if satisfies(value, IO[str]):
+        handler = logging.StreamHandler(value)
         handler.formatter = JSONFormatter()
         return handler
 

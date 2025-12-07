@@ -16,7 +16,7 @@ from rich.text import Text
 
 from ..enrich import repr_highlight, REPR_HIGHLIGHTER
 from .rich_repr import RichRepr, implements_rich_repr
-from .rich_text import RichText, implements_rich_text
+from .rich_text import RichText
 
 
 RichFormatterConverter = Callable[[Any], Text]
@@ -28,7 +28,7 @@ def _safe_isinstance(
 ) -> bool:
     """isinstance can fail in rare cases, for example types with no __class__
 
-    Implementation coppied from `rich.pretty._safe_isinstance` since it's
+    Implementation copied from `rich.pretty._safe_isinstance` since it's
     private.
     """
     try:
@@ -171,7 +171,6 @@ class RichFormatter(Formatter):
         for literal_text, field_name, format_spec, conversion in self.parse(
             format_string
         ):
-
             # output the literal text
             if literal_text:
                 result.append(literal_text)
@@ -231,7 +230,6 @@ class RichFormatter(Formatter):
         # Deal with `Text` first, either as a result of a _conversion_ or simply
         # provided for interpolation.
         if isinstance(value, Text):
-
             # If there is a format spec apply it to the plain string value of
             # the text. This seems like the most reasonable approach to support
             # to easily offer some support for formatting specifications.

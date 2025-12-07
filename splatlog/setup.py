@@ -1,9 +1,5 @@
-# TODO  This file is _not_ called `setup.py` because
-
 from __future__ import annotations
 import logging
-from typing import Any
-
 
 from splatlog.typings import (
     ConsoleHandlerCastable,
@@ -103,9 +99,7 @@ def setup(
 
             4.
 
-
-
-        Defaults to `None`, which is ignored.
+                Defaults to `None`, which is ignored.
 
 
     -   `level`: Set main logging level. Accepts integer levels from

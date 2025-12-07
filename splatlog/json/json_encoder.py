@@ -1,5 +1,5 @@
 import json
-from typing import Literal, Optional, TypeVar, IO, Union
+from typing import Optional, TypeVar, IO, Union
 from collections.abc import Iterable, Callable, Mapping
 
 from splatlog.lib import each, fmt_type
@@ -493,7 +493,7 @@ class JSONEncoder(json.JSONEncoder):
         for chunk in self.iterencode(obj):
             fp.write(chunk)
 
-    def get_handlers(self) -> tuple[DefaultHandler]:
+    def get_handlers(self) -> tuple[DefaultHandler, ...]:
         if self._handlers is None:
             return ALL_HANDLERS
         return tuple(self._handlers)
@@ -508,7 +508,7 @@ class JSONEncoder(json.JSONEncoder):
 
     def remove_handlers(
         self, match: Callable[[DefaultHandler], bool]
-    ) -> tuple[DefaultHandler]:
+    ) -> tuple[DefaultHandler, ...]:
         if self._handlers is None:
             self._handlers = list(ALL_HANDLERS)
 

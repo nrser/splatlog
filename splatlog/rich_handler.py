@@ -3,7 +3,6 @@
 from __future__ import annotations
 from typing import IO, ClassVar, Mapping, Optional, Union
 import logging
-import sys
 
 from rich.table import Table
 from rich.console import Console
@@ -21,14 +20,12 @@ from splatlog.lib.rich import (
     RichFormatter,
 )
 from splatlog.lib.typeguard import satisfies
+from splatlog.lib.rich import ToRichConsole, to_console
 from splatlog.splat_handler import SplatHandler
 from splatlog.typings import (
     Level,
     RichThemeCastable,
     VerbosityLevelsCastable,
-    StdoutName,
-    RichConsoleCastable,
-    is_stdio_name,
 )
 
 
@@ -75,33 +72,6 @@ class RichHandler(SplatHandler):
             )
         )
 
-    @classmethod
-    def cast_console(
-        cls, console: RichConsoleCastable, theme: Theme
-    ) -> Console:
-        if console is None:
-            return Console(file=sys.stderr, theme=theme)
-
-        if isinstance(console, Console):
-            return console
-
-        if is_stdio_name(console):
-            return Console(
-                file=(sys.stderr if console == "stderr" else sys.stdout),
-                theme=theme,
-            )
-
-        if satisfies(console, IO[str]):
-            return Console(file=console, theme=theme)
-
-        raise TypeError(
-            "expected `console` to be {}, given {}: {}".format(
-                fmt(Union[Console, StdoutName, IO[str]]),
-                fmt(type(console)),
-                fmt(console),
-            )
-        )
-
     console: Console
     formatter: RichFormatter
 
@@ -109,7 +79,7 @@ class RichHandler(SplatHandler):
         self,
         level: Level = logging.NOTSET,
         *,
-        console: RichConsoleCastable | None = None,
+        console: ToRichConsole | None = None,
         theme: RichThemeCastable | None = None,
         verbosity_levels: Optional[VerbosityLevelsCastable] = None,
         formatter: None | RichFormatter = None,
@@ -117,7 +87,7 @@ class RichHandler(SplatHandler):
         super().__init__(level=level, verbosity_levels=verbosity_levels)
 
         self.theme = self.cast_theme(theme)
-        self.console = self.cast_console(console, self.theme)
+        self.console = to_console(console, theme=self.theme)
 
         if formatter is None:
             self.formatter = RichFormatter()

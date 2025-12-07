@@ -29,7 +29,7 @@ from splatlog.typings import (
     VerbosityLevels as VerbosityLevels,
     VerbosityLevelsCastable as VerbosityLevelsCastable,
     StdoutName as StdoutName,
-    RichConsoleCastable as RichConsoleCastable,
+    ToRichConsole as ToRichConsole,
     RichThemeCastable as RichThemeCastable,
     NamedHandlerCast as NamedHandlerCast,
     KwdMapping as KwdMapping,
@@ -42,7 +42,7 @@ from splatlog.typings import (
     FileHandlerMode as FileHandlerMode,
     ExcInfo as ExcInfo,
 )
-from splatlog import lib
+from splatlog import lib as lib
 from splatlog.levels import (
     CRITICAL as CRITICAL,
     FATAL as FATAL,

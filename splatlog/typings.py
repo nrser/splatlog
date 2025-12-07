@@ -18,12 +18,12 @@ from typing import (
     TYPE_CHECKING,
 )
 
-from rich.console import Console
 from rich.style import StyleType
 from rich.theme import Theme
 from typeguard import check_type, TypeCheckError
 
 from splatlog.lib.text import fmt
+from splatlog.lib.rich import ToRichConsole
 
 if TYPE_CHECKING:
     from splatlog.verbosity.verbosity_level_resolver import (
@@ -163,34 +163,18 @@ VerbosityLevelsCastable = Mapping[
 StdoutName = Literal["stdout", "stderr"]
 
 
-def is_stdio_name(value: Any) -> TypeGuard[StdoutName]:
-    """\
-    Is `value` a {py:type}`StdioName`?
+def is_stdout_name(value: Any) -> TypeGuard[StdoutName]:
+    """Is `value` a {py:type}`StdioName`?
 
-    > 📝 NOTE Equivalent to {py:func}`splatlog.lib.satisfies`, which (to my
-    > understanding) can not be typed to support type-narrowing over a
-    > {py:type}`typing.Literal`.
+    ```{note}
+
+    Equivalent to {py:func}`splatlog.lib.satisfies`, which (to my understanding)
+    can not be typed to support type-narrowing over a {py:type}`typing.Literal`.
+
+    ```
     """
     try:
         check_type(value, StdoutName)
-    except TypeCheckError:
-        return False
-    return True
-
-
-RichConsoleCastable = Console | StdoutName | IO[str] | None
-
-
-def is_rich_console_castable(value: Any) -> TypeGuard[RichConsoleCastable]:
-    """\
-    Is `value` a {py:type}`StdioName`?
-
-    > 📝 NOTE Equivalent to {py:func}`splatlog.lib.satisfies`, which (to my
-    > understanding) can not be typed to support type-narrowing over a
-    > {py:type}`typing.Union`.
-    """
-    try:
-        check_type(value, RichConsoleCastable)
     except TypeCheckError:
         return False
     return True
@@ -224,14 +208,14 @@ HandlerCastable = logging.Handler | KwdMapping
 Types that a
 """
 
-ConsoleHandlerCastable = HandlerCastable | bool | RichConsoleCastable | Level
+ConsoleHandlerCastable = HandlerCastable | bool | ToRichConsole | Level
 """
 What can be cast to a `"console"` handler.
 """
 
 JSONEncoderStyle = Literal["compact", "pretty"]
 
-ExportHandlerCastable = HandlerCastable | str | Path
+ExportHandlerCastable = HandlerCastable | str | Path | IO[str]
 
 JSONFormatterCastable = Union[
     None, "JSONFormatter", JSONEncoderStyle, KwdMapping

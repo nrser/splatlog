@@ -7,13 +7,12 @@ Helpers for working with [rich][]
 from __future__ import annotations
 from typing import Any
 
-from rich.console import Console
 from rich.theme import Theme
 from rich.color import Color, ColorType
 from rich.style import Style
 
 # Re-exports
-from .constants import THEME as THEME, DEFAULT_CONSOLE
+from .theme import THEME as THEME
 from .typings import Rich as Rich, is_rich as is_rich
 from .enriched_type import EnrichedType as EnrichedType
 from .ntv_table import ntv_table as ntv_table
@@ -33,11 +32,22 @@ from .formatter import (
     RichText as RichText,
     implements_rich_text as implements_rich_text,
 )
+from .console import (
+    StdoutName as StdoutName,
+    ToRichConsole as ToRichConsole,
+    is_stdout_name as is_stdout_name,
+    is_to_rich_console as is_to_rich_console,
+    to_console as to_console,
+)
 
 
 def capture_riches(
-    *objects: Any, console: Console = DEFAULT_CONSOLE, **print_kwds
+    *objects: Any, console: ToRichConsole = None, **print_kwds
 ) -> str:
+    # Convert the arg to a `rich.console.Console` instance. In the default case
+    # `None` this will construct a `Console` with the library defaults.
+    console = to_console(console)
+
     with console.capture() as capture:
         console.print(*objects, **print_kwds)
     return capture.get()

@@ -129,6 +129,6 @@ FALLBACK_HANDLER = DefaultHandler(
     },
 )
 
-ALL_HANDLERS = tuple(
+ALL_HANDLERS: tuple[DefaultHandler, ...] = tuple(
     sorted(x for x in locals().values() if isinstance(x, DefaultHandler))
 )

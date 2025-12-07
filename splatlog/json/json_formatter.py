@@ -1,12 +1,13 @@
 import logging
 import json
 from typing import Any, Literal, Optional, TypeVar, Union
-from datetime import datetime, timezone, tzinfo
+from datetime import datetime, tzinfo
 from collections.abc import Mapping
 
+from rich.console import Console
 from rich.text import Text
 
-from splatlog.lib.rich import is_rich, capture_riches, RichFormatter
+from splatlog.lib.rich import is_rich, capture_riches, RichFormatter, to_console
 from splatlog.lib.text import fmt
 from splatlog.typings import JSONEncoderCastable, JSONFormatterCastable
 
@@ -50,6 +51,7 @@ class JSONFormatter(logging.Formatter):
     _tz: Optional[tzinfo]
     _use_Z_for_utc: bool
     _rich_formatter: RichFormatter
+    _console: Console | None
 
     def __init__(
         self,
@@ -62,6 +64,7 @@ class JSONFormatter(logging.Formatter):
         encoder: Union[json.JSONEncoder, JSONEncoderCastable] = None,
         tz: Optional[tzinfo] = LOCAL_TIMEZONE,
         use_Z_for_utc: bool = True,
+        console: Console | None = None,
     ):
         super().__init__(fmt, datefmt, style, validate, defaults=defaults)
 
@@ -75,19 +78,29 @@ class JSONFormatter(logging.Formatter):
         self._tz = tz
         self._use_Z_for_utc = use_Z_for_utc
         self._rich_formatter = RichFormatter()
+        self._console = console
 
     def _format_message(self, record: logging.LogRecord) -> str:
         # Get a "rich" version of `record.msg` to render
         #
-        # NOTE  `str` instances can be rendered by Rich, but they do no count as
-        #       "rich" -- i.e. `is_rich(str) -> False`.
+        # NOTE  `str` instances can be rendered by Rich, but they do _not_ count
+        #       as "rich" -- i.e. `is_rich(str) -> False`.
+        #
+        # NOTE  In this case, any interpolation `args` assigned to the `record`
+        #       are silently ignored because I'm not sure what we would do with
+        #       them.
         if is_rich(record.msg):
-            # A rich message was provided, just use that.
+            # We need a `rich.console.Console` to render the rich object, so
+            # create one if we didn't receive one at construction.
             #
-            # NOTE  In this case, any interpolation `args` assigned to the
-            #       `record` are silently ignored because I'm not sure what we
-            #       would do with them.
-            return capture_riches(record.msg)
+            # `capture_riches` will create one on-demand, but that's silly to be
+            # doing on (potentially) every message, so we store it here and
+            # reuse
+            if self._console is None:
+                self._console = to_console(None)
+
+            # Render the rich object and capture it to a `str` to return
+            return capture_riches(record.msg, console=self._console)
 
         # `record.msg` is _not_ a Rich renderable; it is treated like a
         # string (like logging normally work).
