@@ -1,6 +1,4 @@
 from colorsys import hsv_to_rgb
-from itertools import pairwise
-from typing import Generator
 from zlib import crc32
 
 # HSV_tuples = [(x*1.0/N, 0.75, 0.75) for x in range(N)]
