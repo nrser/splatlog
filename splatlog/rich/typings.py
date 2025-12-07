@@ -25,7 +25,7 @@ class RichTyped(Protocol):
     control how their type is printed by Rich.
 
     As an extension, the protocol is not used by Rich itself, but is preferred
-    by `splatlog.lib.rich.enrich_type` to format object types.
+    by `splatlog.rich.enrich_type` to format object types.
 
     ##### Examples #####
 
@@ -56,23 +56,22 @@ class RichTyped(Protocol):
     ```
 
     To wrap things up we'll create an instance of `A`, extract it's "Rich type"
-    with `splatlog.lib.rich.enrich_type`, and print our panel!
+    with `splatlog.rich.enrich_type`, and print our panel!
 
     ```python
     >>> from rich.console import Console
-    >>> from splatlog.lib.rich import enrich_type
+    >>> from splatlog.rich import enrich_type
 
     >>> a = A()
     >>> Console(width=40).print(enrich_type(a))
     ╭──────────────────────────────────────╮
-    │ splatlog.lib.rich.typings.A          │
+    │ splatlog.rich.typings.A          │
     ╰──────────────────────────────────────╯
 
     ```
     """
 
-    def __rich_type__(self) -> RenderableType:
-        ...
+    def __rich_type__(self) -> RenderableType: ...
 
 
 def is_rich(x: object) -> TypeGuard[Rich]:

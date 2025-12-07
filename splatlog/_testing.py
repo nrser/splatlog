@@ -1,5 +1,7 @@
-"""Shit just used in tests (doctest at the moment), , excluded from the
-distributed package."""
+"""
+Shit just used in tests (doctest at the moment), excluded from the distributed
+package.
+"""
 
 import logging
 from typing import Any, Optional, Union

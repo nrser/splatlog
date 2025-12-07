@@ -42,6 +42,7 @@ from splatlog.typings import (
     FileHandlerMode as FileHandlerMode,
     ExcInfo as ExcInfo,
 )
+from splatlog import rich as rich
 from splatlog import lib as lib
 from splatlog.levels import (
     CRITICAL as CRITICAL,

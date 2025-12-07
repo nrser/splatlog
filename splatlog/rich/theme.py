@@ -17,7 +17,7 @@ from splatlog.lib.typeguard import satisfies
 ToRichTheme: TypeAlias = Theme | IO[str] | dict[str, StyleType] | None
 """
 What we can convert to a {py:class}`rich.theme.Theme`. See
-{py:func}`splatlog.lib.rich.theme.to_theme` for details.
+{py:func}`splatlog.rich.theme.to_theme` for details.
 """
 
 # Constants

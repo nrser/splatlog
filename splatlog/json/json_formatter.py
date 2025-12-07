@@ -7,7 +7,7 @@ from collections.abc import Mapping
 from rich.console import Console
 from rich.text import Text
 
-from splatlog.lib.rich import is_rich, capture_riches, RichFormatter, to_console
+from splatlog.rich import is_rich, capture_riches, RichFormatter, to_console
 from splatlog.lib.text import fmt
 from splatlog.typings import JSONEncoderCastable, JSONFormatterCastable
 
@@ -128,6 +128,8 @@ class JSONFormatter(logging.Formatter):
         Using UTC timestamps.
 
         ```python
+
+        >>> from datetime import datetime, timezone
         >>> from splatlog._testing import make_log_record
 
         >>> r_1 = make_log_record(
@@ -145,6 +147,8 @@ class JSONFormatter(logging.Formatter):
 
         ```python
 
+        >>> from datetime import timezone
+
         >>> JSONFormatter(
         ...     tz=timezone.utc,
         ...     use_Z_for_utc=False
@@ -159,6 +163,7 @@ class JSONFormatter(logging.Formatter):
 
         ```python
 
+        >>> from datetime import datetime
         >>> from zoneinfo import ZoneInfo
 
         >>> la_tz = ZoneInfo("America/Los_Angeles")
@@ -188,6 +193,8 @@ class JSONFormatter(logging.Formatter):
         Basic example.
 
         ```python
+
+        >>> from datetime import datetime, timezone
         >>> from splatlog._testing import make_log_record
 
         >>> r_1 = make_log_record(
@@ -216,6 +223,8 @@ class JSONFormatter(logging.Formatter):
         With some `data` attached.
 
         ```python
+
+        >>> from datetime import datetime, timezone
         >>> from splatlog._testing import make_log_record
 
         >>> r_2 = make_log_record(
@@ -247,7 +256,9 @@ class JSONFormatter(logging.Formatter):
         With error information (`exc_info`).
 
         ```python
+
         >>> import sys
+        >>> from datetime import datetime, timezone
         >>> from splatlog._testing import make_log_record
 
         >>> try:

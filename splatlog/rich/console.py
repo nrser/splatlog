@@ -12,12 +12,12 @@ StdoutName = Literal["stdout", "stderr"]
 ToRichConsole: TypeAlias = Console | StdoutName | IO[str] | None
 """
 What we can convert to a {py:class}`rich.console.Console`. See
-{py:func}`splatlog.lib.rich.console.to_rich_console`.
+{py:func}`splatlog.rich.console.to_rich_console`.
 """
 
 
 def is_stdout_name(value: Any) -> TypeGuard[StdoutName]:
-    """Is `value` a {py:type}`splatlog.lib.rich.console.StdioName`?
+    """Is `value` a {py:type}`splatlog.rich.console.StdioName`?
 
     ```{note}
 
@@ -34,7 +34,7 @@ def is_stdout_name(value: Any) -> TypeGuard[StdoutName]:
 
 
 def is_to_rich_console(value: Any) -> TypeGuard[ToRichConsole]:
-    """Is `value` a {py:type}`splatlog.lib.rich.console.ToRichConsole`?
+    """Is `value` a {py:type}`splatlog.rich.console.ToRichConsole`?
 
     ```{note}
 

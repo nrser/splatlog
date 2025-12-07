@@ -11,7 +11,7 @@ from rich.theme import Theme
 from rich.traceback import Traceback
 
 from splatlog.lib import fmt
-from splatlog.lib.rich import (
+from splatlog.rich import (
     Rich,
     is_rich,
     ntv_table,
@@ -20,7 +20,7 @@ from splatlog.lib.rich import (
     RichFormatter,
 )
 from splatlog.lib.typeguard import satisfies
-from splatlog.lib.rich import ToRichConsole, to_console
+from splatlog.rich import ToRichConsole, to_console
 from splatlog.splat_handler import SplatHandler
 from splatlog.typings import (
     Level,

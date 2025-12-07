@@ -9,7 +9,7 @@ from splatlog.json.json_formatter import JSONFormatter
 from splatlog.lib import satisfies
 from splatlog.lib.collections import partition_mapping
 from splatlog.lib.text import fmt
-from splatlog.lib.rich import is_to_rich_console
+from splatlog.rich import is_to_rich_console
 from splatlog.levels import get_level_value, is_level
 from splatlog.locking import lock
 from splatlog.rich_handler import RichHandler
@@ -220,7 +220,7 @@ def cast_console_handler(
         ```
 
     5.  Anything that we can cast to a `rich.console.Console` (see
-        {py:func}`splatlog.lib.rich.console.cast_console`) is assigned as the
+        {py:func}`splatlog.rich.console.cast_console`) is assigned as the
         console in a new `RichHandler` instance.
 
         ```python
@@ -278,14 +278,14 @@ def cast_console_handler(
             ...
         TypeError:
             Expected
-                None
-                | logging.Handler
+                logging.Handler
                 | typing.Mapping[str, typing.Any]
                 | bool
                 | rich.console.Console
                 | 'stdout'
                 | 'stderr'
                 | typing.IO[str]
+                | None
                 | int
                 | str,
             given list: [1, 2, 3]

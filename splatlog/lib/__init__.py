@@ -23,7 +23,6 @@ from .text import (
     fmt_type_hint as fmt_type_hint,
 )
 
-from . import rich as rich
 from .typeguard import satisfies as satisfies
 
 

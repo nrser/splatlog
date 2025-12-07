@@ -23,7 +23,7 @@ from rich.theme import Theme
 from typeguard import check_type, TypeCheckError
 
 from splatlog.lib.text import fmt
-from splatlog.lib.rich import ToRichConsole
+from splatlog.rich import ToRichConsole
 
 if TYPE_CHECKING:
     from splatlog.verbosity.verbosity_level_resolver import (

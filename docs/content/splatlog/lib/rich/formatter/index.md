@@ -1,9 +1,9 @@
-splatlog.lib.rich.formatter
+splatlog.rich.formatter
 ==============================================================================
 
-@pyscope splatlog.lib.rich.formatter.rich_formatter
-@pyscope splatlog.lib.rich.formatter.rich_repr
-@pyscope splatlog.lib.rich.formatter.rich_text
+@pyscope splatlog.rich.formatter.rich_formatter
+@pyscope splatlog.rich.formatter.rich_repr
+@pyscope splatlog.rich.formatter.rich_text
 
 
 Examples
@@ -35,7 +35,7 @@ library modules that we'll use in the examples.
 >>> import rich
 >>> from rich.text import Text
 
->>> from splatlog.lib.rich.formatter import RichFormatter
+>>> from splatlog.rich.formatter import RichFormatter
 
 ```
 
@@ -241,7 +241,7 @@ Rendered with RichText protocol: 😄 Hey yo! 😄. Pretty neat!
 `isinstance` checks, should you have a use for them.
 
 ```python
->>> from splatlog.lib.rich.formatter import RichText
+>>> from splatlog.rich.formatter import RichText
 >>> isinstance(custom_formatted, RichText)
 True
 
@@ -396,4 +396,4 @@ The general approach that seems to have emerged during development is:
     > for the initial implementation.
 
 
-@pydoc splatlog.lib.rich.formatter
+@pydoc splatlog.rich.formatter
