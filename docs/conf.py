@@ -45,6 +45,16 @@ intersphinx_mapping = {
     "rich": ("https://rich.readthedocs.io/en/latest/", None),
 }
 
+# Python domain/signature formatting
+# ----------------------------------------------------------------------------
+
+# Wrap long signatures across multiple lines (per-parameter) for readability.
+# Applies to Python objects rendered by the domain (including autodoc2 output).
+python_maximum_signature_line_length = 80
+
+# Prefer unqualified type names in rendered annotations when links are available.
+python_use_unqualified_type_names = True
+
 # Options for HTML output
 # ----------------------------------------------------------------------------
 #
