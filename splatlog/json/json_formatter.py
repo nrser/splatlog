@@ -24,11 +24,20 @@ Self = TypeVar("Self", bound="JSONFormatter")
 
 class JSONFormatter(logging.Formatter):
     """
-    Howdy
+    Our {py:class}`logging.Formatter` for producing JSON logs. Specifically,
+    formats [JSON Lines][] — each {py:class}`logging.LogRecord` becomes a single
+    line encoding a JSON object.
+
+    Used as the default formatter for the `export` named handler, see
+    {py:func}`splatlog.named_handlers.to_export_handler`.
     """
 
     @classmethod
-    def cast(cls: type[Self], value: JSONFormatterCastable) -> Self:
+    def from_(cls: type[Self], value: JSONFormatterCastable) -> Self:
+        """
+        Convert a `value` into a JSON formatter. Raises {py:class}`TypeError` on
+        failure.
+        """
         if isinstance(value, cls):
             return value
 

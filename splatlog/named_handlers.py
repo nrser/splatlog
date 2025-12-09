@@ -126,10 +126,31 @@ def set_named_handler(name: str, value: Any) -> None: ...
 
 
 def set_named_handler(name: str, value: Any) -> None:
-    """ """
+    """
+    Construct a {py:class}`logging.Handler` from `value` and add it to the root
+    {py:class}`logging.Logger`.
+
+    Uses the function registered by `name` with
+    {py:func}`splatlog.named_handlers.register_named_handler` or the
+    {py:func}`splatlog.named_handlers.named_handler` decorator to convert
+    `value` to a handler. A function _must_ be registered by `name`, or a
+    {py:class}`KeyError` will be raised. This is primarily to catch `name`
+    typos.
+
+    After setting a named handler you may access it with
+    {py:func}`splatlog.named_handlers.get_named_handler`. In practice, named
+    handlers are set mostly through {py:func}`splatlog.setup`, which calls this
+    function.
+
+    This function acquires the {py:func}`splatlog.locking.lock` to do the root
+    logger access and mutations. Construction of the handler is done before
+    acquiring the lock.
+
+    If the new handler is identical to the old handler skips the get/set ordeal.
+    """
     check_name(name)
-    cast = _registry[name]
-    new_handler = cast(value)
+    converter = _registry[name]
+    new_handler = converter(value)
 
     with lock():
         old_handler = _handlers.get(name)
@@ -147,15 +168,15 @@ def set_named_handler(name: str, value: Any) -> None:
 
 
 @overload
-def cast_console_handler(value: Literal[True]) -> RichHandler: ...
+def to_console_handler(value: Literal[True]) -> RichHandler: ...
 
 
 @overload
-def cast_console_handler(value: logging.Handler) -> logging.Handler: ...
+def to_console_handler(value: logging.Handler) -> logging.Handler: ...
 
 
 @named_handler("console")
-def cast_console_handler(
+def to_console_handler(
     value: ConsoleHandlerCastable,
 ) -> Optional[logging.Handler]:
     """Convert a value into either a `logging.Handler` or `None`.
@@ -321,7 +342,7 @@ def cast_console_handler(
 
 
 @named_handler("export")
-def cast_export_handler(value) -> Optional[logging.Handler]:
+def to_export_handler(value) -> Optional[logging.Handler]:
     if value is None or value is False:
         return None
 
@@ -339,7 +360,7 @@ def cast_export_handler(value) -> Optional[logging.Handler]:
                     "Mappings passed to {} must contain 'filename' or "
                     "'stream' keys, given {}"
                 ).format(
-                    fmt(cast_export_handler),
+                    fmt(to_export_handler),
                     fmt(value),
                 )
             )
@@ -360,7 +381,7 @@ def cast_export_handler(value) -> Optional[logging.Handler]:
             handler.formatter = formatter
         else:
             # Cast to a `JSONFormatter`
-            handler.formatter = JSONFormatter.cast(formatter)
+            handler.formatter = JSONFormatter.from_(formatter)
 
         if verbosity_levels := post_kwds.get("verbosity_levels"):
             VerbosityLevelsFilter.set_on(handler, verbosity_levels)

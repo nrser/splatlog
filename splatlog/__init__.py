@@ -99,8 +99,8 @@ from splatlog.named_handlers import (
     named_handler as named_handler,
     get_named_handler as get_named_handler,
     set_named_handler as set_named_handler,
-    cast_console_handler as cast_console_handler,
-    cast_export_handler as cast_export_handler,
+    to_console_handler as to_console_handler,
+    to_export_handler as to_export_handler,
 )
 from splatlog.setup import (
     setup as setup,
