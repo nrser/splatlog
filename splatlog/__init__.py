@@ -53,10 +53,14 @@ from splatlog.levels import (
     INFO as INFO,
     DEBUG as DEBUG,
     NOTSET as NOTSET,
-    get_level_value as get_level_value,
+    to_level_name as to_level_name,
+    to_level_value as to_level_value,
     is_level_name as is_level_name,
     is_level_value as is_level_value,
     is_level as is_level,
+    get_level as get_level,
+    get_level_name as get_level_name,
+    set_level as set_level,
 )
 from splatlog.names import (
     root_name as root_name,

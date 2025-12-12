@@ -16,11 +16,11 @@ DEBUG = logging.DEBUG  # 10
 NOTSET = logging.NOTSET  # 0
 
 
-def get_level_name(level_value: LevelValue) -> str:
+def to_level_name(level_value: LevelValue) -> LevelName:
     return logging.getLevelName(level_value)
 
 
-def get_level_value(level: Level) -> LevelValue:
+def to_level_value(level: Level) -> LevelValue:
     """
     Make a `logging` level number from more useful/intuitive things, like string
     you might get from an environment variable or command option.
@@ -246,3 +246,18 @@ def is_level(
     return is_level_name(
         value, case_sensitive=case_sensitive
     ) or is_level_value(value)
+
+
+def get_level() -> LevelValue:
+    """
+    Get the root log level.
+    """
+    return logging.getLogger().level
+
+
+def get_level_name() -> LevelName:
+    return to_level_name(get_level())
+
+
+def set_level(level: Level) -> None:
+    logging.getLogger().setLevel(to_level_value(level))

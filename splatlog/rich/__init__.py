@@ -12,7 +12,11 @@ from rich.color import Color, ColorType
 from rich.style import Style
 
 # Re-exports
-from .theme import THEME as THEME
+from .theme import (
+    THEME as THEME,
+    to_theme as to_theme,
+    set_default_theme as set_default_theme,
+)
 from .typings import Rich as Rich, is_rich as is_rich
 from .enriched_type import EnrichedType as EnrichedType
 from .ntv_table import ntv_table as ntv_table
@@ -92,5 +96,13 @@ def override_ansi_colors(theme=THEME, **name_color_map: str | Color) -> Theme:
             )
         else:
             styles[name] = style
+
+    # For each override, make sure there is a style with that name. The `rich`
+    # base styles only include _some_ of the ANSI colors, but if you override
+    # `blue` you want to make sure that's used for `[blue]` and not the terminal
+    # color
+    for name, color in name_color_map.items():
+        if name not in styles:
+            styles[name] = Style(color=color)
 
     return Theme(styles)

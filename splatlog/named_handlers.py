@@ -10,7 +10,7 @@ from splatlog.lib import satisfies
 from splatlog.lib.collections import partition_mapping
 from splatlog.lib.text import fmt
 from splatlog.rich import is_to_rich_console
-from splatlog.levels import get_level_value, is_level
+from splatlog.levels import to_level_value, is_level
 from splatlog.locking import lock
 from splatlog.rich_handler import RichHandler
 from splatlog.typings import (
@@ -372,7 +372,7 @@ def to_export_handler(value) -> Optional[logging.Handler]:
         handler = cls(**init_kwds)
 
         if "level" in post_kwds:
-            handler.setLevel(get_level_value(post_kwds["level"]))
+            handler.setLevel(to_level_value(post_kwds["level"]))
 
         formatter = post_kwds.get("formatter")
 

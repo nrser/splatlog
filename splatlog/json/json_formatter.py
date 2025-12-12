@@ -1,6 +1,6 @@
 import logging
 import json
-from typing import Any, Literal, Optional, TypeVar, Union
+from typing import Any, Literal, Optional, TypeAlias, TypeVar
 from datetime import datetime, tzinfo
 from collections.abc import Mapping
 
@@ -13,13 +13,13 @@ from splatlog.typings import JSONEncoderCastable, JSONFormatterCastable
 
 from .json_encoder import JSONEncoder
 
-__all__ = ["LOCAL_TIMEZONE", "JSONFormatterCastable", "JSONFormatter"]
-
 
 LOCAL_TIMEZONE = datetime.now().astimezone().tzinfo
 
 
 Self = TypeVar("Self", bound="JSONFormatter")
+MsgMode: TypeAlias = Literal["plain", "html", "ansi"]
+PercentStyle: TypeAlias = Literal["%", "{", "$"]
 
 
 class JSONFormatter(logging.Formatter):
@@ -60,20 +60,32 @@ class JSONFormatter(logging.Formatter):
     _tz: Optional[tzinfo]
     _use_Z_for_utc: bool
     _rich_formatter: RichFormatter
+
     _console: Console | None
+    """
+    Used to encode encode `msg` fields of {py:class}`logging.LogRecord` that are
+    _not_ {py:class}`str`.
+    """
+
+    _message_mode: MsgMode
+    """
+    How to encode `msg` fields of {py:class}`logging.LogRecord` that are _not_
+    {py:class}`str`.
+    """
 
     def __init__(
         self,
         fmt: str | None = None,
         datefmt: str | None = None,
-        style: Literal["%", "{", "$"] = "{",
+        style: PercentStyle = "{",
         validate: bool = True,
         *,
         defaults: Mapping[str, Any] | None = None,
-        encoder: Union[json.JSONEncoder, JSONEncoderCastable] = None,
-        tz: Optional[tzinfo] = LOCAL_TIMEZONE,
+        encoder: json.JSONEncoder | JSONEncoderCastable = None,
+        tz: tzinfo | None = LOCAL_TIMEZONE,
         use_Z_for_utc: bool = True,
         console: Console | None = None,
+        message_mode: MsgMode = "plain",
     ):
         super().__init__(fmt, datefmt, style, validate, defaults=defaults)
 
@@ -88,47 +100,15 @@ class JSONFormatter(logging.Formatter):
         self._use_Z_for_utc = use_Z_for_utc
         self._rich_formatter = RichFormatter()
         self._console = console
+        self._message_mode = message_mode
 
     def _format_message(self, record: logging.LogRecord) -> str:
-        # Get a "rich" version of `record.msg` to render
-        #
-        # NOTE  `str` instances can be rendered by Rich, but they do _not_ count
-        #       as "rich" -- i.e. `is_rich(str) -> False`.
-        #
-        # NOTE  In this case, any interpolation `args` assigned to the `record`
-        #       are silently ignored because I'm not sure what we would do with
-        #       them.
-        if is_rich(record.msg):
-            # We need a `rich.console.Console` to render the rich object, so
-            # create one if we didn't receive one at construction.
-            #
-            # `capture_riches` will create one on-demand, but that's silly to be
-            # doing on (potentially) every message, so we store it here and
-            # reuse
-            if self._console is None:
-                self._console = to_console(None)
-
-            # Render the rich object and capture it to a `str` to return
-            return capture_riches(record.msg, console=self._console)
-
-        # `record.msg` is _not_ a Rich renderable; it is treated like a
-        # string (like logging normally work).
-        #
-        # Make sure we actually have a string:
-        msg = record.msg if isinstance(record.msg, str) else str(record.msg)
-
-        # See if there are `record.args` to interpolate.
+        msg = str(record.msg)
         if args := record.args:
-            if isinstance(args, tuple):
-                text = self._rich_formatter.vformat(msg, args, {})
-            else:
-                text = self._rich_formatter.vformat(msg, (), args)
-            return text.plain
-
-        # Results are wrapped in a `rich.text.Text` for render, which is
-        # assigned the `log.message` style (though that style is empty by
-        # default).
-        return Text.from_markup(msg, style="log.message").plain
+            msg = msg % args
+        elif data := getattr(record, "data"):
+            msg = msg % data
+        return msg
 
     def _format_timestamp(self, record: logging.LogRecord) -> str:
         """

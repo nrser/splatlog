@@ -3,7 +3,7 @@ from typing import Optional
 
 from splatlog import LevelName
 from splatlog.typings import Level, VerbosityLevelsCastable, VerbosityLevels
-from splatlog.levels import get_level_value
+from splatlog.levels import to_level_value
 from splatlog.verbosity import VerbosityLevelsFilter
 
 
@@ -16,7 +16,7 @@ class SplatHandler(logging.Handler):
         *,
         verbosity_levels: Optional[VerbosityLevelsCastable] = None,
     ):
-        super().__init__(get_level_value(level))
+        super().__init__(to_level_value(level))
         VerbosityLevelsFilter.set_on(self, verbosity_levels)
 
     def get_verbosity_levels(self) -> Optional[VerbosityLevels]:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 from inspect import isclass
+from logging import LogRecord
 from string import Formatter
 from types import MappingProxyType
 from typing import (
@@ -14,6 +15,7 @@ from typing import (
 
 from rich.text import Text
 
+from ..typings import Rich, is_rich
 from ..enrich import repr_highlight, REPR_HIGHLIGHTER
 from .rich_repr import RichRepr, implements_rich_repr
 from .rich_text import RichText
@@ -144,11 +146,21 @@ class RichFormatter(Formatter):
         return self._conversions
 
     def format(self, format_string: str, /, *args: Any, **kwargs: Any) -> Text:
+        """
+        Format a
+        """
         return self.vformat(format_string, args, kwargs)
 
     def vformat(
         self, format_string: str, args: Sequence[Any], kwargs: Mapping[str, Any]
     ) -> Text:
+        """
+        Version of {py:meth}`format` to be called when you already have `args`
+        and `kwds` prepared.
+
+        As opposed to splatting them out (just to be immediately recollected, as
+        `{py:meth}`format` immediately calls this method).
+        """
         used_args = set()
         result, _ = self._vformat(format_string, args, kwargs, used_args, 2)
         self.check_unused_args(used_args, args, kwargs)
@@ -163,9 +175,13 @@ class RichFormatter(Formatter):
         recursion_depth: int,
         auto_arg_index: int = 0,
     ) -> tuple[Text, int]:
+        """
+        Internal implementation of {py:meth}`vformat`.
+        """
         if recursion_depth < 0:
             raise ValueError("Max string recursion exceeded")
 
+        # Start with an empty `Text` that we will append to
         result = Text("", end="")
 
         for literal_text, field_name, format_spec, conversion in self.parse(
@@ -173,7 +189,7 @@ class RichFormatter(Formatter):
         ):
             # output the literal text
             if literal_text:
-                result.append(literal_text)
+                result.append_text(Text.from_markup(literal_text))
 
             # if there's a field, output it
             if field_name is not None:
@@ -264,3 +280,44 @@ class RichFormatter(Formatter):
         raise ValueError(
             "Unknown conversion specifier {0!s}".format(conversion)
         )
+
+    def format_message(self, record: LogRecord) -> Rich:
+        """
+        Format the `msg` from a {py:class}`logging.LogRecord`.
+        """
+        # If the record didn't come from a `splatlog.SplatLogger` (which adds
+        # this special "extra" attribute) then defer to the standard message
+        # formatting provided by `logging.LogRecord.getMessage`
+        # (percent/printf-style interpolation), since that's what every other
+        # logger will expect be using.
+        #
+        if not hasattr(record, "_splatlog_"):
+            return Text(record.getMessage())
+
+        # Get a "rich" version of `record.msg` to render
+        #
+        # NOTE  `str` instances can be rendered by Rich, but they do no count as
+        #       "rich" -- i.e. `is_rich(str) -> False`.
+        if is_rich(record.msg):
+            # A rich message was provided, just use that.
+            #
+            # NOTE  In this case, any interpolation `args` assigned to the
+            #       `record` are silently ignored because I'm not sure what we
+            #       would do with them.
+            return record.msg
+
+        # `record.msg` is _not_ a Rich renderable; it is treated like a
+        # string (like logging normally work).
+        #
+        # Make sure we actually have a string:
+        msg = str(record.msg)
+        args: Sequence[Any] = ()
+        kwds: Mapping[str, Any] = getattr(record, "data", {})
+
+        match record.args:
+            case a if isinstance(a, Sequence):
+                args = a
+            case kw if isinstance(kw, Mapping):
+                kwds = {**kwds, **kw}
+
+        return self.vformat(msg, args, kwds)

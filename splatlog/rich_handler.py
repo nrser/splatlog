@@ -1,25 +1,22 @@
 """Contains the `RichHandler` class."""
 
 from __future__ import annotations
-from typing import IO, ClassVar, Mapping, Optional, Union
+from collections.abc import Sequence
+from typing import Any, Mapping, Optional
 import logging
 
 from rich.table import Table
 from rich.console import Console
 from rich.text import Text
-from rich.theme import Theme
 from rich.traceback import Traceback
 
-from splatlog.lib import fmt
 from splatlog.rich import (
     Rich,
-    is_rich,
     ntv_table,
-    THEME,
+    to_theme,
     enrich,
     RichFormatter,
 )
-from splatlog.lib.typeguard import satisfies
 from splatlog.rich import ToRichConsole, to_console
 from splatlog.splat_handler import SplatHandler
 from splatlog.typings import (
@@ -36,44 +33,7 @@ class RichHandler(SplatHandler):
     Output is meant for specifically humans.
     """
 
-    _default_theme: ClassVar[Theme] = THEME
-
-    @classmethod
-    def set_default_theme(cls, theme: RichThemeCastable) -> None:
-        cls._default_theme = cls.cast_theme(theme)
-
-    @classmethod
-    def cast_theme(cls, theme: object) -> Theme:
-        if theme is None:
-            # If no theme was provided create an instance-owned copy of the
-            # default theme (so that any modifications don't spread to any other
-            # instances... which usually doesn't matter, since there is
-            # typically only one instance, but it's good practice I guess).
-            return Theme(cls._default_theme.styles)
-
-        if isinstance(theme, Theme):
-            # Given a `rich.theme.Theme`, which can be used directly
-            return theme
-
-        if satisfies(theme, IO[str]):
-            # Given an open file to read the theme from
-            return Theme.from_file(theme)
-
-        if isinstance(theme, dict):
-            # Given a `dict` layer it over the default `THEME` so it has our
-            # custom styles (if you don't want this pass a `Theme` instance)
-            styles = THEME.styles.copy()
-            styles.update(theme)
-            return Theme(styles, inherit=False)
-
-        raise TypeError(
-            "Expected `theme` to be {}, given {}: {}".format(
-                fmt(Union[None, Theme, IO[str]]), fmt(type(theme)), fmt(theme)
-            )
-        )
-
     console: Console
-    formatter: RichFormatter
 
     def __init__(
         self,
@@ -86,13 +46,8 @@ class RichHandler(SplatHandler):
     ):
         super().__init__(level=level, verbosity_levels=verbosity_levels)
 
-        self.theme = self.cast_theme(theme)
+        self.theme = to_theme(theme)
         self.console = to_console(console, theme=self.theme)
-
-        if formatter is None:
-            self.formatter = RichFormatter()
-        else:
-            self.formatter = formatter
 
     def emit(self, record):
         # pylint: disable=broad-except
@@ -114,44 +69,18 @@ class RichHandler(SplatHandler):
             self.handleError(record)
 
     def _get_rich_msg(self, record: logging.LogRecord) -> Rich:
-        # If the record didn't come from a `splatlog.SplatLogger` (which adds
-        # this special "extra" attribute) then defer to the standard message
-        # formatting provided by `logging.LogRecord.getMessage`
-        # (percent/printf-style interpolation), since that's what every other
-        # logger will expect be using.
-        #
-        if not hasattr(record, "_splatlog_"):
-            return Text(record.getMessage())
+        msg = str(record.msg)
+        args: Sequence[Any] = ()
+        kwds: Mapping[str, Any] = getattr(record, "data", {})
 
-        # Get a "rich" version of `record.msg` to render
-        #
-        # NOTE  `str` instances can be rendered by Rich, but they do no count as
-        #       "rich" -- i.e. `is_rich(str) -> False`.
-        if is_rich(record.msg):
-            # A rich message was provided, just use that.
-            #
-            # NOTE  In this case, any interpolation `args` assigned to the
-            #       `record` are silently ignored because I'm not sure what we
-            #       would do with them.
-            return record.msg
+        if isinstance(record.args, Sequence):
+            args = record.args
+        elif isinstance(record.args, Mapping):
+            kwds = {**kwds, **record.args}
 
-        # `record.msg` is _not_ a Rich renderable; it is treated like a
-        # string (like logging normally work).
-        #
-        # Make sure we actually have a string:
-        msg = record.msg if isinstance(record.msg, str) else str(record.msg)
+        msg = msg.format(*args, **kwds)
 
-        # See if there are `record.args` to interpolate.
-        if args := record.args:
-            if isinstance(args, tuple):
-                return self.formatter.vformat(msg, args, {})
-
-            return self.formatter.vformat(msg, (), args)
-
-        # Results are wrapped in a `rich.text.Text` for render, which is
-        # assigned the `log.message` style (though that style is empty by
-        # default).
-        return Text.from_markup(msg, style="log.message")
+        return Text.from_markup(msg)
 
     def _get_name_cell(self, record):
         text = Text()
@@ -209,7 +138,8 @@ class RichHandler(SplatHandler):
             )
 
         output.add_row(
-            Text("msg", style="log.label"), self._get_rich_msg(record)
+            Text("msg", style="log.label"),
+            self._get_rich_msg(record),
         )
 
         if data := getattr(record, "data", None):

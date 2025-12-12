@@ -15,7 +15,7 @@ from splatlog.typings import (
     VerbosityRange,
     as_verbosity,
 )
-from splatlog.levels import NOTSET, get_level_value
+from splatlog.levels import NOTSET, to_level_value
 
 __all__ = ["VerbosityLevelResolver"]
 
@@ -95,7 +95,7 @@ class VerbosityLevelResolver:
         # Translate any `str` level names to their `int`` level value and check the
         # verbosity is in-bounds
         levels = [
-            (as_verbosity(v), get_level_value(l)) for v, l in verbosity_levels
+            (as_verbosity(v), to_level_value(l)) for v, l in verbosity_levels
         ]
 
         # Add the "upper cap" with a max verbosity of `sys.maxsize`. The level value

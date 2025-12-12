@@ -1,6 +1,7 @@
 from __future__ import annotations
 import logging
 
+from splatlog.rich import set_default_theme
 from splatlog.typings import (
     ConsoleHandlerCastable,
     ExportHandlerCastable,
@@ -9,10 +10,9 @@ from splatlog.typings import (
     VerbosityLevelsCastable,
     RichThemeCastable,
 )
-from splatlog.levels import get_level_value
+from splatlog.levels import to_level_value, set_level
 from splatlog.verbosity import set_verbosity_levels, set_verbosity
 from splatlog.named_handlers import set_named_handler
-from splatlog.rich_handler import RichHandler
 
 
 def setup(
@@ -126,10 +126,10 @@ def setup(
     """
 
     if theme is not None:
-        RichHandler.set_default_theme(theme)
+        set_default_theme(theme)
 
     if level is not None:
-        logging.getLogger().setLevel(get_level_value(level))
+        set_level(level)
 
     if verbosity_levels is not None:
         set_verbosity_levels(verbosity_levels)

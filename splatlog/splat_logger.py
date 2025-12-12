@@ -12,7 +12,7 @@ from collections.abc import Generator
 from types import GenericAlias, MappingProxyType
 from typing import Callable, Optional, Type
 
-from splatlog.levels import get_level_value
+from splatlog.levels import to_level_value
 from splatlog.lib.collections import partition_mapping
 from splatlog.lib.text import fmt
 from splatlog.typings import Level, LevelValue
@@ -321,6 +321,15 @@ class SplatLogger(logging.LoggerAdapter):
         return msg, new_kwargs
 
     def iter_handlers(self) -> Generator[logging.Handler, None, None]:
+        """
+        Iterate through the applicable {py:class}`logging.Handler`.
+
+        Always yields from {py:attr}`logging.Logger.handlers` of the
+        {py:class}`logging.Logger` that this adapter wraps. If that logger is
+        set to {py:attr}`logging.Logger.propagate` then continues walking up the
+        {py:attr}`logging.Logger.parent` chain, yielding the ancestor handlers
+        as well.
+        """
         logger = self.logger
         while logger:
             yield from logger.handlers
@@ -346,7 +355,7 @@ class SplatLogger(logging.LoggerAdapter):
         return self.logger.level
 
     def setLevel(self, level: Level) -> None:
-        super().setLevel(get_level_value(level))
+        super().setLevel(to_level_value(level))
 
     def getChild(self, suffix):
         if self.logger.root is not self.logger:

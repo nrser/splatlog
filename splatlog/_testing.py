@@ -5,7 +5,7 @@ package.
 
 import logging
 from typing import Any, Optional, Union
-from splatlog.levels import get_level_value
+from splatlog.levels import to_level_value
 
 from splatlog.typings import ExcInfo, Level
 from datetime import datetime
@@ -43,7 +43,7 @@ def make_log_record(
     """
     record = logging.LogRecord(
         name=name,
-        level=get_level_value(level),
+        level=to_level_value(level),
         pathname=pathname,
         lineno=lineno,
         msg=msg,
