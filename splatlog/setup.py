@@ -1,24 +1,25 @@
 from __future__ import annotations
 import logging
+from typing import Literal
 
 from splatlog.rich import set_default_theme
 from splatlog.typings import (
-    ConsoleHandlerCastable,
-    ExportHandlerCastable,
+    ToConsoleHandler,
+    ToExportHandler,
     Level,
     Verbosity,
     VerbosityLevelsCastable,
     RichThemeCastable,
 )
-from splatlog.levels import to_level_value, set_level
+from splatlog.levels import set_level
 from splatlog.verbosity import set_verbosity_levels, set_verbosity
 from splatlog.named_handlers import set_named_handler
 
 
 def setup(
     *,
-    console: ConsoleHandlerCastable | None = None,
-    export: ExportHandlerCastable | None = None,
+    console: ToConsoleHandler | Literal[False] | None = None,
+    export: ToExportHandler | Literal[False] | None = None,
     level: Level | None = None,
     theme: RichThemeCastable | None = None,
     verbosity: Verbosity | None = None,
@@ -40,10 +41,11 @@ def setup(
     ## Parameters
 
     ```{note}
-    All parameters default to `None`, which in all cases is
-    ignored.
+
+    All parameters default to `None`, which in all cases is ignored.
 
     As such, calling `setup()` with no argument is a no-op.
+
     ```
 
     -   `console`: create a {py:class}`logging.Handler` writing to the console
@@ -55,51 +57,23 @@ def setup(
 
         Accepts the following:
 
-        1.  Cast to {py:class}`splatlog.rich_handler.RichHandler`:
+        1.  {py:data}`True`, {py:type}`splatlog.typings.StdoutName`,
+            {py:class}`typing.IO`, {py:class}`rich.console.Console`, and
+            {py:class}`collections.abc.Mapping` are passed to
+            {py:func}`splatlog.named_handlers.to_console_handler` to
+            construct a {py:class}`splatlog.rich_handler.RichHandler`.
 
-            1.  `True`: all default attributes (equivalent to calling the
-                constructor with no arguments). Writes to `STDOUT`.
+            ## Examples
 
-                ### Example
+            Log {py:data}`logging.INFO` and above to `STDERR`.
 
-                Log {py:data}`logging.INFO` and above to `STDOUT`.
+            ```python
 
-                ```python
-                splatlog.setup(level="info", console=True)
-                ```
+            splatlog.setup(level="info", console="stderr")
+            # or simply
+            splatlog.setup(level="info", console=True)
 
-            2.  {py:type}`splatlog.typings.StdoutName`: write to the named
-                standard output stream (`"stdout"` or `"stderr"`).
-
-                ### Example
-
-                Log {py:data}`logging.INFO` and above to `STDERR`.
-
-                ```python
-                splatlog.setup(level="info", console="stderr")
-                ```
-
-            3.  {py:type}`splatlog.typings.Level`: sets the level of the
-                constructed handler, with other attributes as defaults.
-
-                Not that useful in isolation — just set the root `level` — but
-                may make sense when you have multiple handlers active.
-
-                ### Example
-
-                Log everything to export, and warnings or higher to the console.
-
-                ```python
-                splatlog.setup(
-                    level="debug",
-                    export="/var/log/splatlog.jsonl",
-                    console="warning",
-                )
-                ```
-
-            4.
-
-                Defaults to `None`, which is ignored.
+            ```
 
 
     -   `level`: Set main logging level. Accepts integer levels from

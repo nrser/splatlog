@@ -6,17 +6,15 @@ from types import TracebackType
 from typing import (
     IO,
     Any,
-    Callable,
     Literal,
     Optional,
-    Sequence,
     Type,
     TypeAlias,
     TypeGuard,
     Union,
-    Mapping,
     TYPE_CHECKING,
 )
+from collections.abc import Mapping, Sequence, Callable
 
 from rich.style import StyleType
 from rich.theme import Theme
@@ -203,19 +201,19 @@ Once registered by a `name` {py:class}`str` with
 
 KwdMapping = Mapping[str, Any]
 
-HandlerCastable = logging.Handler | KwdMapping
+ToConsoleHandler = (
+    logging.Handler | KwdMapping | Literal[True] | Level | ToRichConsole
+)
 """
-Types that a
-"""
+What can be converted to a `console` named handlers, via constructing a
+{py:class}`splatlog.rich_handler.RichHandler`.
 
-ConsoleHandlerCastable = HandlerCastable | bool | ToRichConsole | Level
-"""
-What can be cast to a `"console"` handler.
+See {py:func}`splatlog.named_handlers.to_console_handler` for details.
 """
 
 JSONEncoderStyle = Literal["compact", "pretty"]
 
-ExportHandlerCastable = HandlerCastable | str | Path | IO[str]
+ToExportHandler = logging.Handler | KwdMapping | str | Path | IO[str]
 
 JSONFormatterCastable = Union[
     None, "JSONFormatter", JSONEncoderStyle, KwdMapping

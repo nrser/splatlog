@@ -14,9 +14,9 @@ from splatlog.levels import to_level_value, is_level
 from splatlog.locking import lock
 from splatlog.rich_handler import RichHandler
 from splatlog.typings import (
-    ConsoleHandlerCastable,
+    ToConsoleHandler,
     NamedHandlerCast,
-    ExportHandlerCastable,
+    ToExportHandler,
     OnConflict,
 )
 from splatlog.verbosity.verbosity_levels_filter import VerbosityLevelsFilter
@@ -105,19 +105,23 @@ def named_handler(
     return decorator
 
 
+# Accessors
+# ============================================================================
+
+
 def get_named_handler(name: str) -> logging.Handler | None:
     return _handlers.get(name)
 
 
 @overload
 def set_named_handler(
-    name: Literal["console"], value: ConsoleHandlerCastable
+    name: Literal["console"], value: ToConsoleHandler
 ) -> None: ...
 
 
 @overload
 def set_named_handler(
-    name: Literal["export"], value: ExportHandlerCastable
+    name: Literal["export"], value: ToExportHandler
 ) -> None: ...
 
 
@@ -148,9 +152,34 @@ def set_named_handler(name: str, value: Any) -> None:
 
     If the new handler is identical to the old handler skips the get/set ordeal.
     """
+
+    # When passed `None` or `False` hand-off to the deleter. `False` is used
+    # from `splatlog.setup` because `None` is ignored.
+    #
+    # Standardizes deleting named handlers, relieves converters from having to
+    # handle them.
+    if value is None or value is False:
+        return del_named_handler(name)
+
     check_name(name)
-    converter = _registry[name]
-    new_handler = converter(value)
+
+    build = _registry[name]
+    new_handler = build(value)
+
+    if not isinstance(new_handler, logging.Handler):
+        raise TypeError(
+            (
+                "Expected {} handler builder to return {}; gave {}: {} "
+                + "and received {}: {}"
+            ).format(
+                fmt(name),
+                fmt(logging.Handler),
+                fmt(type(value)),
+                fmt(value),
+                fmt(type(new_handler)),
+                fmt(new_handler),
+            )
+        )
 
     with lock():
         old_handler = _handlers.get(name)
@@ -167,18 +196,29 @@ def set_named_handler(name: str, value: Any) -> None:
             _handlers[name] = new_handler
 
 
-@overload
-def to_console_handler(value: Literal[True]) -> RichHandler: ...
+def del_named_handler(name: str) -> None:
+    check_name(name)
+
+    with lock():
+        old_handler = _handlers.get(name)
+
+        if old_handler is not None:
+            root_logger = logging.getLogger()
+
+            root_logger.removeHandler(old_handler)
+
+            del _handlers[name]
 
 
-@overload
-def to_console_handler(value: logging.Handler) -> logging.Handler: ...
+# Conversion
+# ============================================================================
+#
+# Converting values to the built-in `console` and `export` named handlers.
+# Serve as examples for adding custom ones.
 
 
 @named_handler("console")
-def to_console_handler(
-    value: ConsoleHandlerCastable,
-) -> Optional[logging.Handler]:
+def to_console_handler(value: ToConsoleHandler) -> logging.Handler:
     """Convert a value into either a `logging.Handler` or `None`.
 
     If neither of those make sense raises a `TypeError`.
@@ -193,30 +233,7 @@ def to_console_handler(
 
         ```
 
-    2.  `False` is cast to `None`.
-
-        ```python
-        >>> cast_console_handler(False) is None
-        True
-
-        >>> cast_console_handler(None) is None
-        True
-
-        ```
-
-    3.  Any `logging.Handler` instance is simply returned.
-
-        ```python
-        >>> import sys
-
-        >>> handler = logging.StreamHandler(sys.stdout)
-
-        >>> cast_console_handler(handler) is handler
-        True
-
-        ```
-
-    4.  Any `collections.abc.Mapping` is used as the keyword arguments to
+    2.  Any `collections.abc.Mapping` is used as the keyword arguments to
         construct a new `RichHandler`.
 
         ```python
@@ -240,7 +257,7 @@ def to_console_handler(
 
         ```
 
-    5.  Anything that we can cast to a `rich.console.Console` (see
+    3.  Anything that we can cast to a `rich.console.Console` (see
         {py:func}`splatlog.rich.console.cast_console`) is assigned as the
         console in a new `RichHandler` instance.
 
@@ -262,7 +279,7 @@ def to_console_handler(
 
         ```
 
-    6.  Any log level name or value is assigned as the level to a new
+    4.  Any log level name or value is assigned as the level to a new
         `RichHandler` instance.
 
         ```python
@@ -291,7 +308,7 @@ def to_console_handler(
 
         Same applies for `"stderr"`.
 
-    7.  Anythings else raises a `TypeError`.
+    5.  Anythings else raises a `TypeError`.
 
         ```python
         >>> cast_console_handler([1, 2, 3])
@@ -317,9 +334,6 @@ def to_console_handler(
     if value is True:
         return RichHandler()
 
-    if value is None or value is False:
-        return None
-
     if isinstance(value, logging.Handler):
         return value
 
@@ -334,7 +348,7 @@ def to_console_handler(
 
     raise TypeError(
         "Expected {}, given {}: {}".format(
-            fmt(ConsoleHandlerCastable),
+            fmt(ToConsoleHandler),
             fmt(type(value)),
             fmt(value),
         )
@@ -342,13 +356,7 @@ def to_console_handler(
 
 
 @named_handler("export")
-def to_export_handler(value) -> Optional[logging.Handler]:
-    if value is None or value is False:
-        return None
-
-    if isinstance(value, logging.Handler):
-        return value
-
+def to_export_handler(value) -> logging.Handler:
     if isinstance(value, Mapping):
         if "stream" in value:
             cls = logging.StreamHandler
