@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import IO, Any, Literal, Optional, Union, overload
+from typing import IO, Any, Literal, Union, overload
 from collections.abc import Callable, Mapping
 
 from splatlog.json.json_formatter import JSONFormatter
