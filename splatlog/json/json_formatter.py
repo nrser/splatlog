@@ -5,9 +5,8 @@ from datetime import datetime, tzinfo
 from collections.abc import Mapping
 
 from rich.console import Console
-from rich.text import Text
 
-from splatlog.rich import is_rich, capture_riches, RichFormatter, to_console
+from splatlog.rich import RichFormatter
 from splatlog.lib.text import fmt
 from splatlog.typings import JSONEncoderCastable, JSONFormatterCastable
 

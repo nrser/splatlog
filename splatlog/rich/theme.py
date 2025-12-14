@@ -64,12 +64,12 @@ def to_theme(value: ToRichTheme) -> Theme:
     ##
     -   {py:class}`rich.console.Console`: already cast, may be used as-is.
 
-    -   {py:type}`splatlog.typings.StdoutName`: write to the named standard output
+    -   {py:type}`splatlog.typings.StdioName`: write to the named standard output
         stream.
 
     -   {py:class}`typing.IO`: write to the given string I/O stream.
 
-    -   {py:data}`None`: cast with library defaults.
+    -   {py:data}`None`: construct with library defaults.
     """
     if value is None:
         # Convert `None` to a copy of the default theme

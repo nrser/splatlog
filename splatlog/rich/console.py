@@ -1,22 +1,24 @@
+from collections.abc import Mapping
 import sys
-from typing import IO, Any, Literal, TypeAlias, TypeGuard
+from typing import IO, Any, Literal, TypeAlias, TypeGuard, cast
 from rich.console import Console
 from rich.theme import Theme
 from typeguard import check_type, TypeCheckError
 
 from splatlog.lib.text import fmt
 from splatlog.lib.typeguard import satisfies
+from splatlog.rich import to_theme
 
-StdoutName = Literal["stdout", "stderr"]
+StdioName = Literal["stdout", "stderr"]
 
-ToRichConsole: TypeAlias = Console | StdoutName | IO[str] | None
+ToRichConsole: TypeAlias = Console | Mapping[str, Any] | StdioName | IO[str]
 """
 What we can convert to a {py:class}`rich.console.Console`. See
 {py:func}`splatlog.rich.console.to_rich_console`.
 """
 
 
-def is_stdout_name(value: Any) -> TypeGuard[StdoutName]:
+def is_stdio_name(value: Any) -> TypeGuard[StdioName]:
     """Is `value` a {py:type}`splatlog.rich.console.StdioName`?
 
     ```{note}
@@ -27,10 +29,24 @@ def is_stdout_name(value: Any) -> TypeGuard[StdoutName]:
     ```
     """
     try:
-        check_type(value, StdoutName)
+        check_type(value, StdioName)
     except TypeCheckError:
         return False
     return True
+
+
+def to_stdio(name: StdioName) -> IO[str]:
+    match name:
+        case "stdout":
+            return sys.stdout
+        case "stderr":
+            return sys.stderr
+        case _:
+            raise TypeError(
+                "expected {}, given {}: {}".format(
+                    fmt(StdioName), fmt(type(name)), fmt(name)
+                )
+            )
 
 
 def is_to_rich_console(value: Any) -> TypeGuard[ToRichConsole]:
@@ -59,7 +75,7 @@ def to_console(value: ToRichConsole, *, theme: Theme | None = None) -> Console:
 
         -   {py:class}`rich.console.Console`: already cast, may be used as-is.
 
-        -   {py:type}`splatlog.typings.StdoutName`: write to the named standard
+        -   {py:type}`splatlog.typings.StdioName`: write to the named standard
             output stream.
 
         -   {py:class}`typing.IO`: write to the given string I/O stream.
@@ -75,11 +91,20 @@ def to_console(value: ToRichConsole, *, theme: Theme | None = None) -> Console:
     if isinstance(value, Console):
         return value
 
-    if is_stdout_name(value):
+    if isinstance(value, Mapping):
         return Console(
-            file=(sys.stderr if value == "stderr" else sys.stdout),
-            theme=theme,
+            **cast(
+                Mapping[str, Any],
+                {
+                    "file": sys.stderr,
+                    **value,
+                    "theme": to_theme(value.get("theme")),
+                },
+            )
         )
+
+    if is_stdio_name(value):
+        return Console(file=to_stdio(value), theme=theme)
 
     if satisfies(value, IO[str]):
         return Console(file=value, theme=theme)

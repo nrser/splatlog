@@ -158,10 +158,10 @@ VerbosityLevelsCastable = Mapping[
 # Rich
 # ============================================================================
 
-StdoutName = Literal["stdout", "stderr"]
+StdioName = Literal["stdout", "stderr"]
 
 
-def is_stdout_name(value: Any) -> TypeGuard[StdoutName]:
+def is_stdout_name(value: Any) -> TypeGuard[StdioName]:
     """Is `value` a {py:type}`StdioName`?
 
     ```{note}
@@ -172,7 +172,7 @@ def is_stdout_name(value: Any) -> TypeGuard[StdoutName]:
     ```
     """
     try:
-        check_type(value, StdoutName)
+        check_type(value, StdioName)
     except TypeCheckError:
         return False
     return True

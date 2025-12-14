@@ -28,7 +28,7 @@ from splatlog.typings import (
     VerbosityRange as VerbosityRange,
     VerbosityLevels as VerbosityLevels,
     VerbosityLevelsCastable as VerbosityLevelsCastable,
-    StdoutName as StdoutName,
+    StdioName as StdioName,
     ToRichConsole as ToRichConsole,
     RichThemeCastable as RichThemeCastable,
     NamedHandlerCast as NamedHandlerCast,

@@ -74,9 +74,9 @@ def setup(
             -   {py:data}`True` — all defaults.
             -   {py:class}`collections.abc.Mapping` — keyword arguments for the
                 {py:class}`splatlog.rich_handler.RichHandler` constructor.
-            -   {py:type}`splatlog.typings.StdoutName`, {py:class}`typing.IO`,
+            -   {py:type}`splatlog.typings.Level` — specify log level.
+            -   {py:type}`splatlog.typings.StdioName`, {py:class}`typing.IO`,
                 or {py:class}`rich.console.Console` — where to write output.
-            -   {py:type}`splatlog.levels.Level` — log level for the handler.
 
         ## Examples
 

@@ -15,6 +15,7 @@ from rich.style import Style
 from .theme import (
     THEME as THEME,
     to_theme as to_theme,
+    get_default_theme as get_default_theme,
     set_default_theme as set_default_theme,
 )
 from .typings import Rich as Rich, is_rich as is_rich
@@ -37,20 +38,20 @@ from .formatter import (
     implements_rich_text as implements_rich_text,
 )
 from .console import (
-    StdoutName as StdoutName,
+    StdioName as StdioName,
     ToRichConsole as ToRichConsole,
-    is_stdout_name as is_stdout_name,
+    is_stdio_name as is_stdio_name,
     is_to_rich_console as is_to_rich_console,
     to_console as to_console,
 )
 
 
 def capture_riches(
-    *objects: Any, console: ToRichConsole = None, **print_kwds
+    *objects: Any, console: ToRichConsole | None = None, **print_kwds
 ) -> str:
     # Convert the arg to a `rich.console.Console` instance. In the default case
     # `None` this will construct a `Console` with the library defaults.
-    console = to_console(console)
+    console = to_console({} if console is None else console)
 
     with console.capture() as capture:
         console.print(*objects, **print_kwds)
