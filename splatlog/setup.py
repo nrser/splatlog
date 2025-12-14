@@ -1,5 +1,4 @@
 from __future__ import annotations
-import logging
 from typing import Literal
 
 from splatlog.rich import set_default_theme
@@ -57,24 +56,38 @@ def setup(
 
         Accepts the following:
 
-        1.  {py:data}`True`, {py:type}`splatlog.typings.StdoutName`,
-            {py:class}`typing.IO`, {py:class}`rich.console.Console`, and
-            {py:class}`collections.abc.Mapping` are passed to
-            {py:func}`splatlog.named_handlers.to_console_handler` to
-            construct a {py:class}`splatlog.rich_handler.RichHandler`.
+        1.  {py:data}`None` (default) is ignored; no action is taking regarding
+            the console handler. This behavior is consistent across the `export`
+            and `custom_named_handler` arguments as well.
 
-            ## Examples
+        2.  {py:data}`False` removes the console handler, if any. This behavior
+            is consistent across the `export` and `custom_named_handler`
+            arguments as well.
 
-            Log {py:data}`logging.INFO` and above to `STDERR`.
+        3.  Any `logging.Handler` instance is added as-is, allowing users to
+            substitute their own extension or alternative implementation.
 
-            ```python
+        4.  Everything else is used to construct a
+            {py:class}`splatlog.rich_handler.RichHandler`. Full details in
+            {py:func}`splatlog.named_handlers.to_console_handler`, but in brief:
 
-            splatlog.setup(level="info", console="stderr")
-            # or simply
-            splatlog.setup(level="info", console=True)
+            -   {py:data}`True` — all defaults.
+            -   {py:class}`collections.abc.Mapping` — keyword arguments for the
+                {py:class}`splatlog.rich_handler.RichHandler` constructor.
+            -   {py:type}`splatlog.typings.StdoutName`, {py:class}`typing.IO`,
+                or {py:class}`rich.console.Console` — where to write output.
+            -   {py:type}`splatlog.levels.Level` — log level for the handler.
 
-            ```
+        ## Examples
 
+        Log {py:data}`logging.INFO` and above to {py:data}`sys.stderr`.
+
+        ```python
+
+        splatlog.setup(level="info", console="stderr") # or simply
+        splatlog.setup(level="info", console=True) # as STDERR is the default
+
+        ```
 
     -   `level`: Set main logging level. Accepts integer levels from
         {py:mod}`logging`, like {py:data}`logging.INFO`, as well as string
