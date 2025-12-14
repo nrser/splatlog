@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 from collections.abc import Sequence
-from typing import Any, Mapping, Optional
+from typing import Any, Mapping
 import logging
 
 from rich.table import Table
@@ -10,20 +10,10 @@ from rich.console import Console
 from rich.text import Text
 from rich.traceback import Traceback
 
-from splatlog.rich import (
-    Rich,
-    ntv_table,
-    to_theme,
-    enrich,
-    RichFormatter,
-)
-from splatlog.rich import ToRichConsole, to_console
+from splatlog.rich import Rich, ntv_table, to_theme, enrich
+from splatlog.rich import ToRichConsole, ToRichTheme, to_console
 from splatlog.splat_handler import SplatHandler
-from splatlog.typings import (
-    Level,
-    RichThemeCastable,
-    VerbosityLevelsCastable,
-)
+from splatlog.typings import Level, VerbosityLevelsCastable
 
 
 class RichHandler(SplatHandler):
@@ -39,10 +29,9 @@ class RichHandler(SplatHandler):
         self,
         level: Level = logging.NOTSET,
         *,
-        console: ToRichConsole | None = None,
-        theme: RichThemeCastable | None = None,
-        verbosity_levels: Optional[VerbosityLevelsCastable] = None,
-        formatter: None | RichFormatter = None,
+        console: ToRichConsole = None,
+        theme: ToRichTheme = None,
+        verbosity_levels: VerbosityLevelsCastable | None = None,
     ):
         super().__init__(level=level, verbosity_levels=verbosity_levels)
 
@@ -72,11 +61,12 @@ class RichHandler(SplatHandler):
         msg = str(record.msg)
         args: Sequence[Any] = ()
         kwds: Mapping[str, Any] = getattr(record, "data", {})
+        rec_args = record.args
 
-        if isinstance(record.args, Sequence):
-            args = record.args
-        elif isinstance(record.args, Mapping):
-            kwds = {**kwds, **record.args}
+        if isinstance(rec_args, Sequence):
+            args = rec_args
+        elif isinstance(rec_args, Mapping):
+            kwds = {**kwds, **rec_args}
 
         msg = msg.format(*args, **kwds)
 

@@ -178,11 +178,6 @@ def is_stdout_name(value: Any) -> TypeGuard[StdioName]:
     return True
 
 
-RichThemeCastable = Theme | IO[str] | dict[str, StyleType]
-"""
-
-"""
-
 # Named Handlers
 # ============================================================================
 
@@ -205,19 +200,23 @@ ToConsoleHandler = (
     logging.Handler | KwdMapping | Literal[True] | Level | ToRichConsole
 )
 """
-What can be converted to a `console` named handlers, via constructing a
+What can be converted to a `console` named handler, mainly via constructing a
 {py:class}`splatlog.rich_handler.RichHandler`.
 
 See {py:func}`splatlog.named_handlers.to_console_handler` for details.
 """
 
+ToExportHandler = logging.Handler | KwdMapping | str | Path | IO[str]
+"""
+What can be converted to an `export` named handler, mainly via constructing a
+{py:class}`splatlog.json.JSONHandler`.
+
+See {py:func}`splatlog.named_handlers.to_export_handler` for details.
+"""
+
 JSONEncoderStyle = Literal["compact", "pretty"]
 
-ToExportHandler = logging.Handler | KwdMapping | str | Path | IO[str]
-
-JSONFormatterCastable = Union[
-    None, "JSONFormatter", JSONEncoderStyle, KwdMapping
-]
+ToJSONFormatter = Union[None, "JSONFormatter", JSONEncoderStyle, KwdMapping]
 
 JSONEncoderCastable = Union[None, "JSONEncoder", JSONEncoderStyle, KwdMapping]
 

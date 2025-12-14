@@ -36,7 +36,7 @@ from splatlog.typings import (
     ToConsoleHandler as ToConsoleHandler,
     JSONEncoderStyle as JSONEncoderStyle,
     ToExportHandler as ToExportHandler,
-    JSONFormatterCastable as JSONFormatterCastable,
+    ToJSONFormatter as ToJSONFormatter,
     JSONEncoderCastable as JSONEncoderCastable,
     FileHandlerMode as FileHandlerMode,
     ExcInfo as ExcInfo,

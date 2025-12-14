@@ -11,10 +11,12 @@ from splatlog.rich import to_theme
 
 StdioName = Literal["stdout", "stderr"]
 
-ToRichConsole: TypeAlias = Console | Mapping[str, Any] | StdioName | IO[str]
+ToRichConsole: TypeAlias = (
+    Console | Mapping[str, Any] | StdioName | IO[str] | None
+)
 """
 What we can convert to a {py:class}`rich.console.Console`. See
-{py:func}`splatlog.rich.console.to_rich_console`.
+{py:func}`splatlog.rich.console.to_console`.
 """
 
 

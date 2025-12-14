@@ -8,7 +8,7 @@ from rich.console import Console
 
 from splatlog.rich import RichFormatter
 from splatlog.lib.text import fmt
-from splatlog.typings import JSONEncoderCastable, JSONFormatterCastable
+from splatlog.typings import JSONEncoderCastable, ToJSONFormatter
 
 from .json_encoder import JSONEncoder
 
@@ -32,7 +32,7 @@ class JSONFormatter(logging.Formatter):
     """
 
     @classmethod
-    def from_(cls: type[Self], value: JSONFormatterCastable) -> Self:
+    def from_(cls: type[Self], value: ToJSONFormatter) -> Self:
         """
         Convert a `value` into a JSON formatter. Raises {py:class}`TypeError` on
         failure.
@@ -51,7 +51,7 @@ class JSONFormatter(logging.Formatter):
 
         raise TypeError(
             "Expected {}, given {}: {}".format(
-                fmt(JSONFormatterCastable), fmt(type(value)), fmt(value)
+                fmt(ToJSONFormatter), fmt(type(value)), fmt(value)
             )
         )
 

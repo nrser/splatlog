@@ -1,14 +1,13 @@
 from __future__ import annotations
 from typing import Literal
 
-from splatlog.rich import set_default_theme
+from splatlog.rich import set_default_theme, ToRichTheme
 from splatlog.typings import (
     ToConsoleHandler,
     ToExportHandler,
     Level,
     Verbosity,
     VerbosityLevelsCastable,
-    RichThemeCastable,
 )
 from splatlog.levels import set_level
 from splatlog.verbosity import set_verbosity_levels, set_verbosity
@@ -20,7 +19,7 @@ def setup(
     console: ToConsoleHandler | Literal[False] | None = None,
     export: ToExportHandler | Literal[False] | None = None,
     level: Level | None = None,
-    theme: RichThemeCastable | None = None,
+    theme: ToRichTheme | None = None,
     verbosity: Verbosity | None = None,
     verbosity_levels: VerbosityLevelsCastable | None = None,
     **custom_named_handlers: object,
@@ -75,8 +74,8 @@ def setup(
             -   {py:class}`collections.abc.Mapping` — keyword arguments for the
                 {py:class}`splatlog.rich_handler.RichHandler` constructor.
             -   {py:type}`splatlog.typings.Level` — specify log level.
-            -   {py:type}`splatlog.typings.StdioName`, {py:class}`typing.IO`,
-                or {py:class}`rich.console.Console` — where to write output.
+            -   {py:type}`splatlog.typings.StdioName`, {py:class}`typing.IO`, or
+                {py:class}`rich.console.Console` — where to write output.
 
         ## Examples
 
@@ -92,6 +91,13 @@ def setup(
     -   `level`: Set main logging level. Accepts integer levels from
         {py:mod}`logging`, like {py:data}`logging.INFO`, as well as string
         representations such as `"info"` and `"INFO"`.
+
+        Defaults to `None`, which is ignored.
+
+    -   `theme`: Set the default {py:class}`rich.theme.Theme`, which is the
+        theme that will be used anywhere one is not given specifically.
+
+        See {py:func}`splatlog.rich.theme.to_theme` for details.
 
         Defaults to `None`, which is ignored.
 
