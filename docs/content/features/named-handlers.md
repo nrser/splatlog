@@ -1,4 +1,4 @@
-Named Handlers Feature
+Named Handlers
 ==============================================================================
 
 Overview

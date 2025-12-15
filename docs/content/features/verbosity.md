@@ -1,4 +1,4 @@
-Verbosity Feature
+Verbosity
 ==============================================================================
 
 Splatlog has a _verbosity_ system that allows you to configure which loggers
