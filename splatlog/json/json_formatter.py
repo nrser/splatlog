@@ -1,12 +1,15 @@
 import logging
 import json
-from typing import Any, Literal, Optional, TypeAlias, TypeVar
+import os
+import re
+from typing import Any, Literal, Optional, TypeAlias, TypeVar, assert_never
 from datetime import datetime, tzinfo
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 
 from rich.console import Console
+from rich.text import Text
 
-from splatlog.rich import RichFormatter
+from splatlog.rich import RichFormatter, capture_riches, to_console
 from splatlog.lib.text import fmt
 from splatlog.typings import JSONEncoderCastable, ToJSONFormatter
 
@@ -17,7 +20,7 @@ LOCAL_TIMEZONE = datetime.now().astimezone().tzinfo
 
 
 Self = TypeVar("Self", bound="JSONFormatter")
-MsgMode: TypeAlias = Literal["plain", "html", "ansi"]
+MsgMode: TypeAlias = Literal["plain", "ansi", "html"]
 PercentStyle: TypeAlias = Literal["%", "{", "$"]
 
 
@@ -66,7 +69,7 @@ class JSONFormatter(logging.Formatter):
     _not_ {py:class}`str`.
     """
 
-    _message_mode: MsgMode
+    _msg_mode: MsgMode
     """
     How to encode `msg` fields of {py:class}`logging.LogRecord` that are _not_
     {py:class}`str`.
@@ -84,7 +87,7 @@ class JSONFormatter(logging.Formatter):
         tz: tzinfo | None = LOCAL_TIMEZONE,
         use_Z_for_utc: bool = True,
         console: Console | None = None,
-        message_mode: MsgMode = "plain",
+        msg_mode: MsgMode = "plain",
     ):
         super().__init__(fmt, datefmt, style, validate, defaults=defaults)
 
@@ -99,15 +102,97 @@ class JSONFormatter(logging.Formatter):
         self._use_Z_for_utc = use_Z_for_utc
         self._rich_formatter = RichFormatter()
         self._console = console
-        self._message_mode = message_mode
+        self._msg_mode = msg_mode
+
+    # Accessors
+    # ========================================================================
+
+    @property
+    def console(self) -> Console:
+        """
+        Get a {py:class}`rich.console.Console` to use parsing
+        [Rich Console Markup][] and rendering `msg` in `"ansi"` and `"html"`
+        {py:type}`MsgMode`.
+
+        If a console wasn't provided at construction an instance is created
+        on-demand and reused, to avoid constructing one for every record.
+
+        [Rich Console Markup]: https://rich.readthedocs.io/en/latest/markup.html
+        """
+        if self._console is None:
+            if self._msg_mode == "html":
+                self._console = to_console(
+                    dict(
+                        # Need this, as otherwise the Jupyter detection will result in `file=` not
+                        # working (WTF..?)
+                        force_jupyter=False,
+                        # Where the console should write to
+                        file=open(os.devnull, "w"),
+                        # Force terminal control codes
+                        force_terminal=True,
+                        # Boolean to enable recording of terminal output
+                        record=True,
+                    )
+                )
+            else:
+                self._console = to_console(
+                    dict(
+                        # Need this, as otherwise the Jupyter detection will result in `file=` not
+                        # working (WTF..?)
+                        force_jupyter=False,
+                        # Force terminal control codes
+                        force_terminal=True,
+                    )
+                )
+        return self._console
+
+    def _get_msg(self, record: logging.LogRecord) -> str:
+        """
+        Get the message string from a {py:class}`logging.LogRecord`,
+        interpolating any placeholders. May include Rich markup.
+        """
+        if not getattr(record, "_splatlog_", None):
+            return record.getMessage()
+
+        msg = str(record.msg)
+        args: Sequence[Any] = ()
+        kwds: Mapping[str, Any] = getattr(record, "data", {})
+        rec_args = record.args
+
+        if isinstance(rec_args, Sequence):
+            args = rec_args
+        elif isinstance(rec_args, Mapping):
+            kwds = {**kwds, **rec_args}
+
+        msg = msg.format(*args, **kwds)
+
+        return msg
 
     def _format_message(self, record: logging.LogRecord) -> str:
-        msg = str(record.msg)
-        if args := record.args:
-            msg = msg % args
-        elif data := getattr(record, "data"):
-            msg = msg % data
-        return msg
+        """
+        Format the {py:class}`logging.LogRecord`.
+        """
+
+        msg = self._get_msg(record)
+
+        match self._msg_mode:
+            case "plain":
+                return msg
+
+            case "ansi":
+                return capture_riches(
+                    Text.from_markup(msg), console=self.console
+                )
+
+            case "html":
+                self.console.print(Text.from_markup(msg))
+                html = self.console.export_html(inline_styles=True)
+                m = re.search(r"(?is)<body[^>]*>(.*?)</body\s*>", html)
+                body = m.group(1).strip() if m else ""
+                return body
+
+            case _:
+                assert_never(self._msg_mode)
 
     def _format_timestamp(self, record: logging.LogRecord) -> str:
         """

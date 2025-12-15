@@ -30,7 +30,6 @@ from splatlog.typings import (
     VerbosityLevelsCastable as VerbosityLevelsCastable,
     StdioName as StdioName,
     ToRichConsole as ToRichConsole,
-    RichThemeCastable as RichThemeCastable,
     NamedHandlerCast as NamedHandlerCast,
     KwdMapping as KwdMapping,
     ToConsoleHandler as ToConsoleHandler,

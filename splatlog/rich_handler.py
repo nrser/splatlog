@@ -57,7 +57,10 @@ class RichHandler(SplatHandler):
             #
             self.handleError(record)
 
-    def _get_rich_msg(self, record: logging.LogRecord) -> Rich:
+    def _get_rich_msg(self, record: logging.LogRecord) -> str | Rich:
+        if not getattr(record, "_splatlog_", None):
+            return record.getMessage()
+
         msg = str(record.msg)
         args: Sequence[Any] = ()
         kwds: Mapping[str, Any] = getattr(record, "data", {})

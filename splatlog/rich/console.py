@@ -68,7 +68,9 @@ def is_to_rich_console(value: Any) -> TypeGuard[ToRichConsole]:
     return True
 
 
-def to_console(value: ToRichConsole, *, theme: Theme | None = None) -> Console:
+def to_console(
+    value: ToRichConsole = None, *, theme: Theme | None = None
+) -> Console:
     """Convert a `value` into a {py:class}`rich.console.Console`.
 
     ## Parameters
