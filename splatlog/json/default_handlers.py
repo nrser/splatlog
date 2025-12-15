@@ -42,7 +42,7 @@ def method_handler(method_name: str, priority: int) -> DefaultHandler:
 
 
 def handle_exception(error: BaseException) -> dict[str, JSONEncodable]:
-    dct = dict(
+    dct: dict[str, JSONEncodable] = dict(
         type=fmt_type(error.__class__),
         msg=str(error),
     )
