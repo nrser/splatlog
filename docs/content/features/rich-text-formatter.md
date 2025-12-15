@@ -1,10 +1,5 @@
-splatlog.rich.formatter
+Rich Text Formatter
 ==============================================================================
-
-@pyscope splatlog.rich.formatter.rich_formatter
-@pyscope splatlog.rich.formatter.rich_repr
-@pyscope splatlog.rich.formatter.rich_text
-
 
 Examples
 ------------------------------------------------------------------------------
