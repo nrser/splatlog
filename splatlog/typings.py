@@ -16,8 +16,6 @@ from typing import (
 )
 from collections.abc import Mapping, Sequence, Callable
 
-from rich.style import StyleType
-from rich.theme import Theme
 from typeguard import check_type, TypeCheckError
 
 from splatlog.lib.text import fmt
