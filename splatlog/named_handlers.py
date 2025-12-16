@@ -228,7 +228,7 @@ def to_console_handler(value: ToConsoleHandler) -> logging.Handler:
     1.  `True` is cast to a new `RichHandler` with all default attributes.
 
         ```python
-        >>> cast_console_handler(True)
+        >>> to_console_handler(True)
         <RichHandler (NOTSET)>
 
         ```
@@ -237,7 +237,9 @@ def to_console_handler(value: ToConsoleHandler) -> logging.Handler:
         construct a new `RichHandler`.
 
         ```python
-        >>> handler = cast_console_handler(
+        >>> import sys
+
+        >>> handler = to_console_handler(
         ...     dict(
         ...         console=sys.stdout,
         ...         verbosity_levels=dict(
@@ -265,7 +267,7 @@ def to_console_handler(value: ToConsoleHandler) -> logging.Handler:
         >>> from io import StringIO
 
         >>> sio = StringIO()
-        >>> handler = cast_console_handler(sio)
+        >>> handler = to_console_handler(sio)
 
         >>> isinstance(handler, RichHandler)
         True
@@ -274,7 +276,7 @@ def to_console_handler(value: ToConsoleHandler) -> logging.Handler:
         True
 
         >>> import sys
-        >>> cast_console_handler("stdout").console.file is sys.stdout
+        >>> to_console_handler("stdout").console.file is sys.stdout
         True
 
         ```
@@ -283,10 +285,10 @@ def to_console_handler(value: ToConsoleHandler) -> logging.Handler:
         `RichHandler` instance.
 
         ```python
-        >>> cast_console_handler(logging.DEBUG).level == logging.DEBUG
+        >>> to_console_handler(logging.DEBUG).level == logging.DEBUG
         True
 
-        >>> cast_console_handler("DEBUG").level == logging.DEBUG
+        >>> to_console_handler("DEBUG").level == logging.DEBUG
         True
 
         ```
@@ -301,7 +303,7 @@ def to_console_handler(value: ToConsoleHandler) -> logging.Handler:
 
         >>> logging.addLevelName(stdout_level_value, "stdout")
 
-        >>> cast_console_handler("stdout").level == stdout_level_value
+        >>> to_console_handler("stdout").level == stdout_level_value
         False
 
         ```
@@ -311,21 +313,20 @@ def to_console_handler(value: ToConsoleHandler) -> logging.Handler:
     5.  Anythings else raises a `TypeError`.
 
         ```python
-        >>> cast_console_handler([1, 2, 3])
+        >>> to_console_handler([1, 2, 3])
         Traceback (most recent call last):
             ...
         TypeError:
             Expected
                 logging.Handler
-                | typing.Mapping[str, typing.Any]
-                | bool
+                | collections.abc.Mapping[str, typing.Any]
+                | True
+                | int
+                | str
                 | rich.console.Console
                 | 'stdout'
                 | 'stderr'
-                | typing.IO[str]
-                | None
-                | int
-                | str,
+                | typing.IO[str],
             given list: [1, 2, 3]
 
         ```

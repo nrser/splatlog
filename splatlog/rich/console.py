@@ -11,9 +11,7 @@ from splatlog.rich import to_theme
 
 StdioName = Literal["stdout", "stderr"]
 
-ToRichConsole: TypeAlias = (
-    Console | Mapping[str, Any] | StdioName | IO[str] | None
-)
+ToRichConsole: TypeAlias = Console | Mapping[str, Any] | StdioName | IO[str]
 """
 What we can convert to a {py:class}`rich.console.Console`. See
 {py:func}`splatlog.rich.console.to_console`.
@@ -69,7 +67,7 @@ def is_to_rich_console(value: Any) -> TypeGuard[ToRichConsole]:
 
 
 def to_console(
-    value: ToRichConsole = None, *, theme: Theme | None = None
+    value: ToRichConsole | None = None, *, theme: Theme | None = None
 ) -> Console:
     """Convert a `value` into a {py:class}`rich.console.Console`.
 

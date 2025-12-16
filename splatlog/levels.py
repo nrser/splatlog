@@ -33,13 +33,13 @@ def to_level_value(level: Level) -> LevelValue:
     `logging` package, `logging._checkLevel` in particular.
 
     ```python
-    >>> get_level_value(logging.DEBUG)
+    >>> to_level_value(logging.DEBUG)
     10
 
-    >>> get_level_value(123)
+    >>> to_level_value(123)
     123
 
-    >>> get_level_value(-1)
+    >>> to_level_value(-1)
     -1
 
     ```
@@ -53,7 +53,7 @@ def to_level_value(level: Level) -> LevelValue:
     correspond to any named level.
 
     ```python
-    >>> get_level_value("8")
+    >>> to_level_value("8")
     8
 
     ```
@@ -61,7 +61,7 @@ def to_level_value(level: Level) -> LevelValue:
     We also accept level *names*.
 
     ```python
-    >>> get_level_value("debug")
+    >>> to_level_value("debug")
     10
 
     ```
@@ -74,9 +74,9 @@ def to_level_value(level: Level) -> LevelValue:
     version of the string.
 
     ```python
-    >>> get_level_value("DEBUG")
+    >>> to_level_value("DEBUG")
     10
-    >>> get_level_value("Debug")
+    >>> to_level_value("Debug")
     10
 
     ```
@@ -85,7 +85,7 @@ def to_level_value(level: Level) -> LevelValue:
 
     ```python
     >>> logging.addLevelName(8, "LUCKY")
-    >>> get_level_value("lucky")
+    >>> to_level_value("lucky")
     8
 
     ```
@@ -95,7 +95,7 @@ def to_level_value(level: Level) -> LevelValue:
     Everything else can kick rocks:
 
     ```python
-    >>> get_level_value([])
+    >>> to_level_value([])
     Traceback (most recent call last):
         ...
     TypeError: Expected `level` to be `int | str`, given `list`: []
