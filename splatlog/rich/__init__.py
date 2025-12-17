@@ -13,7 +13,7 @@ from rich.style import Style
 
 # Re-exports
 from .theme import (
-    ToRichTheme as ToRichTheme,
+    ToTheme as ToTheme,
     THEME as THEME,
     to_theme as to_theme,
     get_default_theme as get_default_theme,

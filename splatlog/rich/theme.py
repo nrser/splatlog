@@ -14,7 +14,7 @@ from splatlog.lib.typeguard import satisfies
 # Typings
 # ============================================================================
 
-ToRichTheme: TypeAlias = Theme | IO[str] | dict[str, StyleType] | None
+ToTheme: TypeAlias = Theme | IO[str] | dict[str, StyleType]
 """
 What we can convert to a {py:class}`rich.theme.Theme`. See
 {py:func}`splatlog.rich.theme.to_theme` for details.
@@ -49,7 +49,7 @@ def get_default_theme() -> Theme:
     return _default_theme
 
 
-def set_default_theme(theme: ToRichTheme) -> None:
+def set_default_theme(theme: ToTheme) -> None:
     global _default_theme
     _default_theme = to_theme(theme)
 
@@ -58,7 +58,7 @@ def set_default_theme(theme: ToRichTheme) -> None:
 # ============================================================================
 
 
-def to_theme(value: ToRichTheme) -> Theme:
+def to_theme(value: ToTheme | None = None) -> Theme:
     """Convert a `value` into a {py:class}`rich.theme.Theme`.
 
     ##
@@ -92,6 +92,6 @@ def to_theme(value: ToRichTheme) -> Theme:
 
     raise TypeError(
         "Expected `theme` to be {}, given {}: {}".format(
-            fmt(ToRichTheme), fmt(type(value)), fmt(value)
+            fmt(ToTheme), fmt(type(value)), fmt(value)
         )
     )

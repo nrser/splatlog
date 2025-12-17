@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Literal
 
-from splatlog.rich import set_default_theme, ToRichTheme
+from splatlog.rich import set_default_theme, ToTheme
 from splatlog.typings import (
     ToConsoleHandler,
     ToExportHandler,
@@ -19,37 +19,38 @@ def setup(
     console: ToConsoleHandler | Literal[False] | None = None,
     export: ToExportHandler | Literal[False] | None = None,
     level: Level | None = None,
-    theme: ToRichTheme | None = None,
+    theme: ToTheme | None = None,
     verbosity: Verbosity | None = None,
     verbosity_levels: VerbosityLevelsCastable | None = None,
     **custom_named_handlers: object,
 ) -> None:
-    """Setup splatlog, enabling log output. Equivalent to
+    """Setup splatlog, enabling log output. Contemporary to
     {py:func}`logging.basicConfig` from the standard library.
 
-    Typically you want to call this function once upon starting execution of
-    your program — in a `main` function or block, inside a start-up function or
-    hook, or simply near the top of a script or notebook.
+    Typically you'll call this function once at the start of your program — in a
+    `main` function or block, inside a start-up function or hook, or simply near
+    the top of a script or notebook.
 
     You can however call this function multiple times, and later configurations
     will seamlessly replace earlier ones. There are situations where this makes
     sense, such as setting up a default configuration immediately at program
-    start then calling again when you've parsed options or configuration.
+    start then calling again when you've parsed options or loaded configuration.
 
     ## Parameters
 
     ```{note}
 
-    All parameters default to `None`, which in all cases is ignored.
+    All parameters default to {py:data}`None`, which in all cases is ignored.
 
     As such, calling `setup()` with no argument is a no-op.
 
     ```
 
     -   `console`: create a {py:class}`logging.Handler` writing to the console
-        (terminal, command line) standard output (`STDOUT` or `STDERR` streams).
+        (terminal, command line) standard output ({py:data}`sys.stdout` or
+        {py:data}`sys.stderr` streams).
 
-        Focused on development feedback, and defaults to using
+        Focused on providing feedback during development. Defaults to using
         {py:class}`splatlog.rich_handler.RichHandler` for colored, tabular
         output.
 
@@ -63,14 +64,15 @@ def setup(
             is consistent across the `export` and `custom_named_handler`
             arguments as well.
 
-        3.  Any `logging.Handler` instance is added as-is, allowing users to
-            substitute their own extension or alternative implementation.
+        3.  Any {py:class}`logging.Handler` instance is added as-is, allowing
+            users to substitute their own extension or alternative
+            implementation.
 
         4.  Everything else is used to construct a
             {py:class}`splatlog.rich_handler.RichHandler`. Full details in
             {py:func}`splatlog.named_handlers.to_console_handler`, but in brief:
 
-            -   {py:data}`True` — all defaults.
+            -   {py:data}`True` — all defaults, logs to {py:data}`sys.stderr`.
             -   {py:class}`collections.abc.Mapping` — keyword arguments for the
                 {py:class}`splatlog.rich_handler.RichHandler` constructor.
             -   {py:type}`splatlog.typings.Level` — specify log level.
@@ -88,18 +90,36 @@ def setup(
 
         ```
 
-    -   `level`: Set main logging level. Accepts integer levels from
-        {py:mod}`logging`, like {py:data}`logging.INFO`, as well as string
-        representations such as `"info"` and `"INFO"`.
+    -   `level`: Set root logging level. Accepts integer levels from
+        {py:mod}`logging`, like {py:data}`logging.INFO` and alias
+        {py:data}`splatlog.INFO`, as well as string representations such as
+        `"info"` and `"INFO"`.
 
-        Defaults to `None`, which is ignored.
+        Defaults to {py:data}`None`, which is ignored.
 
-    -   `theme`: Set the default {py:class}`rich.theme.Theme`, which is the
-        theme that will be used anywhere one is not given specifically.
+    -   `theme`: Set the default {py:class}`rich.theme.Theme`.
 
-        See {py:func}`splatlog.rich.theme.to_theme` for details.
+        The default theme is used anywhere a theme is not explicitly provided,
+        such as constructing {py:class}`rich.console.Console` in
+        {py:func}`splatlog.rich.console.to_console`.
 
-        Defaults to `None`, which is ignored.
+        Accepts the same values as {py:func}`splatlog.rich.theme.to_theme`,
+        which is used to construct a theme if needed.
+
+        Defaults to {py:data}`None`, which is ignored.
+
+        ## Examples
+
+        Log everything ({py:data}`logging.DEBUG` and up) to the console with
+        logger names in pure magenta.
+
+        ```python
+
+        splatlog.setup(level="debug", console=True, theme={
+            "log.name": "#FF00FF",
+        })
+
+        ```
 
     -   `verbosity`: Optional integer input dictating how much logging should be
         output.
