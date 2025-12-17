@@ -45,12 +45,10 @@ class Formatter(Protocol):
     @overload
     def __call__(
         self, *args, fallback: Callable[[Any], TFallback], **kwds
-    ) -> Union[str, TFallback]:
-        ...
+    ) -> Union[str, TFallback]: ...
 
     @overload
-    def __call__(self, *args, **kwds) -> str:
-        ...
+    def __call__(self, *args, **kwds) -> str: ...
 
 
 @dataclasses.dataclass(frozen=True)
@@ -238,6 +236,25 @@ def fmt_type(t: Type, opts: FmtOpts[TFallback]) -> Union[str, TFallback]:
 @FmtOpts.provide
 def fmt_type_of(x: object, opts: FmtOpts[TFallback]) -> str | TFallback:
     return fmt_type(type(x), opts)
+
+
+@FmtOpts.provide
+def fmt_type_value(x: object, opts: FmtOpts[TFallback]) -> str | TFallback:
+    """Helper to produce the `TYPE: VALUE` format we often use in error
+    messages.
+
+    Nothing fancy, just calls {py:func}`fmt_type_of` and {py:func}`fmt`.
+
+    ## Examples
+
+    ```python
+
+    fmt_type_value(123)
+    "int: 123"
+
+    ```
+    """
+    return f"{fmt_type_of(x, opts)}: {fmt(x, opts)}"
 
 
 def _nest(formatted: str, nested: bool) -> str:

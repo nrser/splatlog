@@ -19,6 +19,7 @@ from .text import (
     fmt_routine as fmt_routine,
     fmt_type as fmt_type,
     fmt_type_of as fmt_type_of,
+    fmt_type_value as fmt_type_value,
     fmt_range as fmt_range,
     fmt_type_hint as fmt_type_hint,
 )

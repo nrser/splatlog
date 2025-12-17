@@ -5,7 +5,7 @@ from rich.console import Console
 from rich.theme import Theme
 from typeguard import check_type, TypeCheckError
 
-from splatlog.lib.text import fmt
+from splatlog.lib.text import fmt, fmt_type_value
 from splatlog.lib.typeguard import satisfies
 from splatlog.rich import to_theme
 
@@ -43,8 +43,8 @@ def to_stdio(name: StdioName) -> IO[str]:
             return sys.stderr
         case _:
             raise TypeError(
-                "expected {}, given {}: {}".format(
-                    fmt(StdioName), fmt(type(name)), fmt(name)
+                "expected {}, given {}".format(
+                    fmt(StdioName), fmt_type_value(name)
                 )
             )
 
