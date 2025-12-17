@@ -11,7 +11,6 @@
 content/basic-usage
 content/features/named-handlers
 content/features/verbosity
-content/features/rich-text-formatter
 content/features/formatting-type-hints
 apidocs/index
 ```

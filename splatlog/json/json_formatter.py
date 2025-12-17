@@ -9,7 +9,7 @@ from collections.abc import Mapping, Sequence
 from rich.console import Console
 from rich.text import Text
 
-from splatlog.rich import RichFormatter, capture_riches, to_console
+from splatlog.rich import capture_riches, to_console
 from splatlog.lib.text import fmt
 from splatlog.typings import JSONEncoderCastable, ToJSONFormatter
 
@@ -61,7 +61,6 @@ class JSONFormatter(logging.Formatter):
     _encoder: json.JSONEncoder
     _tz: Optional[tzinfo]
     _use_Z_for_utc: bool
-    _rich_formatter: RichFormatter
 
     _console: Console | None
     """
@@ -100,7 +99,6 @@ class JSONFormatter(logging.Formatter):
 
         self._tz = tz
         self._use_Z_for_utc = use_Z_for_utc
-        self._rich_formatter = RichFormatter()
         self._console = console
         self._msg_mode = msg_mode
 
