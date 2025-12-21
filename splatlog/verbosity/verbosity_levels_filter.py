@@ -8,7 +8,7 @@ from splatlog.verbosity.verbosity_level_resolver import VerbosityLevelResolver
 
 from splatlog.verbosity.verbosity_state import (
     VerbosityLevels,
-    VerbosityLevelsCastable,
+    ToVerbosityLevels,
     cast_verbosity_levels,
     get_verbosity,
 )
@@ -123,7 +123,7 @@ class VerbosityLevelsFilter(logging.Filter):
     def set_on(
         cls,
         filterer: logging.Filterer,
-        verbosity_levels: Optional[VerbosityLevelsCastable],
+        verbosity_levels: Optional[ToVerbosityLevels],
     ) -> None:
         cls.remove_from(filterer)
 
@@ -148,7 +148,7 @@ class VerbosityLevelsFilter(logging.Filter):
     #:
     _sorted_verbosity_levels: list[tuple[str, VerbosityLevelResolver]]
 
-    def __init__(self, verbosity_levels: VerbosityLevelsCastable):
+    def __init__(self, verbosity_levels: ToVerbosityLevels):
         super().__init__()
         self._verbosity_levels = cast_verbosity_levels(verbosity_levels)
         self._sorted_verbosity_levels = sorted(

@@ -13,7 +13,7 @@ from rich.traceback import Traceback
 from splatlog.rich import Rich, ntv_table, to_theme, enrich
 from splatlog.rich import ToRichConsole, ToTheme, to_console
 from splatlog.splat_handler import SplatHandler
-from splatlog.typings import Level, VerbosityLevelsCastable
+from splatlog.typings import Level, ToVerbosityLevels
 
 
 class RichHandler(SplatHandler):
@@ -31,7 +31,7 @@ class RichHandler(SplatHandler):
         *,
         console: ToRichConsole = None,
         theme: ToTheme = None,
-        verbosity_levels: VerbosityLevelsCastable | None = None,
+        verbosity_levels: ToVerbosityLevels | None = None,
     ):
         super().__init__(level=level, verbosity_levels=verbosity_levels)
 

@@ -12,7 +12,7 @@ from splatlog.typings import (
     Verbosity,
     as_verbosity,
     VerbosityLevels,
-    VerbosityLevelsCastable,
+    ToVerbosityLevels,
 )
 from splatlog.verbosity.verbosity_level_resolver import VerbosityLevelResolver
 
@@ -63,7 +63,7 @@ def _unset_logger_levels() -> None:
 
 
 def cast_verbosity_levels(
-    verbosity_levels: VerbosityLevelsCastable,
+    verbosity_levels: ToVerbosityLevels,
 ) -> VerbosityLevels:
     """Create a `VerbosityLevels` mapping by applying
     `VerbosityLevelResolver.cast` to each value in `verbosity_levels`.
@@ -118,7 +118,7 @@ def get_verbosity_levels() -> VerbosityLevels:
     return {**_verbosity_levels}
 
 
-def set_verbosity_levels(verbosity_levels: VerbosityLevelsCastable) -> None:
+def set_verbosity_levels(verbosity_levels: ToVerbosityLevels) -> None:
     """
     Set the global verbosity levels.
 

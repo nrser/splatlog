@@ -70,6 +70,8 @@ This corresponds to the `logging._Level` type used for the argument to
 {py:meth}`logging.Logger.setLevel` in PyLance.
 """
 
+# LevelSetup: TypeAlias = Level | Mapping[str, Level | ]
+
 # Verbosity
 # ============================================================================
 
@@ -149,7 +151,7 @@ VerbosityRange = tuple[range, LevelValue]
 
 VerbosityLevels = Mapping[str, "VerbosityLevelResolver"]
 
-VerbosityLevelsCastable = Mapping[
+ToVerbosityLevels = Mapping[
     str, Union["VerbosityLevelResolver", Sequence[VerbosityLevel]]
 ]
 

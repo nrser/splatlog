@@ -20,8 +20,7 @@ def default_each_descend(target) -> bool:
 @overload
 def find(
     predicate: Callable[[TEntry], bool], iterable: Iterable[TEntry]
-) -> Optional[TEntry]:
-    ...
+) -> Optional[TEntry]: ...
 
 
 @overload
@@ -30,8 +29,7 @@ def find(
     iterable: Iterable[TEntry],
     *,
     not_found: TNotFound,
-) -> Union[TEntry, TNotFound]:
-    ...
+) -> Union[TEntry, TNotFound]: ...
 
 
 def find(predicate, iterable, *, not_found=None):
