@@ -23,11 +23,10 @@ from splatlog.typings import (
     Level as Level,
     Verbosity as Verbosity,
     is_verbosity as is_verbosity,
-    as_verbosity as as_verbosity,
+    to_verbosity as to_verbosity,
     VerbosityLevel as VerbosityLevel,
-    VerbosityRange as VerbosityRange,
     VerbosityLevels as VerbosityLevels,
-    VerbosityLevelsCastable as VerbosityLevelsCastable,
+    ToVerbosityLevels as ToVerbosityLevels,
     StdioName as StdioName,
     ToRichConsole as ToRichConsole,
     NamedHandlerCast as NamedHandlerCast,
@@ -59,6 +58,8 @@ from splatlog.levels import (
     get_level as get_level,
     get_level_name as get_level_name,
     set_level as set_level,
+    get_verbosity as get_verbosity,
+    set_verbosity as set_verbosity,
 )
 from splatlog.names import (
     root_name as root_name,
@@ -66,14 +67,6 @@ from splatlog.names import (
 )
 from splatlog.verbosity import (
     VerbosityLevelResolver as VerbosityLevelResolver,
-    VerbosityLevelsFilter as VerbosityLevelsFilter,
-    cast_verbosity_levels as cast_verbosity_levels,
-    get_verbosity_levels as get_verbosity_levels,
-    set_verbosity_levels as set_verbosity_levels,
-    del_verbosity_levels as del_verbosity_levels,
-    get_verbosity as get_verbosity,
-    set_verbosity as set_verbosity,
-    del_verbosity as del_verbosity,
 )
 from splatlog.locking import (
     lock as lock,

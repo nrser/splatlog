@@ -1,10 +1,12 @@
 import logging
-from typing import Optional
 
 from splatlog import LevelName
-from splatlog.typings import Level, VerbosityLevelsCastable, VerbosityLevels
-from splatlog.levels import to_level_value
-from splatlog.verbosity import VerbosityLevelsFilter
+from splatlog.typings import (
+    Level,
+    ToVerbosityLevels,
+    to_level_spec,
+)
+from splatlog.levels import to_level_value, VerbosityLevelsFilter, get_verbosity
 
 
 class SplatHandler(logging.Handler):
@@ -14,28 +16,14 @@ class SplatHandler(logging.Handler):
         self,
         level: Level = logging.NOTSET,
         *,
-        verbosity_levels: Optional[VerbosityLevelsCastable] = None,
+        verbosity_levels: ToVerbosityLevels | None = None,
     ):
         super().__init__(to_level_value(level))
-        VerbosityLevelsFilter.set_on(self, verbosity_levels)
 
-    def get_verbosity_levels(self) -> Optional[VerbosityLevels]:
-        if filter := VerbosityLevelsFilter.get_from(self):
-            return filter.verbosity_levels
-
-    def set_verbosity_levels(
-        self, verbosity_levels: Optional[VerbosityLevelsCastable]
-    ) -> None:
-        VerbosityLevelsFilter.set_on(self, verbosity_levels)
-
-    def del_verbosity_levels(self) -> None:
-        VerbosityLevelsFilter.remove_from(self)
-
-    verbosity_levels = property(
-        get_verbosity_levels,
-        set_verbosity_levels,
-        del_verbosity_levels,
-    )
+        if verbosity_levels:
+            VerbosityLevelsFilter.set_on(
+                self, to_level_spec(verbosity_levels), get_verbosity()
+            )
 
     def get_level_name(self) -> LevelName:
         return logging.getLevelName(self.level)

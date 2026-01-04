@@ -5,14 +5,13 @@ private variables, and are hence global to the process.
 
 from __future__ import annotations
 import logging
-from typing import Optional, Iterable
 
 from splatlog.locking import lock
 from splatlog.typings import (
     Verbosity,
-    as_verbosity,
+    to_verbosity,
     VerbosityLevels,
-    VerbosityLevelsCastable,
+    ToVerbosityLevels,
 )
 from splatlog.verbosity.verbosity_level_resolver import VerbosityLevelResolver
 
@@ -29,7 +28,7 @@ __all__ = [
 # State Variables
 # ============================================================================
 
-_verbosity: Optional[Verbosity] = None
+_verbosity: Verbosity | None = None
 _verbosity_levels: VerbosityLevels = {}
 
 
@@ -63,7 +62,7 @@ def _unset_logger_levels() -> None:
 
 
 def cast_verbosity_levels(
-    verbosity_levels: VerbosityLevelsCastable,
+    verbosity_levels: ToVerbosityLevels,
 ) -> VerbosityLevels:
     """Create a `VerbosityLevels` mapping by applying
     `VerbosityLevelResolver.cast` to each value in `verbosity_levels`.
@@ -95,7 +94,7 @@ def cast_verbosity_levels(
     ```
     """
     return {
-        name: VerbosityLevelResolver.cast(levels)
+        name: VerbosityLevelResolver.from_(levels)
         for name, levels in verbosity_levels.items()
     }
 
@@ -118,7 +117,7 @@ def get_verbosity_levels() -> VerbosityLevels:
     return {**_verbosity_levels}
 
 
-def set_verbosity_levels(verbosity_levels: VerbosityLevelsCastable) -> None:
+def set_verbosity_levels(verbosity_levels: ToVerbosityLevels) -> None:
     """
     Set the global verbosity levels.
 
@@ -202,7 +201,7 @@ def del_verbosity_levels() -> None:
 # ----------------------------------------------------------------------------
 
 
-def get_verbosity() -> Optional[Verbosity]:
+def get_verbosity() -> Verbosity | None:
     """
     Get the current _verbosity_.
 
@@ -241,7 +240,7 @@ def set_verbosity(verbosity: Verbosity) -> None:
     """
     global _verbosity
 
-    verbosity = as_verbosity(verbosity)
+    verbosity = to_verbosity(verbosity)
 
     # Lock around this so that two coincident calls from different threads don't
     # execute this block at the same time, which could result in logger levels

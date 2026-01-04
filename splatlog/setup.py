@@ -3,14 +3,13 @@ from typing import Literal
 
 from splatlog.rich import set_default_theme, ToTheme
 from splatlog.typings import (
+    ToLevelSpec,
     ToConsoleHandler,
     ToExportHandler,
-    Level,
     Verbosity,
-    VerbosityLevelsCastable,
+    ToVerbosityLevels,
 )
-from splatlog.levels import set_level
-from splatlog.verbosity import set_verbosity_levels, set_verbosity
+from splatlog.levels import set_level, set_verbosity
 from splatlog.named_handlers import set_named_handler
 
 
@@ -18,10 +17,9 @@ def setup(
     *,
     console: ToConsoleHandler | Literal[False] | None = None,
     export: ToExportHandler | Literal[False] | None = None,
-    level: Level | None = None,
+    level: ToLevelSpec | None = None,
     theme: ToTheme | None = None,
     verbosity: Verbosity | None = None,
-    verbosity_levels: VerbosityLevelsCastable | None = None,
     **custom_named_handlers: object,
 ) -> None:
     """Setup splatlog, enabling log output. Contemporary to
@@ -128,13 +126,7 @@ def setup(
         `verbosity_levels` dictates how `verbosity` maps to logging levels.
         Higher `verbosity` should mean more logging output.
 
-        Defaults to `None`, which is ignored.
-
-    -   `verbosity_levels`: Control how the main logging level responds to
-        `verbosity`, if and when it is set (through this function or
-        {py:func}`splatlog.verbosity.set_verbosity`).
-
-        Defaults to `None`, which is ignored.
+        Defaults to {py:data}`None`, which is ignored.
 
     """
 
@@ -143,9 +135,6 @@ def setup(
 
     if level is not None:
         set_level(level)
-
-    if verbosity_levels is not None:
-        set_verbosity_levels(verbosity_levels)
 
     if verbosity is not None:
         set_verbosity(verbosity)

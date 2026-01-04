@@ -3,14 +3,15 @@
 from __future__ import annotations
 import logging
 from typing import Optional, TypeVar
-from splatlog.names import is_in_hierarchy
-from splatlog.verbosity.verbosity_level_resolver import VerbosityLevelResolver
 
-from splatlog.verbosity.verbosity_state import (
-    VerbosityLevels,
-    VerbosityLevelsCastable,
-    cast_verbosity_levels,
-    get_verbosity,
+from splatlog import LevelValue
+from splatlog.levels.verbosity_level_resolver import VerbosityLevelResolver
+from splatlog.names import is_in_hierarchy
+from splatlog.typings import (
+    LevelSpec,
+    Verbosity,
+    is_level_value,
+    to_verbosity,
 )
 
 __all__ = ["VerbosityLevelsFilter"]
@@ -123,14 +124,12 @@ class VerbosityLevelsFilter(logging.Filter):
     def set_on(
         cls,
         filterer: logging.Filterer,
-        verbosity_levels: Optional[VerbosityLevelsCastable],
+        spec: LevelSpec,
+        verbosity: Verbosity,
     ) -> None:
         cls.remove_from(filterer)
 
-        if verbosity_levels is None:
-            return
-
-        filter = cls(verbosity_levels)
+        filter = cls(spec, verbosity)
 
         filterer.addFilter(filter)
 
@@ -139,41 +138,37 @@ class VerbosityLevelsFilter(logging.Filter):
         for filter in [f for f in filterer.filters if isinstance(f, cls)]:
             filterer.removeFilter(filter)
 
-    _verbosity_levels: VerbosityLevels
+    _spec: LevelSpec
+    _verbosity: Verbosity
 
-    #: Verbosity level items, reverse-sorted by key.
-    #:
-    #: When resolving against the hierarchy names, we need to use the most
-    #: specific, which is essentially the longest.
-    #:
-    _sorted_verbosity_levels: list[tuple[str, VerbosityLevelResolver]]
-
-    def __init__(self, verbosity_levels: VerbosityLevelsCastable):
+    def __init__(self, spec: LevelSpec, verbosity: Verbosity):
         super().__init__()
-        self._verbosity_levels = cast_verbosity_levels(verbosity_levels)
-        self._sorted_verbosity_levels = sorted(
-            self._verbosity_levels.items(), key=lambda item: item[0]
-        )
-        self._sorted_verbosity_levels.reverse()
+        self._spec = spec
+        self._verbosity = verbosity
 
     @property
-    def verbosity_levels(self) -> VerbosityLevels:
-        return self._verbosity_levels
+    def verbosity(self) -> Verbosity:
+        return self._verbosity
+
+    @verbosity.setter
+    def set_verbosity(self, value: object) -> None:
+        self._verbosity = to_verbosity(value)
+
+    def get_effective_level(self, record: logging.LogRecord) -> LevelValue:
+        if is_level_value(self._spec):
+            return self._spec
+
+        if isinstance(self._spec, VerbosityLevelResolver):
+            return self._spec.get_level(self._verbosity)
+
+        for hierarchy_name, levels in self._spec.items():
+            if is_in_hierarchy(hierarchy_name, record.name):
+                if is_level_value(levels):
+                    return levels
+                else:
+                    return levels.get_level(self._verbosity)
+
+        return logging.NOTSET
 
     def filter(self, record: logging.LogRecord) -> bool:
-        if self._verbosity_levels is None:
-            return True
-
-        verbosity = get_verbosity()
-
-        if verbosity is None:
-            return True
-
-        for hierarchy_name, ranges in self._sorted_verbosity_levels:
-            if is_in_hierarchy(hierarchy_name, record.name):
-                effectiveLevel = ranges.get_level(verbosity)
-                return (
-                    effectiveLevel is None or record.levelno >= effectiveLevel
-                )
-
-        return True
+        return record.levelno >= self.get_effective_level(record)

@@ -19,7 +19,6 @@ from splatlog.typings import (
     ToExportHandler,
     OnConflict,
 )
-from splatlog.verbosity.verbosity_levels_filter import VerbosityLevelsFilter
 
 
 _registry: dict[str, NamedHandlerCast] = {}
@@ -392,8 +391,9 @@ def to_export_handler(value) -> logging.Handler:
             # Cast to a `JSONFormatter`
             handler.formatter = JSONFormatter.from_(formatter)
 
-        if verbosity_levels := post_kwds.get("verbosity_levels"):
-            VerbosityLevelsFilter.set_on(handler, verbosity_levels)
+        if _verbosity_levels := post_kwds.get("verbosity_levels"):
+            raise NotImplementedError("TODO..? Verbosity levels on handlers?")
+            # VerbosityLevelsFilter.set_on(handler, verbosity_levels)
 
         return handler
 

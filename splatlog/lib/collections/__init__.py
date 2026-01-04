@@ -3,7 +3,6 @@ from collections import defaultdict
 from typing import Optional, TypeVar, Union, overload
 from collections.abc import Callable, Iterable, Mapping, Container
 
-
 T = TypeVar("T")
 TEntry = TypeVar("TEntry")
 TNotFound = TypeVar("TNotFound")
@@ -20,8 +19,7 @@ def default_each_descend(target) -> bool:
 @overload
 def find(
     predicate: Callable[[TEntry], bool], iterable: Iterable[TEntry]
-) -> Optional[TEntry]:
-    ...
+) -> Optional[TEntry]: ...
 
 
 @overload
@@ -30,8 +28,7 @@ def find(
     iterable: Iterable[TEntry],
     *,
     not_found: TNotFound,
-) -> Union[TEntry, TNotFound]:
-    ...
+) -> Union[TEntry, TNotFound]: ...
 
 
 def find(predicate, iterable, *, not_found=None):
@@ -83,17 +80,36 @@ def each(*targets, descend=default_each_descend, deep=True):
 
 def partition_mapping(
     mapping: Mapping[TKey, TValue],
-    by: Union[Container, Callable[[TKey], bool]],
+    by: Container | Callable[[TKey], bool],
 ) -> tuple[dict[TKey, TValue], dict[TKey, TValue]]:
-    """
-    ##### Examples #####
+    """Partition a {py:class}`collections.abc.Mapping` into two {py:class}`dict`
+    by key over `by`.
+
+    ## Examples
+
+    Partition by a {py:class}`collections.abc.Container` of keys `{"a", "c"}`.
+    The first {py:class}`dict` contains keys `"a"` and `"c"`, along with their
+    values; the second {py:class}`dict` contains the remaining key/value pairs.
 
     ```python
+
     >>> partition_mapping(
     ...     {"a": 1, "b": 2, "c": 3, "d": 4},
     ...     {"a", "c"}
     ... )
     ({'a': 1, 'c': 3}, {'b': 2, 'd': 4})
+
+    ```
+
+    Partition by a function — keys in the word `"back"`.
+
+    ```python
+
+    >>> partition_mapping(
+    ...     {"a": 1, "b": 2, "c": 3, "d": 4},
+    ...     lambda k: k in "back",
+    ... )
+    ({'a': 1, 'b': 2, 'c': 3}, {'d': 4})
 
     ```
     """
