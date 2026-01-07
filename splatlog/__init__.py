@@ -38,6 +38,8 @@ from splatlog.typings import (
     JSONEncoderCastable as JSONEncoderCastable,
     FileHandlerMode as FileHandlerMode,
     ExcInfo as ExcInfo,
+    is_level_name as is_level_name,
+    is_level_value as is_level_value,
 )
 from splatlog import rich as rich
 from splatlog import lib as lib
@@ -52,8 +54,6 @@ from splatlog.levels import (
     NOTSET as NOTSET,
     to_level_name as to_level_name,
     to_level_value as to_level_value,
-    is_level_name as is_level_name,
-    is_level_value as is_level_value,
     is_level as is_level,
     get_level as get_level,
     get_level_name as get_level_name,
@@ -64,9 +64,6 @@ from splatlog.levels import (
 from splatlog.names import (
     root_name as root_name,
     is_in_hierarchy as is_in_hierarchy,
-)
-from splatlog.verbosity import (
-    VerbosityLevelResolver as VerbosityLevelResolver,
 )
 from splatlog.locking import (
     lock as lock,

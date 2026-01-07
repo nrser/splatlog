@@ -373,16 +373,6 @@ VerbosityValue = Union["VerbosityLevelResolver", Sequence[VerbosityLevel]]
 
 ToVerbosityLevels = Mapping[str, VerbosityValue]
 
-ToLevelSpec: TypeAlias = (
-    Level | VerbosityValue | Mapping[str, Level | VerbosityValue]
-)
-
-LevelSpec: TypeAlias = Union[
-    LevelValue,
-    "VerbosityLevelResolver",
-    dict[str, Union[LevelValue, "VerbosityLevelResolver"]],
-]
-
 
 def is_verbosity(x: object) -> TypeIs[Verbosity]:
     """
@@ -468,8 +458,96 @@ def is_verbosity_value(value: Any) -> TypeIs[VerbosityValue]:
     return False
 
 
+### Level Spec ###
+
+LevelSpec: TypeAlias = Union[
+    LevelValue,
+    "VerbosityLevelResolver",
+    dict[str, Union[LevelValue, "VerbosityLevelResolver"]],
+]
+
+ToLevelSpec: TypeAlias = (
+    Level | VerbosityValue | Mapping[str, Level | VerbosityValue]
+)
+
+
 def to_level_spec(value: ToLevelSpec) -> LevelSpec:
-    raise NotImplementedError("TODO")
+    """
+    Convert a `ToLevelSpec` to a normalized `LevelSpec`.
+
+    ##### Examples #####
+
+    Convert a level name to a level value:
+
+    ```python
+    >>> to_level_spec("DEBUG")
+    10
+
+    >>> to_level_spec("info")
+    20
+
+    ```
+
+    Level values pass through:
+
+    ```python
+    >>> to_level_spec(30)
+    30
+
+    ```
+
+    A sequence of verbosity/level pairs becomes a `VerbosityLevelResolver`:
+
+    ```python
+    >>> resolver = to_level_spec([(0, "ERROR"), (1, "WARNING"), (3, "INFO")])
+    >>> isinstance(resolver, VerbosityLevelResolver)
+    True
+
+    ```
+
+    A mapping is converted to a dict with normalized values:
+
+    ```python
+    >>> spec = to_level_spec({"console": "DEBUG", "export": "INFO"})
+    >>> spec
+    {'console': 10, 'export': 20}
+
+    ```
+    """
+    from splatlog.levels.verbosity_level_resolver import (
+        VerbosityLevelResolver,
+    )
+
+    # Already a VerbosityLevelResolver
+    if isinstance(value, VerbosityLevelResolver):
+        return value
+
+    # Level as int or str (check before Sequence since str is a Sequence)
+    if isinstance(value, (int, str)):
+        return to_level_value(value)
+
+    # Mapping[str, Level | VerbosityValue]
+    if isinstance(value, Mapping):
+        result: dict[str, LevelValue | VerbosityLevelResolver] = {}
+        for key, val in value.items():
+            if isinstance(val, VerbosityLevelResolver):
+                result[key] = val
+            elif isinstance(val, (int, str)):
+                result[key] = to_level_value(val)
+            elif isinstance(val, Sequence):
+                result[key] = VerbosityLevelResolver(val)
+            else:
+                raise TypeError(
+                    "Expected Level or VerbosityValue for key {}, "
+                    "given {}: {}".format(fmt(key), fmt_type_of(val), fmt(val))
+                )
+        return result
+
+    # Sequence[VerbosityLevel]
+    if isinstance(value, Sequence):
+        return VerbosityLevelResolver(value)
+
+    assert_never(value, ToLevelSpec)
 
 
 # Rich
