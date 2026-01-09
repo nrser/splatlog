@@ -3,6 +3,7 @@ AUTOBUILD
 dists
 Dunder
 furo
+posargs
 Sigstore
 splatlog
 testpypi

@@ -16,7 +16,11 @@ from typing import (
 )
 import typing
 
-from typing_extensions import TypeIs
+# TypeIs was added to stdlib typing in 3.13; simplify when requires-python >= 3.13
+if sys.version_info >= (3, 13):
+    from typing import TypeIs
+else:
+    from typing_extensions import TypeIs
 from collections.abc import Mapping, Sequence, Callable
 
 from typeguard import check_type, TypeCheckError

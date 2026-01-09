@@ -13,6 +13,9 @@ classifiers = [
 dependencies = [
     "rich>=9",
     "typeguard==3.0.0b2",
+    # TypeIs was added to stdlib typing in 3.13; remove when
+    # requires-python >= 3.13
+    "typing_extensions>=4.0; python_version < '3.13'",
 ]
 
 [project.urls]
@@ -24,6 +27,8 @@ Documentation = "http://nrser.com/splatlog"
 dev = [
     "black>=22.3.0",
     "doctor-testerson",
+    "pytest>=7.0",
+    "tox>=4.0",
 ]
 docs = [
     "myst-parser>=4.0.1",
