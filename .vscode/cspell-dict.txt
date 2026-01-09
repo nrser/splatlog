@@ -3,6 +3,7 @@ AUTOBUILD
 dists
 Dunder
 furo
+mixedcase
 posargs
 Sigstore
 splatlog

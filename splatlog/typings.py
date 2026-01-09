@@ -477,9 +477,9 @@ ToLevelSpec: TypeAlias = (
 
 def to_level_spec(value: ToLevelSpec) -> LevelSpec:
     """
-    Convert a `ToLevelSpec` to a normalized `LevelSpec`.
+    Normalized an input `value` to a `LevelSpec`.
 
-    ##### Examples #####
+    ## Examples
 
     Convert a level name to a level value:
 
