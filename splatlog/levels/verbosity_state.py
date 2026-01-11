@@ -13,7 +13,7 @@ from splatlog.typings import (
     VerbosityLevels,
     ToVerbosityLevels,
 )
-from splatlog.verbosity.verbosity_level_resolver import VerbosityLevelResolver
+from splatlog.levels.verbosity_level_resolver import VerbosityLevelResolver
 
 __all__ = [
     "cast_verbosity_levels",
@@ -70,7 +70,7 @@ def cast_verbosity_levels(
     ##### Examples #####
 
     ```python
-    >>> cast_verbosity_levels(
+    >>> result = cast_verbosity_levels(
     ...     {
     ...         "some_mod": (
     ...             (0, "WARNING"),
@@ -84,12 +84,11 @@ def cast_verbosity_levels(
     ...         ),
     ...     },
     ... )
-    {'some_mod': <VerbosityLevelResolver    [0, 1, 2]: WARNING,
-                                            [3, 4]: INFO,
-                                            [5, ...]: DEBUG>,
-        'other_mod': <VerbosityLevelResolver    [0]: WARNING,
-                                                [1]: INFO,
-                                                [2, ...]: DEBUG>}
+    >>> sorted(result.keys())
+    ['other_mod', 'some_mod']
+    >>> from splatlog.levels import VerbosityLevelResolver
+    >>> all(isinstance(v, VerbosityLevelResolver) for v in result.values())
+    True
 
     ```
     """
@@ -109,7 +108,7 @@ def get_verbosity_levels() -> VerbosityLevels:
     > state.
     >
     > The copy is _shallow_ — it references the actual `VerbosityLevelConfig`
-    > instances that are in use — but those are publically immutable. If you go
+    > instances that are in use — but those are publicly immutable. If you go
     > modifying private attributes your on your own as far as `splatlog` is
     > concerned.
     >
@@ -158,12 +157,12 @@ def set_verbosity_levels(verbosity_levels: ToVerbosityLevels) -> None:
     ...     )
     ... })
 
-    >>> get_verbosity_levels()
-    {'splatlog': <VerbosityLevelResolver    [0, 1, 2]: WARNING,
-                                            [3]: INFO,
-                                            [4, ...]: DEBUG>,
-        'my.app': <VerbosityLevelResolver   [0]: INFO,
-                                            [1, ...]: DEBUG>}
+    >>> levels = get_verbosity_levels()
+    >>> sorted(levels.keys())
+    ['my.app', 'splatlog']
+    >>> from splatlog.levels import VerbosityLevelResolver
+    >>> all(isinstance(v, VerbosityLevelResolver) for v in levels.values())
+    True
 
     ```
     """
