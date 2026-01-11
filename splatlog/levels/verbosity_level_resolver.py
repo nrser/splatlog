@@ -172,11 +172,8 @@ class VerbosityLevelResolver(Classifier[Verbosity, LevelValue]):
         ...         (5, DEBUG),
         ...     )
         ... )
-        <VerbosityLevelResolver
-            [0]: ERROR,
-            [1, 2]: WARNING,
-            [3, 4]: INFO,
-            [5, ...]: DEBUG>
+        <VerbosityLevelResolver [0]: ERROR, [1, 2]: WARNING,
+            [3, 4]: INFO, [5, 6, ..., 16]: DEBUG>
 
         ```
         """
