@@ -192,7 +192,7 @@ def to_level_value(level: Level) -> LevelValue:
     >>> to_level_value([])
     Traceback (most recent call last):
         ...
-    TypeError: Expected `level` to be `int | str`, given `list`: []
+    AssertionError: Expected `int | str`, given `list`: `[]`
 
     ```
     """
@@ -413,17 +413,16 @@ def to_verbosity(x: object) -> Verbosity:
     ##### Examples #####
 
     ```python
-    >>> as_verbosity(0)
+    >>> to_verbosity(0)
     0
 
-    >>> as_verbosity(8)
+    >>> to_verbosity(8)
     8
 
-    >>> as_verbosity(-1)
+    >>> to_verbosity(-1)
     Traceback (most recent call last):
-      ...
-    TypeError: Expected verbosity to be non-negative integer less than
-        `sys.maxsize`, given int: -1
+        ...
+    TypeError: Expected verbosity to be non-negative integer less than `sys.maxsize`, given int: -1
 
     ```
     """
@@ -477,34 +476,37 @@ ToLevelSpec: TypeAlias = (
 
 def to_level_spec(value: ToLevelSpec) -> LevelSpec:
     """
-    Normalized an input `value` to a `LevelSpec`.
+    Normalized an input `value` to a `LevelSpec`, which — in a loose sense — is
+    anything you would specify as a level/verbosity-based filter on a logger or
+    handler.
 
     ## Examples
 
-    Convert a level name to a level value:
+    Normalizes {py:type}`Level` values to {py:type}`LevelValue` integers, see
+    {py:func}`to_level_value` for details.
 
     ```python
+
+    >>> import logging
     >>> to_level_spec("DEBUG")
     10
-
-    >>> to_level_spec("info")
-    20
-
-    ```
-
-    Level values pass through:
-
-    ```python
-    >>> to_level_spec(30)
-    30
+    >>> to_level_spec(logging.DEBUG)
+    10
+    >>> to_level_spec(99)
+    99
 
     ```
 
-    A sequence of verbosity/level pairs becomes a `VerbosityLevelResolver`:
+    Normalizes verbosity/level mappings to a
+    {py:class}`splatlog.levels.verbosity_level_resolver.VerbosityLevelResolver`.
 
     ```python
-    >>> resolver = to_level_spec([(0, "ERROR"), (1, "WARNING"), (3, "INFO")])
-    >>> isinstance(resolver, VerbosityLevelResolver)
+
+    >>> from splatlog.levels import VerbosityLevelResolver
+    >>> isinstance(
+    ...     to_level_spec([(0, "ERROR"), (1, "WARNING"), (3, "INFO")]),
+    ...     VerbosityLevelResolver
+    ... )
     True
 
     ```
@@ -512,8 +514,8 @@ def to_level_spec(value: ToLevelSpec) -> LevelSpec:
     A mapping is converted to a dict with normalized values:
 
     ```python
-    >>> spec = to_level_spec({"console": "DEBUG", "export": "INFO"})
-    >>> spec
+
+    >>> to_level_spec({"console": "DEBUG", "export": "INFO"})
     {'console': 10, 'export': 20}
 
     ```
