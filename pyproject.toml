@@ -50,6 +50,9 @@ no-build-isolation-package = ["pyyaml"]
 [tool.uv.sources]
 doctor-testerson = { git = "https://github.com/nrser/doctor-testerson.git" }
 
+[tool.pytest.ini_options]
+doctest_optionflags = "NORMALIZE_WHITESPACE"
+
 [tool.hatch.build.targets.sdist]
 include = [
     "splatlog",
