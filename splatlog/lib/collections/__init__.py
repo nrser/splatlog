@@ -141,10 +141,10 @@ def group_by(
     > stream-like approach of iterating through the entries and breaking up
     > groups when the result of the key function changes.
 
-    ##### Examples #####
+    ## Examples
 
     ```python
-    >>> group_by(
+    >>> result = group_by(
     ...     [
     ...         {"name": "Hudie", "type": "cat"},
     ...         {"name": "Rice Card", "type": "human"},
@@ -153,16 +153,12 @@ def group_by(
     ...     ],
     ...     lambda dct: dct["type"],
     ... )
-    ... # This is a little weird because NORMALIZE_WHITESPACE treats all
-    ... # whitespace as equivalent, but you can't _add_ whitespace places there
-    ... # was none.
-    ... #
-    ... # SEE   https://stackoverflow.com/a/17640475
-    ... #
-    {'cat': [{'name': 'Hudie', 'type': 'cat'},
-            {'name': 'Oscar', 'type': 'cat'}],
-        'human': [{'name': 'Rice Card', 'type': 'human'},
-            {'name': 'Kid Cloud', 'type': 'human'}]}
+    >>> sorted(result.keys())
+    ['cat', 'human']
+    >>> result["cat"]
+    [{'name': 'Hudie', 'type': 'cat'}, {'name': 'Oscar', 'type': 'cat'}]
+    >>> result["human"]
+    [{'name': 'Rice Card', 'type': 'human'}, {'name': 'Kid Cloud', 'type': 'human'}]
 
     ```
     """
