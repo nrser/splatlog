@@ -33,6 +33,9 @@ if TYPE_CHECKING:
     from splatlog.levels import VerbosityLevelResolver
     from splatlog.json import JSONFormatter, JSONEncoder
 
+# Helpers
+# ============================================================================
+
 _ASSERT_NEVER_REPR_MAX_LENGTH: int = getattr(
     typing, "_ASSERT_NEVER_REPR_MAX_LENGTH", 100
 )
@@ -64,8 +67,11 @@ def assert_never(arg: Never, typ: Any) -> Never:
     )
 
 
-# Level Types
+# Types
 # ============================================================================
+
+# Level Types
+# ----------------------------------------------------------------------------
 #
 # There has always been some... frustration... typing `logging` levels. There is
 # no typing in the builtin module. As such, this _kind-of_ follows the VSCode /
@@ -105,6 +111,297 @@ What `splatlog` accepts as a log level; either a {py:type}`LevelValue` or a
 This corresponds to the `logging._Level` type used for the argument to
 {py:meth}`logging.Logger.setLevel` in PyLance.
 """
+
+
+# Verbosity Types
+# ----------------------------------------------------------------------------
+
+Verbosity: TypeAlias = int
+"""
+Representation of a common "verbose" flag, where the repetition is stored as
+a count:
+
+(no flag) -> 0
+-v        -> 1
+-vv       -> 2
+-vvv      -> 3
+"""
+
+VerbosityLevel = tuple[Verbosity, Level]
+
+VerbosityLevels = Mapping[str, "VerbosityLevelResolver"]
+
+VerbosityValue = Union["VerbosityLevelResolver", Sequence[VerbosityLevel]]
+
+ToVerbosityLevels = Mapping[str, VerbosityValue]
+
+
+# Spec Types
+# ----------------------------------------------------------------------------
+
+LevelSpec: TypeAlias = Union[
+    LevelValue,
+    "VerbosityLevelResolver",
+    dict[str, Union[LevelValue, "VerbosityLevelResolver"]],
+]
+
+ToLevelSpec: TypeAlias = (
+    Level | VerbosityValue | Mapping[str, Level | VerbosityValue]
+)
+
+
+# Rich Types
+# ----------------------------------------------------------------------------
+
+StdioName = Literal["stdout", "stderr"]
+
+# Named Handler Types
+# ----------------------------------------------------------------------------
+
+OnConflict: TypeAlias = Literal["raise", "ignore", "replace"]
+
+NamedHandlerCast = Callable[[Any], None | logging.Handler]
+"""
+A function that casts an argument to a {py:class}`logging.Handler` or returns
+`None`.
+
+Once registered by a `name` {py:class}`str` with
+{py:func}`splatlog.named_handlers.register_named_handler` or the
+{py:func}`splatlog.named_handlers.named_handler` decorator you can use the
+`name` in {py:func}`splatlog.setup` same as
+"""
+
+KwdMapping = Mapping[str, Any]
+
+ToConsoleHandler = (
+    logging.Handler | KwdMapping | Literal[True] | Level | ToRichConsole
+)
+"""
+What can be converted to a `console` named handler, mainly via constructing a
+{py:class}`splatlog.rich_handler.RichHandler`.
+
+See {py:func}`splatlog.named_handlers.to_console_handler` for details.
+"""
+
+ToExportHandler = logging.Handler | KwdMapping | str | Path | IO[str]
+"""
+What can be converted to an `export` named handler, mainly via constructing a
+{py:class}`splatlog.json.JSONHandler`.
+
+See {py:func}`splatlog.named_handlers.to_export_handler` for details.
+"""
+
+JSONEncoderStyle = Literal["compact", "pretty"]
+
+ToJSONFormatter = Union[None, "JSONFormatter", JSONEncoderStyle, KwdMapping]
+
+JSONEncoderCastable = Union[None, "JSONEncoder", JSONEncoderStyle, KwdMapping]
+
+# Other Types
+# ----------------------------------------------------------------------------
+
+# Modes that makes sense to open a logging file in
+FileHandlerMode = Literal["a", "ab", "w", "wb"]
+
+# It's not totally clear to me what the correct typing of "exc info" is... I
+# read the CPython source, I looked at the Pylance types (from Microsoft), and
+# this is what I settled on for this use case.
+ExcInfo = tuple[Type[BaseException], BaseException, Optional[TracebackType]]
+
+# Tests
+# ============================================================================
+
+# Level Tests
+# ----------------------------------------------------------------------------
+
+
+def is_level_name(
+    name: object, *, case_sensitive: bool = False
+) -> TypeIs[LevelName]:
+    """
+    ## Examples
+
+    ```python
+    >>> is_level_name("DEBUG")
+    True
+
+    >>> is_level_name("LEVEL_NAME_TEST")
+    False
+
+    >>> level_value = hash("LEVEL_NAME_TEST") # Use somewhat unique int
+    >>> logging.addLevelName(level_value, "LEVEL_NAME_TEST")
+    >>> is_level_name("LEVEL_NAME_TEST")
+    True
+
+    ```
+    """
+    if not isinstance(name, str):
+        return False
+
+    # `logging` uses upper-case names, so convert to that unless we've been
+    # asked not to
+    if not case_sensitive:
+        name = name.upper()
+
+    # `logging.getLevelNamesMapping` was added in Python 3.11, providing a much
+    # more sane way to figure out if a string is a level name.
+
+    if hasattr(logging, "getLevelNamesMapping"):
+        return name in logging.getLevelNamesMapping()
+
+    # As of writing (2025-12-03) we `requires-python = ">=3.10"`, so
+    # `logging.getLevelNamesMapping` might not be there. As we already have the
+    # code to do the legacy detection, so it doesn't seem worth bumping the
+    # required python version.
+    #
+    # This is uses a weird (and deprecated, in recent Pythons) way of testing if
+    # `name` is a level name — `logging.getLevelName` will return the
+    # `int` level if `name` is a known level name, otherwise returning
+    # `f"Level {name}`
+    if isinstance(logging.getLevelName(name), int):
+        return True
+
+    return False
+
+
+def is_level_value(value: object) -> TypeIs[LevelValue]:
+    """
+    Test if `value` is a level value.
+
+    Specifically, tests if `value` is a _named_ level value — a builtin one like
+    `logging.DEBUG` or a custom one added with `logging.addLevelName`.
+
+    Technically, it seems like you can use _any_ `int` as a level value, but it
+    seems like it makes things simpler if all `LevelValue` have `LevelName` and
+    vice-versa.
+
+    We explicitly reject the booleans {py:data}`True` and {py:data}`False`,
+    because `False` in particular is equal to {py:data}`logging.NOTSET` but
+    that's never what you mean by passing it.
+
+    ## Examples
+
+    ```python
+
+    >>> is_level_value(logging.DEBUG)
+    True
+
+    >>> level_value = hash("LEVEL_VALUE_TEST") # Use somewhat unique int
+    >>> is_level_value(level_value)
+    False
+
+    >>> logging.addLevelName(level_value, "LEVEL_VALUE_TEST")
+    >>> is_level_value(level_value)
+    True
+
+    >>> is_level_value(True)
+    False
+
+    >>> is_level_value(False)
+    False
+
+    ```
+    """
+    return (
+        isinstance(value, int)
+        and not (value is True or value is False)
+        and logging.getLevelName(value) != f"Level {value}"
+    )
+
+
+def is_level(value: object, *, case_sensitive: bool = False) -> TypeIs[Level]:
+    """
+    Is `value` a logging level, in string or integer form? Tests if
+    {py:func}`is_level_name` or {py:func}`is_level_value`.
+    """
+    return is_level_name(
+        value, case_sensitive=case_sensitive
+    ) or is_level_value(value)
+
+
+# Verbosity Tests
+# ----------------------------------------------------------------------------
+
+
+def is_verbosity(x: object) -> TypeIs[Verbosity]:
+    """
+    Test if a value is a _verbosity_.
+
+    ##### Examples #####
+
+    ```python
+    >>> is_verbosity(0)
+    True
+
+    >>> is_verbosity(8)
+    True
+
+    >>> is_verbosity(-1)
+    False
+
+    >>> import sys
+    >>> is_verbosity(sys.maxsize)
+    False
+
+    >>> is_verbosity(sys.maxsize - 1)
+    True
+
+    ```
+    """
+    return isinstance(x, int) and x >= 0 and x < sys.maxsize
+
+
+def is_verbosity_level(value: object) -> TypeIs[VerbosityLevel]:
+    return (
+        isinstance(value, tuple)
+        and len(value) == 2
+        and is_verbosity(value[0])
+        and is_level(value[1])
+    )
+
+
+def is_verbosity_value(value: Any) -> TypeIs[VerbosityValue]:
+    from splatlog.levels.verbosity_level_resolver import (
+        VerbosityLevelResolver,
+    )
+
+    if isinstance(value, VerbosityLevelResolver):
+        return True
+
+    if isinstance(value, Sequence) and all(
+        is_verbosity_level(vl) for vl in value
+    ):
+        return True
+
+    return False
+
+
+# Rich Tests
+# ----------------------------------------------------------------------------
+
+
+def is_stdout_name(value: Any) -> TypeIs[StdioName]:
+    """Is `value` a {py:type}`StdioName`?
+
+    ```{note}
+
+    Equivalent to {py:func}`splatlog.lib.satisfies`, which (to my understanding)
+    can not be typed to support type-narrowing over a {py:type}`typing.Literal`.
+
+    ```
+    """
+    try:
+        check_type(value, StdioName)
+    except TypeCheckError:
+        return False
+    return True
+
+
+# Conversions
+# ============================================================================
+
+# Level Conversions
+# ----------------------------------------------------------------------------
 
 
 def to_level_name(level_value: LevelValue) -> LevelName:
@@ -230,177 +527,8 @@ def to_level_value(level: Level) -> LevelValue:
     assert_never(level, Level)
 
 
-def is_level_name(
-    name: object, *, case_sensitive: bool = False
-) -> TypeIs[LevelName]:
-    """
-    ## Examples
-
-    ```python
-    >>> is_level_name("DEBUG")
-    True
-
-    >>> is_level_name("LEVEL_NAME_TEST")
-    False
-
-    >>> level_value = hash("LEVEL_NAME_TEST") # Use somewhat unique int
-    >>> logging.addLevelName(level_value, "LEVEL_NAME_TEST")
-    >>> is_level_name("LEVEL_NAME_TEST")
-    True
-
-    ```
-    """
-    if not isinstance(name, str):
-        return False
-
-    # `logging` uses upper-case names, so convert to that unless we've been
-    # asked not to
-    if not case_sensitive:
-        name = name.upper()
-
-    # `logging.getLevelNamesMapping` was added in Python 3.11, providing a much
-    # more sane way to figure out if a string is a level name.
-
-    if hasattr(logging, "getLevelNamesMapping"):
-        return name in logging.getLevelNamesMapping()
-
-    # As of writing (2025-12-03) we `requires-python = ">=3.10"`, so
-    # `logging.getLevelNamesMapping` might not be there. As we already have the
-    # code to do the legacy detection, so it doesn't seem worth bumping the
-    # required python version.
-    #
-    # This is uses a weird (and deprecated, in recent Pythons) way of testing if
-    # `name` is a level name — `logging.getLevelName` will return the
-    # `int` level if `name` is a known level name, otherwise returning
-    # `f"Level {name}`
-    if isinstance(logging.getLevelName(name), int):
-        return True
-
-    return False
-
-
-def is_level_value(value: object) -> TypeIs[LevelValue]:
-    """
-    Test if `value` is a level value.
-
-    Specifically, tests if `value` is a _named_ level value — a builtin one like
-    `logging.DEBUG` or a custom one added with `logging.addLevelName`.
-
-    Technically, it seems like you can use _any_ `int` as a level value, but it
-    seems like it makes things simpler if all `LevelValue` have `LevelName` and
-    vice-versa.
-
-    We explicitly reject the booleans {py:data}`True` and {py:data}`False`,
-    because `False` in particular is equal to {py:data}`logging.NOTSET` but
-    that's never what you mean by passing it.
-
-    ## Examples
-
-    ```python
-
-    >>> is_level_value(logging.DEBUG)
-    True
-
-    >>> level_value = hash("LEVEL_VALUE_TEST") # Use somewhat unique int
-    >>> is_level_value(level_value)
-    False
-
-    >>> logging.addLevelName(level_value, "LEVEL_VALUE_TEST")
-    >>> is_level_value(level_value)
-    True
-
-    >>> is_level_value(True)
-    False
-
-    >>> is_level_value(False)
-    False
-
-    ```
-    """
-    return (
-        isinstance(value, int)
-        and not (value is True or value is False)
-        and logging.getLevelName(value) != f"Level {value}"
-    )
-
-
-def is_level(value: object, *, case_sensitive: bool = False) -> TypeIs[Level]:
-    """
-    Is `value` a logging level, in string or integer form? Tests if
-    {py:func}`is_level_name` or {py:func}`is_level_value`.
-    """
-    return is_level_name(
-        value, case_sensitive=case_sensitive
-    ) or is_level_value(value)
-
-
-def assert_level(level: Level, *, var_name: str = "level"):
-    if isinstance(level, str):
-        if not is_level_name(level):
-            raise ValueError(
-                "Expected `{}` to be `{}`, given `str` but {} is not a valid level name".format(
-                    var_name, fmt(Level), fmt(level)
-                )
-            )
-    elif isinstance(level, int):
-        if not is_level_value(level):
-            raise ValueError(
-                "Expected `{}` to be `{}`, given `int` but {} is not a valid level value".format(
-                    var_name, fmt(Level), fmt(level)
-                )
-            )
-    else:
-        assert_never(level, Level)
-
-
-# Verbosity
-# ============================================================================
-
-# Representation of a common "verbose" flag, where the repetition is stored as
-# a count:
-#
-# (no flag) -> 0
-# -v        -> 1
-# -vv       -> 2
-# -vvv      -> 3
-#
-Verbosity = int
-
-VerbosityLevel = tuple[Verbosity, Level]
-
-VerbosityLevels = Mapping[str, "VerbosityLevelResolver"]
-
-VerbosityValue = Union["VerbosityLevelResolver", Sequence[VerbosityLevel]]
-
-ToVerbosityLevels = Mapping[str, VerbosityValue]
-
-
-def is_verbosity(x: object) -> TypeIs[Verbosity]:
-    """
-    Test if a value is a _verbosity_.
-
-    ##### Examples #####
-
-    ```python
-    >>> is_verbosity(0)
-    True
-
-    >>> is_verbosity(8)
-    True
-
-    >>> is_verbosity(-1)
-    False
-
-    >>> import sys
-    >>> is_verbosity(sys.maxsize)
-    False
-
-    >>> is_verbosity(sys.maxsize - 1)
-    True
-
-    ```
-    """
-    return isinstance(x, int) and x >= 0 and x < sys.maxsize
+# Verbosity Conversions
+# ----------------------------------------------------------------------------
 
 
 def to_verbosity(x: object) -> Verbosity:
@@ -433,42 +561,8 @@ def to_verbosity(x: object) -> Verbosity:
     )
 
 
-def is_verbosity_level(value: object) -> TypeIs[VerbosityLevel]:
-    return (
-        isinstance(value, tuple)
-        and len(value) == 2
-        and is_verbosity(value[0])
-        and is_level(value[1])
-    )
-
-
-def is_verbosity_value(value: Any) -> TypeIs[VerbosityValue]:
-    from splatlog.levels.verbosity_level_resolver import (
-        VerbosityLevelResolver,
-    )
-
-    if isinstance(value, VerbosityLevelResolver):
-        return True
-
-    if isinstance(value, Sequence) and all(
-        is_verbosity_level(vl) for vl in value
-    ):
-        return True
-
-    return False
-
-
-### Level Spec ###
-
-LevelSpec: TypeAlias = Union[
-    LevelValue,
-    "VerbosityLevelResolver",
-    dict[str, Union[LevelValue, "VerbosityLevelResolver"]],
-]
-
-ToLevelSpec: TypeAlias = (
-    Level | VerbosityValue | Mapping[str, Level | VerbosityValue]
-)
+# Spec Conversions
+# ----------------------------------------------------------------------------
 
 
 def to_level_spec(value: ToLevelSpec) -> LevelSpec:
@@ -553,78 +647,24 @@ def to_level_spec(value: ToLevelSpec) -> LevelSpec:
     assert_never(value, ToLevelSpec)
 
 
-# Rich
+# Assertions
 # ============================================================================
 
-StdioName = Literal["stdout", "stderr"]
 
-
-def is_stdout_name(value: Any) -> TypeIs[StdioName]:
-    """Is `value` a {py:type}`StdioName`?
-
-    ```{note}
-
-    Equivalent to {py:func}`splatlog.lib.satisfies`, which (to my understanding)
-    can not be typed to support type-narrowing over a {py:type}`typing.Literal`.
-
-    ```
-    """
-    try:
-        check_type(value, StdioName)
-    except TypeCheckError:
-        return False
-    return True
-
-
-# Named Handlers
-# ============================================================================
-
-OnConflict: TypeAlias = Literal["raise", "ignore", "replace"]
-
-NamedHandlerCast = Callable[[Any], None | logging.Handler]
-"""
-A function that casts an argument to a {py:class}`logging.Handler` or returns
-`None`.
-
-Once registered by a `name` {py:class}`str` with
-{py:func}`splatlog.named_handlers.register_named_handler` or the
-{py:func}`splatlog.named_handlers.named_handler` decorator you can use the
-`name` in {py:func}`splatlog.setup` same as
-"""
-
-KwdMapping = Mapping[str, Any]
-
-ToConsoleHandler = (
-    logging.Handler | KwdMapping | Literal[True] | Level | ToRichConsole
-)
-"""
-What can be converted to a `console` named handler, mainly via constructing a
-{py:class}`splatlog.rich_handler.RichHandler`.
-
-See {py:func}`splatlog.named_handlers.to_console_handler` for details.
-"""
-
-ToExportHandler = logging.Handler | KwdMapping | str | Path | IO[str]
-"""
-What can be converted to an `export` named handler, mainly via constructing a
-{py:class}`splatlog.json.JSONHandler`.
-
-See {py:func}`splatlog.named_handlers.to_export_handler` for details.
-"""
-
-JSONEncoderStyle = Literal["compact", "pretty"]
-
-ToJSONFormatter = Union[None, "JSONFormatter", JSONEncoderStyle, KwdMapping]
-
-JSONEncoderCastable = Union[None, "JSONEncoder", JSONEncoderStyle, KwdMapping]
-
-# Etc
-# ============================================================================
-
-# Modes that makes sense to open a logging file in
-FileHandlerMode = Literal["a", "ab", "w", "wb"]
-
-# It's not totally clear to me what the correct typing of "exc info" is... I
-# read the CPython source, I looked at the Pylance types (from Microsoft), and
-# this is what I settled on for this use case.
-ExcInfo = tuple[Type[BaseException], BaseException, Optional[TracebackType]]
+def assert_level(level: Level, *, var_name: str = "level"):
+    if isinstance(level, str):
+        if not is_level_name(level):
+            raise ValueError(
+                "Expected `{}` to be `{}`, given `str` but {} is not a valid level name".format(
+                    var_name, fmt(Level), fmt(level)
+                )
+            )
+    elif isinstance(level, int):
+        if not is_level_value(level):
+            raise ValueError(
+                "Expected `{}` to be `{}`, given `int` but {} is not a valid level value".format(
+                    var_name, fmt(Level), fmt(level)
+                )
+            )
+    else:
+        assert_never(level, Level)
