@@ -94,10 +94,6 @@ Because the Python {py:mod}`logging` system allows custom log levels to be
 introduced this is simply an alias for {py:class}`str`, though only specific
 strings are valid level names.
 
-```{note}
-This type is screwy from a formal perspective —
-```
-
 ## See Also
 
 1.  {py:func}`splatlog.levels.is_level_name`
