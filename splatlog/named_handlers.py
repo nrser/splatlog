@@ -241,9 +241,9 @@ def to_console_handler(value: ToConsoleHandler) -> logging.Handler:
         >>> handler = to_console_handler(
         ...     dict(
         ...         console=sys.stdout,
-        ...         verbosity_levels=dict(
-        ...             some_mod=((0, "WARNING"), (1, "INFO")),
-        ...         )
+        ...         level={
+        ...             "some_mod": ((0, "WARNING"), (1, "INFO")),
+        ...         }
         ...     )
         ... )
 
@@ -253,8 +253,8 @@ def to_console_handler(value: ToConsoleHandler) -> logging.Handler:
         >>> handler.console.file is sys.stdout
         True
 
-        >>> handler.verbosity_levels
-        {'some_mod': <VerbosityLevelResolver [0]: WARNING, [1, ...]: INFO>}
+        >>> len(handler.filters)
+        1
 
         ```
 

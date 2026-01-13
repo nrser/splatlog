@@ -18,10 +18,22 @@ from splatlog.typings import (
     to_verbosity,
     assert_never,
 )
+
+# Submodule Exports
+# ============================================================================
+
 from .verbosity_level_resolver import VerbosityLevelResolver
+
 from .verbosity_levels_filter import (
     VerbosityLevelsFilter as VerbosityLevelsFilter,
 )
+
+VerbosityLevelResolver.__module__ = __name__
+
+__all__ = ["VerbosityLevelResolver"]
+
+# Constants
+# ============================================================================
 
 # Alias the standard `logging` levels so you can avoid another import in many
 # cases

@@ -30,11 +30,8 @@ from splatlog.lib.text import fmt
 from splatlog.rich import ToRichConsole
 
 if TYPE_CHECKING:
-    from splatlog.levels.verbosity_level_resolver import (
-        VerbosityLevelResolver,
-    )
-    from splatlog.json.json_formatter import JSONFormatter
-    from splatlog.json.json_encoder import JSONEncoder
+    from splatlog.levels import VerbosityLevelResolver
+    from splatlog.json import JSONFormatter, JSONEncoder
 
 _ASSERT_NEVER_REPR_MAX_LENGTH: int = getattr(
     typing, "_ASSERT_NEVER_REPR_MAX_LENGTH", 100
@@ -498,7 +495,7 @@ def to_level_spec(value: ToLevelSpec) -> LevelSpec:
     ```
 
     Normalizes verbosity/level mappings to a
-    {py:class}`splatlog.levels.verbosity_level_resolver.VerbosityLevelResolver`.
+    {py:class}`splatlog.levels.VerbosityLevelResolver`.
 
     ```python
 

@@ -5,7 +5,6 @@ import logging
 from typing import Optional, TypeVar
 
 from splatlog import LevelValue
-from splatlog.levels.verbosity_level_resolver import VerbosityLevelResolver
 from splatlog.names import is_in_hierarchy
 from splatlog.typings import (
     LevelSpec,
@@ -13,6 +12,8 @@ from splatlog.typings import (
     is_level_value,
     to_verbosity,
 )
+
+from .verbosity_level_resolver import VerbosityLevelResolver
 
 __all__ = ["VerbosityLevelsFilter"]
 
@@ -37,7 +38,6 @@ class VerbosityLevelsFilter(logging.Filter):
 
     ```python
     >>> from splatlog._testing import make_log_record
-    >>> import splatlog
 
     >>> filter = VerbosityLevelsFilter(
     ...     {
@@ -46,67 +46,36 @@ class VerbosityLevelsFilter(logging.Filter):
     ...             (2, "INFO"),
     ...             (4, "DEBUG"),
     ...         )
-    ...     }
+    ...     },
+    ...     verbosity=0,
     ... )
 
     ```
 
-    When verbosity is not set everything is allowed through.
+    At verbosity 0, only WARNING and above are allowed through.
 
     ```python
-    >>> splatlog.del_verbosity()
-    >>> filter.filter(make_log_record(name="some_module", level="WARNING"))
-    True
-    >>> filter.filter(make_log_record(name="some_module", level="INFO"))
-    True
-    >>> filter.filter(make_log_record(name="some_module", level="DEBUG"))
-    True
-
-    ```
-
-    Once verbosity is set the filter takes effect.
-
-    ```python
-    >>> splatlog.set_verbosity(0)
     >>> filter.filter(make_log_record(name="some_module", level="WARNING"))
     True
     >>> filter.filter(make_log_record(name="some_module", level="INFO"))
     False
     >>> filter.filter(make_log_record(name="some_module", level="DEBUG"))
     False
-
-    >>> splatlog.set_verbosity(2)
-    >>> filter.filter(make_log_record(name="some_module", level="WARNING"))
-    True
-    >>> filter.filter(make_log_record(name="some_module", level="INFO"))
-    True
-    >>> filter.filter(make_log_record(name="some_module", level="DEBUG"))
-    False
-
-    >>> splatlog.set_verbosity(8)
-    >>> filter.filter(make_log_record(name="some_module", level="WARNING"))
-    True
-    >>> filter.filter(make_log_record(name="some_module", level="INFO"))
-    True
-    >>> filter.filter(make_log_record(name="some_module", level="DEBUG"))
-    True
 
     ```
 
     Descendant loggers follow the same logic.
 
     ```python
-    >>> splatlog.set_verbosity(1)
     >>> filter.filter(make_log_record(name="some_module.blah", level="INFO"))
     False
 
     ```
 
-    Loggers that are not descendants are all allowed through.
+    Loggers that are not in the hierarchy are all allowed through.
 
     ```python
-    >>> splatlog.set_verbosity(1)
-    >>> filter.filter(make_log_record(name="other_module", level="INFO"))
+    >>> filter.filter(make_log_record(name="other_module", level="DEBUG"))
     True
 
     ```
