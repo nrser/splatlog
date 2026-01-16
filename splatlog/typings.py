@@ -8,6 +8,7 @@ from typing import (
     Any,
     Literal,
     Never,
+    NewType,
     Optional,
     Type,
     TypeAlias,
@@ -112,34 +113,56 @@ This corresponds to the `logging._Level` type used for the argument to
 # Verbosity Types
 # ----------------------------------------------------------------------------
 
-Verbosity: TypeAlias = int
+Verbosity = NewType("Verbosity", int)
 """
 Representation of a common "verbose" flag, where the repetition is stored as
 a count:
 
-(no flag) -> 0
--v        -> 1
--vv       -> 2
--vvv      -> 3
+    (no flag) -> 0
+    -v        -> 1
+    -vv       -> 2
+    -vvv      -> 3
+
+Implemented as a {py:class}`typing.NewType` because using bare {py:class}`int`
+in verbosity/level associations easily loses context. Consider
+
+    {
+        0: "warning",
+        1: "info",
+        2: "debug",
+    }
+
+compared to
+
+    {
+        Verbosity(0): "warning",
+        Verbosity(1): "info",
+        Verbosity(2): "debug",
+    }
+
+The second example makes it much easier to remember what the keys represent. As
+`Verbosity` is an {py:type}`int` at runtime the first form can still be used in
+the REPL, as well as in scripts and programs that forgo type checking.
 """
 
-VerbosityLevel = tuple[Verbosity, Level]
+VerbositySpec: TypeAlias = Mapping[Verbosity, Level]
+"""
+A {py:class}`collections.abc.Mapping` of {py:type}`Verbosity` to
+{py:type}`Level`, indicating the level that takes effect at various verbosities.
 
-VerbosityLevels = Mapping[str, "VerbosityLevelResolver"]
+Given a verbosity `v and spec `S`, the effective level is
 
-VerbosityValue = Union["VerbosityLevelResolver", Sequence[VerbosityLevel]]
+    S[max(k for k in S if k <= v)]
 
-ToVerbosityLevels = Mapping[str, VerbosityValue]
+"""
 
 
 # Spec Types
 # ----------------------------------------------------------------------------
 
-LevelSpec: TypeAlias = Union[
-    LevelValue,
-    "VerbosityLevelResolver",
-    dict[str, Union[LevelValue, "VerbosityLevelResolver"]],
-]
+LevelSpec: TypeAlias = (
+    Level | VerbositySpec | Mapping[str, Level | VerbositySpec]
+)
 
 ToLevelSpec: TypeAlias = (
     Level | VerbosityValue | Mapping[str, Level | VerbosityValue]

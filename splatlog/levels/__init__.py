@@ -9,7 +9,6 @@ from splatlog.typings import (
     LevelSpec,
     LevelValue,
     Verbosity,
-    VerbosityValue,
     assert_level,
     is_level,
     to_level_name,
