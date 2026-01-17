@@ -3,11 +3,10 @@ from typing import Literal
 
 from splatlog.rich import set_default_theme, ToTheme
 from splatlog.typings import (
-    ToLevelSpec,
+    LevelSpec,
     ToConsoleHandler,
     ToExportHandler,
     Verbosity,
-    ToVerbosityLevels,
 )
 from splatlog.levels import set_level, set_verbosity
 from splatlog.named_handlers import set_named_handler
@@ -17,7 +16,7 @@ def setup(
     *,
     console: ToConsoleHandler | Literal[False] | None = None,
     export: ToExportHandler | Literal[False] | None = None,
-    level: ToLevelSpec | None = None,
+    level: LevelSpec | None = None,
     theme: ToTheme | None = None,
     verbosity: Verbosity | None = None,
     **custom_named_handlers: object,

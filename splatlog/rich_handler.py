@@ -10,13 +10,13 @@ from rich.console import Console
 from rich.text import Text
 from rich.traceback import Traceback
 
+from splatlog.levels import Filter
 from splatlog.rich import Rich, ntv_table, to_theme, enrich
 from splatlog.rich import ToRichConsole, ToTheme, to_console
-from splatlog.splat_handler import SplatHandler
-from splatlog.typings import Level, ToVerbosityLevels
+from splatlog.typings import LevelName, LevelSpec
 
 
-class RichHandler(SplatHandler):
+class RichHandler(logging.Handler):
     """A `logging.Handler` extension that uses [rich][] to print pretty nice log
     entries to the console.
 
@@ -27,16 +27,19 @@ class RichHandler(SplatHandler):
 
     def __init__(
         self,
-        level: Level = logging.NOTSET,
+        level: LevelSpec = logging.NOTSET,
         *,
         console: ToRichConsole | None = None,
         theme: ToTheme | None = None,
-        verbosity_levels: ToVerbosityLevels | None = None,
     ):
-        super().__init__(level=level, verbosity_levels=verbosity_levels)
+        super().__init__()
+        Filter.apply(self, level)
 
         self.theme = to_theme(theme)
         self.console = to_console(console, theme=self.theme)
+
+    def get_level_name(self) -> LevelName:
+        return logging.getLevelName(self.level)
 
     def emit(self, record):
         # pylint: disable=broad-except
