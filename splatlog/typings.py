@@ -31,7 +31,6 @@ from splatlog.lib.text import fmt
 from splatlog.rich import ToRichConsole
 
 if TYPE_CHECKING:
-    from splatlog.levels import VerbosityLevelResolver
     from splatlog.json import JSONFormatter, JSONEncoder
 
 # Helpers
@@ -145,6 +144,8 @@ The second example makes it much easier to remember what the keys represent. As
 the REPL, as well as in scripts and programs that forgo type checking.
 """
 
+VERBOSITY_MAX: Verbosity = Verbosity(16)
+
 VerbositySpec: TypeAlias = Mapping[Verbosity, Level]
 """
 A {py:class}`collections.abc.Mapping` of {py:type}`Verbosity` to
@@ -160,14 +161,20 @@ Given a verbosity `v and spec `S`, the effective level is
 # Spec Types
 # ----------------------------------------------------------------------------
 
-LevelSpec: TypeAlias = (
-    Level | VerbositySpec | Mapping[str, Level | VerbositySpec]
-)
+NameMapSpec: TypeAlias = Mapping[str, Level | VerbositySpec]
 
-ToLevelSpec: TypeAlias = (
-    Level | VerbosityValue | Mapping[str, Level | VerbosityValue]
-)
+LevelSpec: TypeAlias = Level | VerbositySpec | NameMapSpec
+"""
+What you can set a logger of handler `level` to in Splatlog.
 
+Really, it's logical combination of the `level` and `filter` functionality of
+{py:class}`logging.Logger` and {py:class}`logging.Handler`, both of which act
+to filter {py:class}`logging.LogRecord` instances.
+
+If the filtering can be accomplished by setting `level` attributes, it will be.
+More sophisticated filtering is achieved by adding a
+{py:class}`splatlog.levels.Filter` instance.
+"""
 
 # Rich Types
 # ----------------------------------------------------------------------------
@@ -358,41 +365,32 @@ def is_verbosity(x: object) -> TypeIs[Verbosity]:
     >>> is_verbosity(-1)
     False
 
-    >>> import sys
-    >>> is_verbosity(sys.maxsize)
+    >>> is_verbosity(VERBOSITY_MAX)
     False
 
-    >>> is_verbosity(sys.maxsize - 1)
+    >>> is_verbosity(VERBOSITY_MAX - 1)
     True
 
     ```
     """
-    return isinstance(x, int) and x >= 0 and x < sys.maxsize
+    return isinstance(x, int) and x >= 0 and x < VERBOSITY_MAX
 
 
-def is_verbosity_level(value: object) -> TypeIs[VerbosityLevel]:
-    return (
-        isinstance(value, tuple)
-        and len(value) == 2
-        and is_verbosity(value[0])
-        and is_level(value[1])
+def is_verbosity_spec(x: object) -> TypeIs[VerbositySpec]:
+    return isinstance(x, Mapping) and all(
+        isinstance(k, int) and is_level(v) for k, v in x.items()
     )
 
 
-def is_verbosity_value(value: Any) -> TypeIs[VerbosityValue]:
-    from splatlog.levels.verbosity_level_resolver import (
-        VerbosityLevelResolver,
+# Spec Tests
+# ----------------------------------------------------------------------------
+
+
+def is_name_map_spec(x: object) -> TypeIs[NameMapSpec]:
+    return isinstance(x, Mapping) and all(
+        isinstance(k, str) and (is_level(v) or is_verbosity_spec(v))
+        for k, v in x.items()
     )
-
-    if isinstance(value, VerbosityLevelResolver):
-        return True
-
-    if isinstance(value, Sequence) and all(
-        is_verbosity_level(vl) for vl in value
-    ):
-        return True
-
-    return False
 
 
 # Rich Tests
@@ -582,88 +580,6 @@ def to_verbosity(x: object) -> Verbosity:
 
 # Spec Conversions
 # ----------------------------------------------------------------------------
-
-
-def to_level_spec(value: ToLevelSpec) -> LevelSpec:
-    """
-    Normalized an input `value` to a `LevelSpec`, which — in a loose sense — is
-    anything you would specify as a level/verbosity-based filter on a logger or
-    handler.
-
-    ## Examples
-
-    Normalizes {py:type}`Level` values to {py:type}`LevelValue` integers, see
-    {py:func}`to_level_value` for details.
-
-    ```python
-
-    >>> import logging
-    >>> to_level_spec("DEBUG")
-    10
-    >>> to_level_spec(logging.DEBUG)
-    10
-    >>> to_level_spec(99)
-    99
-
-    ```
-
-    Normalizes verbosity/level mappings to a
-    {py:class}`splatlog.levels.VerbosityLevelResolver`.
-
-    ```python
-
-    >>> from splatlog.levels import VerbosityLevelResolver
-    >>> isinstance(
-    ...     to_level_spec([(0, "ERROR"), (1, "WARNING"), (3, "INFO")]),
-    ...     VerbosityLevelResolver
-    ... )
-    True
-
-    ```
-
-    A mapping is converted to a dict with normalized values:
-
-    ```python
-
-    >>> to_level_spec({"console": "DEBUG", "export": "INFO"})
-    {'console': 10, 'export': 20}
-
-    ```
-    """
-    from splatlog.levels.verbosity_level_resolver import (
-        VerbosityLevelResolver,
-    )
-
-    # Already a VerbosityLevelResolver
-    if isinstance(value, VerbosityLevelResolver):
-        return value
-
-    # Level as int or str (check before Sequence since str is a Sequence)
-    if isinstance(value, (int, str)):
-        return to_level_value(value)
-
-    # Mapping[str, Level | VerbosityValue]
-    if isinstance(value, Mapping):
-        result: dict[str, LevelValue | VerbosityLevelResolver] = {}
-        for key, val in value.items():
-            if isinstance(val, VerbosityLevelResolver):
-                result[key] = val
-            elif isinstance(val, (int, str)):
-                result[key] = to_level_value(val)
-            elif isinstance(val, Sequence):
-                result[key] = VerbosityLevelResolver(val)
-            else:
-                raise TypeError(
-                    "Expected Level or VerbosityValue for key {}, "
-                    "given {}: {}".format(fmt(key), fmt_type_of(val), fmt(val))
-                )
-        return result
-
-    # Sequence[VerbosityLevel]
-    if isinstance(value, Sequence):
-        return VerbosityLevelResolver(value)
-
-    assert_never(value, ToLevelSpec)
 
 
 # Assertions

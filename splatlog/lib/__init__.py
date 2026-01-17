@@ -149,7 +149,7 @@ def required_arity(fn: Callable) -> int:
 
 
 def has_method(
-    obj: Any, method_name: str, req_arity: Optional[int] = None
+    obj: Any, method_name: str, req_arity: int | None = None
 ) -> bool:
     if not hasattr(obj, method_name):
         return False

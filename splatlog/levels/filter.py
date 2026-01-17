@@ -1,33 +1,33 @@
-"""The `VerbosityLevelsFilter` class."""
+"""
+Advanced filtering functionality, through extension of
+{py:class}`logging.Filter`.
+"""
 
 from __future__ import annotations
 from collections.abc import Mapping
 from itertools import pairwise
 import logging
-from typing import Optional, TypeVar
+from typing import overload
 
 from splatlog import LevelValue
+from splatlog.lib import has_method
 from splatlog.lib.collections.classifier import Classifier
 from splatlog.names import is_in_hierarchy
 from splatlog.typings import (
     Level,
     LevelSpec,
-    Verbosity,
     VerbositySpec,
     is_level,
-    is_level_value,
+    is_verbosity_spec,
     to_level_value,
     to_verbosity,
+    VERBOSITY_MAX,
 )
 
-from .verbosity import VERBOSITY_MAX, get_verbosity
-
-__all__ = ["BaseFilter", "LevelFilter", "VerbosityFilter", "MapFilter"]
-
-TBaseFilter = TypeVar("TBaseFilter", bound="BaseFilter")
+from .verbosity import get_verbosity
 
 
-class BaseFilter(logging.Filter):
+class Filter(logging.Filter):
     """
     A {py:class}`logging.Filter` that applies a
     {py:type}`splatlog.typing.LevelSpec`
@@ -87,29 +87,64 @@ class BaseFilter(logging.Filter):
     1.  `splatlog.verbosity.verbosity_state.get_verbosity`
     """
 
-    @classmethod
-    def get_from(
-        cls: type[TBaseFilter], filterer: logging.Filterer
-    ) -> Optional[TBaseFilter]:
-        for filter in filterer.filters:
-            if isinstance(filter, cls):
-                return filter
+    @overload
+    @staticmethod
+    def make(spec: Level) -> LevelFilter:
+        pass
 
-    @classmethod
-    def set_on(
-        cls,
+    @overload
+    @staticmethod
+    def make(spec: VerbositySpec) -> VerbosityFilter:
+        pass
+
+    @overload
+    @staticmethod
+    def make(spec: Mapping[str, Level | VerbositySpec]) -> NameMapFilter:
+        pass
+
+    @staticmethod
+    def make(spec: LevelSpec):
+        """
+        Factory method to create concrete subclass instances.
+        """
+        if is_level(spec):
+            return LevelFilter(spec)
+        if is_verbosity_spec(spec):
+            return VerbosityFilter(spec)
+        return NameMapFilter(spec)
+
+    @staticmethod
+    def get_from(filterer: logging.Filterer) -> Filter | None:
+        for f in filterer.filters:
+            if isinstance(f, Filter):
+                return f
+        return None
+
+    @staticmethod
+    def apply(
         filterer: logging.Filterer,
         spec: LevelSpec,
     ) -> None:
-        cls.remove_from(filterer)
+        # Remove any prior `Filter`. This assures that later applications will
+        # override prior ones, instead of augmenting them in the case that the
+        # prior was
+        Filter.remove_from(filterer)
 
-        filter = cls(spec)
+        # If the `spec` is a simple `Level` just set it on the `filterer`, if it
+        # has a `setLevel` method. In practical use `filterer` will be a
+        # `logging.Logger` or `logging.Handler`, both which have `setLevel`, but
+        # the method is not included in the `logging.Filterer`
+        # interface, so we can't "know it's there" and have to test.
+        if is_level(spec) and has_method(filterer, "setLevel", 1):
+            level = to_level_value(spec)
+            filterer.setLevel(level)  # type: ignore
+        else:
+            filter = Filter.make(spec)
+            filterer.addFilter(filter)
 
-        filterer.addFilter(filter)
-
-    @classmethod
-    def remove_from(cls, filterer: logging.Filterer):
-        for filter in [f for f in filterer.filters if isinstance(f, cls)]:
+    @staticmethod
+    def remove_from(filterer: logging.Filterer):
+        for filter in [f for f in filterer.filters if isinstance(f, Filter)]:
             filterer.removeFilter(filter)
 
     spec: LevelSpec
@@ -125,7 +160,7 @@ class BaseFilter(logging.Filter):
         return record.levelno >= self.get_effective_level(record)
 
 
-class LevelFilter(BaseFilter):
+class LevelFilter(Filter):
     level: LevelValue
 
     def __init__(self, spec: Level):
@@ -137,7 +172,7 @@ class LevelFilter(BaseFilter):
         return self.level
 
 
-class VerbosityFilter(BaseFilter):
+class VerbosityFilter(Filter):
     classifier: Classifier[int, LevelValue]
 
     def __init__(self, spec: VerbositySpec):
@@ -175,7 +210,7 @@ class VerbosityFilter(BaseFilter):
         )
 
 
-class MapFilter(BaseFilter):
+class NameMapFilter(Filter):
     """
     A {py:class}`logging.Filter` that applies other filters by logger name.
 
@@ -201,7 +236,7 @@ class MapFilter(BaseFilter):
 
     """
 
-    filters: dict[str, BaseFilter]
+    filters: dict[str, Filter]
 
     def __init__(self, spec: Mapping[str, Level | VerbositySpec]):
         super().__init__(spec)

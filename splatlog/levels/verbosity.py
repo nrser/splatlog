@@ -9,9 +9,10 @@ from splatlog.locking import lock
 from splatlog.typings import Verbosity, to_verbosity
 
 
-VERBOSITY_MAX: Verbosity = Verbosity(16)
-
 _verbosity: Verbosity = Verbosity(0)
+"""
+Current {py:type}`splatlog.typing.Verbosity`, defaults to `0`.
+"""
 
 
 def get_verbosity() -> Verbosity:
