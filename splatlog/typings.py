@@ -146,6 +146,10 @@ the REPL, as well as in scripts and programs that forgo type checking.
 
 VERBOSITY_MAX: Verbosity = Verbosity(16)
 
+
+# Spec Types
+# ----------------------------------------------------------------------------
+
 VerbositySpec: TypeAlias = Mapping[Verbosity, Level]
 """
 A {py:class}`collections.abc.Mapping` of {py:type}`Verbosity` to
@@ -156,10 +160,6 @@ Given a verbosity `v and spec `S`, the effective level is
     S[max(k for k in S if k <= v)]
 
 """
-
-
-# Spec Types
-# ----------------------------------------------------------------------------
 
 NameMapSpec: TypeAlias = Mapping[str, Level | VerbositySpec]
 
