@@ -141,6 +141,10 @@ class Filter(logging.Filter):
         else:
             filter = Filter.make(spec)
             filterer.addFilter(filter)
+            # If we can set the `level` of the `filterer` then set it to
+            # `NOTSET`, clearing any previous application of a `Level`
+            if has_method(filterer, "setLevel", 1):
+                filterer.setLevel(logging.NOTSET)  # type: ignore
 
     @staticmethod
     def remove_from(filterer: logging.Filterer):
