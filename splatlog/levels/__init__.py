@@ -2,6 +2,7 @@ import logging
 
 from splatlog.locking import lock
 from splatlog.typings import (
+    Level,
     LevelName,
     LevelSpec,
     LevelValue,
@@ -10,6 +11,7 @@ from splatlog.typings import (
     is_verbosity_spec,
     to_level_name,
     assert_never,
+    to_level_value,
 )
 
 # Submodule Exports
@@ -19,6 +21,7 @@ from splatlog.typings import (
 # attributed to the `splatlog.levels` package.
 
 from .filter import (
+    fmt_level,
     Filter,
     LevelFilter,
     VerbosityFilter,
@@ -26,6 +29,7 @@ from .filter import (
 )
 from .verbosity import get_verbosity, set_verbosity
 
+fmt_level.__module__ = __name__
 Filter.__module__ = __name__
 LevelFilter.__module__ = __name__
 VerbosityFilter.__module__ = __name__
@@ -34,6 +38,7 @@ get_verbosity.__module__ = __name__
 set_verbosity.__module__ = __name__
 
 __all__ = [
+    "fmt_level",
     "Filter",
     "LevelFilter",
     "VerbosityFilter",

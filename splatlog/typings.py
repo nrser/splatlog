@@ -144,6 +144,12 @@ The second example makes it much easier to remember what the keys represent. As
 the REPL, as well as in scripts and programs that forgo type checking.
 """
 
+ToVerbosity: TypeAlias = int | str
+"""
+What can be converted into a {py:type}`Verbosity`, in the sense of the
+`verbosity` argument to {py:func}`splatlog.setup`
+"""
+
 VERBOSITY_MAX: Verbosity = Verbosity(16)
 
 
@@ -353,7 +359,7 @@ def is_verbosity(x: object) -> TypeIs[Verbosity]:
     """
     Test if a value is a _verbosity_.
 
-    ##### Examples #####
+    ## Examples
 
     ```python
     >>> is_verbosity(0)
@@ -552,7 +558,7 @@ def to_verbosity(x: object) -> Verbosity:
     """
     Cast a value to a _verbosity_, raising `TypeError` if unsuccessful.
 
-    ##### Examples #####
+    ## Examples
 
     ```python
     >>> to_verbosity(0)
@@ -564,17 +570,20 @@ def to_verbosity(x: object) -> Verbosity:
     >>> to_verbosity(-1)
     Traceback (most recent call last):
         ...
-    TypeError: Expected verbosity to be non-negative integer less than `sys.maxsize`, given int: -1
+    TypeError: Expected verbosity to be non-negative integer less than 16, given int: -1
 
     ```
     """
+    if isinstance(x, str):
+        x = int(x)
+
     if is_verbosity(x):
         return x
+
     raise TypeError(
-        (
-            "Expected verbosity to be non-negative integer less than "
-            "`sys.maxsize`, given {}: {}"
-        ).format(fmt(type(x)), fmt(x))
+        "Expected verbosity to be non-negative integer less than {}, given {}: {}".format(
+            fmt(VERBOSITY_MAX), fmt(type(x)), fmt(x)
+        )
     )
 
 

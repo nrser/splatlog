@@ -6,7 +6,7 @@ from splatlog.typings import (
     LevelSpec,
     ToConsoleHandler,
     ToExportHandler,
-    Verbosity,
+    ToVerbosity,
 )
 from splatlog.levels import set_level, set_verbosity
 from splatlog.named_handlers import set_named_handler
@@ -18,7 +18,7 @@ def setup(
     export: ToExportHandler | Literal[False] | None = None,
     level: LevelSpec | None = None,
     theme: ToTheme | None = None,
-    verbosity: Verbosity | None = None,
+    verbosity: ToVerbosity | None = None,
     **custom_named_handlers: object,
 ) -> None:
     """Setup splatlog, enabling log output. Contemporary to

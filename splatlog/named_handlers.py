@@ -73,7 +73,7 @@ def named_handler(
     """
     Create a decorator that registers the decorated function as a named handler
     cast function, allowing `name` to be used like the `console` and `export`
-    arguments to {py:func}`splatlog.setup.setup`.
+    arguments to {py:func}`splatlog.setup`.
 
     ## Parameters
 

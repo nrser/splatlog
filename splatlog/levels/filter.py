@@ -19,12 +19,18 @@ from splatlog.typings import (
     VerbositySpec,
     is_level,
     is_verbosity_spec,
+    to_level_name,
     to_level_value,
     to_verbosity,
     VERBOSITY_MAX,
 )
 
 from .verbosity import get_verbosity
+
+
+def fmt_level(level: Level) -> str:
+    level = to_level_value(level)
+    return f"{level!r} ({to_level_name(level)})"
 
 
 class Filter(logging.Filter):
@@ -201,7 +207,8 @@ class VerbosityFilter(Filter):
             {range(v_1, v_2): l_1 for (v_1, l_1), (v_2, _) in pairwise(pairs)}
         )
 
-    def get_effective_level(self, record: logging.LogRecord) -> LevelValue:
+    @property
+    def effective_level(self) -> LevelValue:
         """
         Get the effective logging level. Returns the
         {py:type}`splatlog.typings.LevelValue` that this instances associates
@@ -212,6 +219,12 @@ class VerbosityFilter(Filter):
             int(get_verbosity()),
             logging.NOTSET,
         )
+
+    def get_effective_level(self, record: logging.LogRecord) -> LevelValue:
+        return self.effective_level
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} {fmt_level(self.effective_level)}>"
 
 
 class NameMapFilter(Filter):

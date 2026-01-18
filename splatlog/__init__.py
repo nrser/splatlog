@@ -1,22 +1,8 @@
-"""Root of the `splatlog` package.
-
-Imports pretty much everything else, so you should only really need to import
-this.
+"""
+Root of the `splatlog` package, defining the general-use API. That is to say
+that `import splatlog` should give you everything you need in nearly all cases.
 """
 
-# NOTE  Package-level re-exports. In addition to being terrible pedantic and
-#       annoying, this serves two purposes:
-#
-#       1.  Makes indirect references in the documentation generator work. This
-#           _might_ be avoidable with enough effort put into the resolver, but
-#           for the moment it is what it is.
-#
-#       2.  Makes PyLance happy (VSCode Python type checker). It doesn't like
-#           import splats
-#
-#               Wildcard import from a library not allowed
-#               Pylance(reportWildcardImportFromLibrary)
-#
 from splatlog.typings import (
     LevelValue as LevelValue,
     LevelName as LevelName,
@@ -94,3 +80,13 @@ from splatlog.named_handlers import (
 from splatlog.setup import (
     setup as setup,
 )
+
+
+setup.__module__ = __name__
+
+V = Verbosity
+
+__all__ = [
+    "setup",
+    "V",
+]

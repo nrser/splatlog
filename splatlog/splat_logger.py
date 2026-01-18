@@ -12,10 +12,10 @@ from collections.abc import Generator
 from types import GenericAlias, MappingProxyType
 from typing import Callable, Optional, Type
 
-from splatlog.levels import to_level_value
+from splatlog.levels import fmt_level
 from splatlog.lib.collections import partition_mapping
 from splatlog.lib.text import fmt
-from splatlog.typings import Level, LevelValue
+from splatlog.typings import KwdMapping, Level, LevelValue, to_level_value
 
 #: Unique sentinel object used by `LoggerProperty` to tell when a default
 #: was returned.
@@ -371,6 +371,34 @@ class SplatLogger(logging.LoggerAdapter):
                 return fn(*args, log=self.getChild(fn.__name__), **kwds)
 
         return log_inject_wrapper
+
+    def inspect(self) -> KwdMapping:
+        logger = self.logger
+        kw = {}
+        kw["name"] = logger.name
+        kw["level"] = fmt_level(logger.level)
+
+        if logger.handlers:
+            handlers = []
+            for handler in logger.handlers:
+                h = {}
+                h["level"] = fmt_level(handler.level)
+
+                if handler.filters:
+                    filters = []
+                    for filter in handler.filters:
+                        filters.append(repr(filter))
+                    h["filters"] = filters
+
+                handlers.append(h)
+
+        if logger.filters:
+            filters = []
+            for filter in logger.filters:
+                filters.append(repr(filter))
+            kw["filters"] = filters
+
+        return kw
 
 
 class ClassLogger(SplatLogger):

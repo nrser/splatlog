@@ -6,7 +6,7 @@ hence global to the process.
 from __future__ import annotations
 
 from splatlog.locking import lock
-from splatlog.typings import Verbosity, to_verbosity
+from splatlog.typings import ToVerbosity, Verbosity, to_verbosity
 
 
 _verbosity: Verbosity = Verbosity(0)
@@ -32,7 +32,7 @@ def get_verbosity() -> Verbosity:
     return _verbosity
 
 
-def set_verbosity(verbosity: Verbosity) -> None:
+def set_verbosity(verbosity: ToVerbosity) -> None:
     """
     Set the _verbosity_, which is used by {py:class}`splatlog.levels.Filter`.
     """
