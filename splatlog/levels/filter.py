@@ -29,6 +29,9 @@ from .verbosity import get_verbosity
 
 
 def fmt_level(level: Level) -> str:
+    """
+    Format a logging level, displaying both the integer value and name.
+    """
     level = to_level_value(level)
     return f"{level!r} ({to_level_name(level)})"
 

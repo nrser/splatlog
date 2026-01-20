@@ -12,6 +12,8 @@ from collections.abc import Generator
 from types import GenericAlias, MappingProxyType
 from typing import Callable, Optional, Type
 
+import rich.repr
+
 from splatlog.levels import fmt_level
 from splatlog.lib.collections import partition_mapping
 from splatlog.lib.text import fmt
@@ -373,10 +375,13 @@ class SplatLogger(logging.LoggerAdapter):
         return log_inject_wrapper
 
     def inspect(self) -> KwdMapping:
+        """
+        Produce a key/value mapping of useful information about the logger,
+        including any attached {py:class}`logging.Handler` and
+        {py:class}`logging.Filter` instances.
+        """
         logger = self.logger
-        kw = {}
-        kw["name"] = logger.name
-        kw["level"] = fmt_level(logger.level)
+        kw = {"name": logger.name, "level": fmt_level(logger.level)}
 
         if logger.handlers:
             handlers = []
@@ -391,6 +396,7 @@ class SplatLogger(logging.LoggerAdapter):
                     h["filters"] = filters
 
                 handlers.append(h)
+            kw["handlers"] = handlers
 
         if logger.filters:
             filters = []
@@ -399,6 +405,20 @@ class SplatLogger(logging.LoggerAdapter):
             kw["filters"] = filters
 
         return kw
+
+    def __rich_repr__(self) -> rich.repr.Result:
+        """
+        Custom rich representation, consisting of the logger name, level, and
+        lists of attached handlers and filters.
+        """
+        yield self.logger.name
+        yield "level", fmt_level(self.logger.level)
+
+        if handlers := self.logger.handlers:
+            yield "handlers", handlers
+
+        if filters := self.logger.filters:
+            yield "filters", filters
 
 
 class ClassLogger(SplatLogger):
