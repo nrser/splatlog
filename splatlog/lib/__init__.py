@@ -11,6 +11,7 @@ from .collections import (
 )
 from .text import (
     is_typing as is_typing,
+    str_find_all as str_find_all,
     Formatter as Formatter,
     FmtOpts as FmtOpts,
     DEFAULT_FMT_OPTS as DEFAULT_FMT_OPTS,

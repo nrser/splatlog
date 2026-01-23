@@ -30,15 +30,22 @@ TYPING_MODULE = typing.__name__
 LAMBDA_NAME = (lambda x: x).__name__
 
 
+FmtOptsSelf = TypeVar("FmtOptsSelf", bound="FmtOpts")
+TFallback = TypeVar("TFallback")
+TFallbackCon = TypeVar("TFallbackCon", covariant=True)
+
+
 def is_typing(x: Any) -> bool:
     return bool(
         get_origin(x) or get_args(x) or type(x).__module__ == TYPING_MODULE
     )
 
 
-FmtOptsSelf = TypeVar("FmtOptsSelf", bound="FmtOpts")
-TFallback = TypeVar("TFallback")
-TFallbackCon = TypeVar("TFallbackCon", covariant=True)
+def str_find_all(s: str, char: str) -> abc.Iterable[int]:
+    i = s.find(char)
+    while i != -1:
+        yield i
+        i = s.find(char, i + 1)
 
 
 class Formatter(Protocol):

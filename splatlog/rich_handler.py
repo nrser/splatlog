@@ -11,6 +11,7 @@ from rich.text import Text
 from rich.traceback import Traceback
 
 from splatlog.levels import Filter
+from splatlog.lib import str_find_all
 from splatlog.rich import Rich, ntv_table, to_theme, enrich
 from splatlog.rich import ToRichConsole, ToTheme, to_console
 from splatlog.typings import LevelName, LevelSpec
@@ -78,17 +79,30 @@ class RichHandler(logging.Handler):
 
         return Text.from_markup(msg)
 
-    def _get_name_cell(self, record):
+    def _get_name_cell(self, record: logging.LogRecord):
         text = Text()
 
-        text.append(record.name, style="log.name")
+        # Add the logger name
+        text.append(record.name)
 
-        if class_name := getattr(record, "class_name", None):
-            text.append(".", style="log.name")
-            text.append(class_name, style="log.class")
+        start = 0
+        for i in str_find_all(record.name, "."):
+            text.stylize("log.name", start, i)
+            start = i + 1
+            text.stylize("log.name.sep", i, start)
+
+        # If we have a `class_name: str` attribute, and it's the terminal
+        # segment of the `LogRecord.name`, then style it differently
+        match getattr(record, "class_name", None):
+            case str(class_name):
+                if record.name[start:] == class_name:
+                    # Style the last segment
+                    text.stylize("log.class", start)
+            case _:
+                text.stylize("log.name", start)
 
         if (func_name := record.funcName) and func_name != "<module>":
-            text.append(".", style="log.name")
+            text.append(".", style="log.name.sep")
             text.append(func_name, style="log.funcName")
 
         # Linking, only works on local vscode instance

@@ -79,7 +79,7 @@ def get_logger_for(obj: object) -> SplatLogger:
         user will store a reference on the class for repeated use (see
         `LoggerProperty`).
 
-    ##### Examples #####
+    ## Examples
 
     First, we'll create a "module logger" in the usual way.
 
@@ -124,7 +124,7 @@ def get_logger_for(obj: object) -> SplatLogger:
     >>> isinstance(class_logger, SelfLogger)
     False
     >>> class_logger.name
-    'splatlog.splat_logger'
+    'splatlog.splat_logger.MyClass'
     >>> class_logger.class_name
     'MyClass'
 
@@ -133,7 +133,7 @@ def get_logger_for(obj: object) -> SplatLogger:
     >>> isinstance(instance_logger, SelfLogger)
     True
     >>> instance_logger.name
-    'splatlog.splat_logger'
+    'splatlog.splat_logger.MyClass'
     >>> instance_logger.class_name
     'MyClass'
     >>> instance_logger.get_identity()
@@ -159,7 +159,7 @@ class LoggerProperty:
     The `ClassLogger` is cached in an attribute on the class' `__dict__` and
     each `SelfLogger` is cached in an attribute on said instance.
 
-    ##### Examples #####
+    ## Examples
 
     A "standard" class.
 
@@ -423,16 +423,38 @@ class SplatLogger(logging.LoggerAdapter):
 
 class ClassLogger(SplatLogger):
     """
-    `ClassLogger` is an extension of `SplatLogger` (and hence a
-    `logging.LoggerAdapter`) that adapts the `logging.Logger` for the module the
-    class is defined in and adds the qualified name of the class to
-    `logging.LogRecord` that it processes as a `class_name` attribute.
+    {py:class}`ClassLogger` is an extension of {py:class}`SplatLogger` (and
+    hence a {py:class}`logging.LoggerAdapter`) that over the
+    {py:class}`logging.Logger` for
+    the fully-qualified class name (`{__module__}.{__qualname__}`).
+
+    Adds the qualified name of the class to `logging.LogRecord` that it
+    processes as a `class_name` attribute.
+
+    ## Examples
+
+    Use through the {py:class}`LoggerProperty`:
+
+    ```python
+    >>> class SomeClass:
+    ...     _log = LoggerProperty()
+    ...
+    ...     @classmethod
+    ...     def do_something(cls):
+    ...         cls._log.info("doing something!")
+
+    >>> isinstance(SomeClass._log, ClassLogger)
+    True
+
+    ```
     """
 
     _class_name: str
 
     def __init__(self, cls: type[object]):
-        super().__init__(logging.getLogger(cls.__module__))
+        super().__init__(
+            logging.getLogger(f"{cls.__module__}.{cls.__qualname__}")
+        )
         self._class_name = cls.__qualname__
 
     @property

@@ -7,17 +7,16 @@ Helpers for working with [rich][]
 from __future__ import annotations
 from typing import Any
 
-from rich.theme import Theme
-from rich.color import Color, ColorType
-from rich.style import Style
 
 # Re-exports
 from .theme import (
     ToTheme as ToTheme,
     THEME as THEME,
+    ANSI_PALETTE_DARK as ANSI_PALETTE_DARK,
     to_theme as to_theme,
     get_default_theme as get_default_theme,
     set_default_theme as set_default_theme,
+    override_ansi_colors as override_ansi_colors,
 )
 from .typings import Rich as Rich, is_rich as is_rich
 from .enriched_type import EnrichedType as EnrichedType
@@ -37,6 +36,28 @@ from .console import (
     to_console as to_console,
 )
 
+# .theme
+ToTheme.__module__ = __name__
+THEME.__module__ = __name__
+to_theme.__module__ = __name__
+get_default_theme.__module__ = __name__
+set_default_theme.__module__ = __name__
+override_ansi_colors.__module__ = __name__
+
+
+__all__ = [
+    # .theme
+    "ToTheme",
+    "THEME",
+    "ANSI_PALETTE_DARK",
+    "to_theme",
+    "get_default_theme",
+    "set_default_theme",
+    "override_ansi_colors",
+    # .
+    "capture_riches",
+]
+
 
 def capture_riches(
     *objects: Any, console: ToRichConsole | None = None, **print_kwds
@@ -48,54 +69,3 @@ def capture_riches(
     with console.capture() as capture:
         console.print(*objects, **print_kwds)
     return capture.get()
-
-
-def override_ansi_colors(theme=THEME, **name_color_map: str | Color) -> Theme:
-    """Copy `theme`, overriding styles using ANSI colors named in
-    `name_color_map` with their corresponding values.
-
-    Used to fix display of ANSI named colors in situations where it's difficult
-    to adjust the "terminal" color values (Jupyter notebooks in VSCode
-    extension) but True Color (24-bit color) rendering is available.
-
-    ## Parameters
-
-    -   `theme`: theme to apply overrides to, defaults to the splatlog theme.
-    -   `name_color_map`: mapping of ANSI color names (`"blue"`, `"red"`, etc.)
-        to replacement. The replacement is used as the `color` argument to
-        {py:class}`rich.style.Style`. Typically a hex string like `"#439af4"`.
-
-    ## Example
-
-    ```python
-    from rich.console import Console
-
-    console = Console(
-        theme=override_ansi_colors(blue="#509dea", bright_blue="#439af4")
-    )
-    ```
-    """
-
-    styles: dict[str, Style] = {}
-    for name, style in theme.styles.items():
-        if (
-            isinstance(style, Style)
-            and style.color
-            and style.color.type is ColorType.STANDARD
-            and style.color.name in name_color_map
-        ):
-            styles[name] = Style.chain(
-                style, Style(color=name_color_map[style.color.name])
-            )
-        else:
-            styles[name] = style
-
-    # For each override, make sure there is a style with that name. The `rich`
-    # base styles only include _some_ of the ANSI colors, but if you override
-    # `blue` you want to make sure that's used for `[blue]` and not the terminal
-    # color
-    for name, color in name_color_map.items():
-        if name not in styles:
-            styles[name] = Style(color=color)
-
-    return Theme(styles)
