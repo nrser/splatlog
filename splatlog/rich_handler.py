@@ -5,6 +5,7 @@ from collections.abc import Sequence
 from typing import Any, Mapping
 import logging
 
+from rich.style import Style
 from rich.table import Table
 from rich.console import Console
 from rich.text import Text
@@ -14,17 +15,44 @@ from splatlog.levels import Filter
 from splatlog.lib import str_find_all
 from splatlog.rich import Rich, ntv_table, to_theme, enrich
 from splatlog.rich import ToRichConsole, ToTheme, to_console
+from splatlog.rich.link import RichLinker, vscode_linker
 from splatlog.typings import LevelName, LevelSpec
+
+LABEL_LOC: Text = Text("loc", style="log.label")
+LABEL_SELF: Text = Text("self", style="log.label")
+LABEL_MSG: Text = Text("msg", style="log.label")
+LABEL_DATA: Text = Text("data", style="log.label")
+LABEL_ERR: Text = Text("err", style="log.label")
 
 
 class RichHandler(logging.Handler):
-    """A `logging.Handler` extension that uses [rich][] to print pretty nice log
-    entries to the console.
+    """
+    A {py:class}`logging.Handler` extension that uses {py:mod}`rich` to print
+    tabulated, colored log records to the console.
 
     Output is meant for specifically humans.
     """
 
     console: Console
+    """
+    Where this handler will print {py:class}`logging.LogRecord`.
+    """
+
+    show_path: bool
+    """
+    Include the source location from {py:class}`logging.LogRecord` in
+    `"{pathname}:{lineno}"` format.
+    """
+
+    link_path: bool
+    """
+    Link the source location. Experimental, at best.
+    """
+
+    linker: RichLinker
+
+    # Construction
+    # ========================================================================
 
     def __init__(
         self,
@@ -32,36 +60,169 @@ class RichHandler(logging.Handler):
         *,
         console: ToRichConsole | None = None,
         theme: ToTheme | None = None,
+        show_path: bool = False,
+        link_path: bool = False,
+        linker: RichLinker = vscode_linker,
     ):
         super().__init__()
         Filter.apply(self, level)
 
         self.theme = to_theme(theme)
         self.console = to_console(console, theme=self.theme)
+        self.show_path = show_path
+        self.link_path = link_path
+        self.linker = linker
 
-    def get_level_name(self) -> LevelName:
-        return logging.getLevelName(self.level)
+    # `logging.Handler` Overrides
+    # ========================================================================
 
-    def emit(self, record):
-        # pylint: disable=broad-except
+    def emit(self, record: logging.LogRecord) -> None:
+        """
+        Implementation of {py:meth}`logging.Handler.emit` that calls
+        {py:meth}`RichHandler.render_record` to render the
+        {py:class}`logging.LogRecord` and print it in the
+        {py:attr}`RichHandler.console`.
+
+        This is where {py:class}`RichHandler` hooks into the {py:mod}`logging`
+        system.
+
+        ```{warning}
+
+        This method is called after the {py:mod}`logging` system has acquired a
+        handler-level lock, which is released after this method returns.
+
+        In general we do not want to make any calls in {py:mod}`logging` that
+        could acquire the module-level lock (configuration, etc.), because a
+        concurrent thread could then try to acquire the locks in reverse order,
+        resulting in **deadlock**.
+
+        See {py:meth}`logging.Handler.emit` for details.
+
+        ```
+        """
         try:
-            self._emit_table(record)
+            self.console.print(self.render_record(record))
         except (RecursionError, KeyboardInterrupt, SystemExit):
             # RecursionError from cPython, they cite issue 36272; the other ones
             # we want to bubble up in interactive shells
             raise
         except Exception:
             # Just use the damn built-in one, it shouldn't happen much really
-            #
-            # NOTE  I _used_ to have this, and I replaced it with a
-            #       `Console.print_exception()` call... probably because it
-            #       sucked... but after looking at `logging.Handler.handleError`
-            #       I realize it's more complicated to do correctly. Maybe it
-            #       will end up being worth the effort and I'll come back to it.
-            #
             self.handleError(record)
 
-    def _get_rich_msg(self, record: logging.LogRecord) -> str | Rich:
+    # Helper Methods
+    # ========================================================================
+
+    def render_record(self, record: logging.LogRecord) -> Table:
+        """
+        The core logic — renders a {py:class}`logging.LogRecord` as a
+        {py:class}`rich.table.Table`.
+
+        ## See Also
+
+        -   [rich._log_render.LogRender](https://github.com/willmcgugan/rich/blob/25a1bf06b4854bd8d9239f8ba05678d2c60a62ad/rich/_log_render.py#L26)
+        """
+
+        output = Table.grid(padding=(0, 1))
+        output.expand = True
+
+        # Left column -- log level, time
+        output.add_column(width=8)
+
+        # Main column -- log name, message, args
+        output.add_column(ratio=1, overflow="fold")
+
+        # Row -- level name, logger name
+        output.add_row(
+            Text(
+                record.levelname,
+                style=f"logging.level.{record.levelname.lower()}",
+            ),
+            self.render_record_name(record),
+        )
+
+        # Row (optional) -- "loc", source location
+        if self.show_path:
+            style = ""
+            if self.link_path:
+                style = Style(link=self.linker(record.pathname, record.lineno))
+
+            path_txt = Text(f"{record.pathname}:{record.lineno}", style=style)
+
+            output.add_row(LABEL_LOC, path_txt)
+
+        # Row (data-dependent) -- "self", self field from `SelfLogger`
+        if src := getattr(record, "self", None):
+            output.add_row(
+                LABEL_SELF,
+                ntv_table(src) if isinstance(src, Mapping) else enrich(src),
+            )
+
+        # Row -- "msg", message
+        output.add_row(LABEL_MSG, self.render_record_msg(record))
+
+        # Row (data-dependent) -- "data", data table
+        if data := getattr(record, "data", None):
+            output.add_row(LABEL_DATA, ntv_table(data))
+
+        # Row (data-dependent) -- "err", exception info (traceback)
+        match record.exc_info:
+            # Filter out the empty possibilities
+            case None | (None, None, None):
+                pass
+            # Match the case we want and add a row for it
+            case (typ, exc, tb):
+                output.add_row(
+                    LABEL_ERR, Traceback.from_exception(typ, exc, tb)
+                )
+
+        return output
+
+    def render_record_name(self, record: logging.LogRecord) -> Text:
+        """
+        Render the `name` attribute of a `logging.LogRecord.name`, appending the
+        `funcName` attribute if present, as a styled {py:class}`rich.text.Text`.
+        """
+        text = Text()
+
+        # Add the logger name
+        text.append(record.name)
+
+        # Style the alternating name, separator spans, up to the last separator
+        name_start = 0
+        for sep_start in str_find_all(record.name, "."):
+            text.stylize("log.name", name_start, sep_start)
+            name_start = sep_start + 1
+            text.stylize("log.name.sep", sep_start, name_start)
+
+        # If we have a `class_name: str` attribute, and it's the terminal
+        # segment of the `LogRecord.name`, then style it differently
+        match getattr(record, "class_name", None):
+            case str(class_name):
+                if record.name[name_start:] == class_name:
+                    # Style the last segment
+                    text.stylize("log.class", name_start)
+            case _:
+                text.stylize("log.name", name_start)
+
+        # Add on a separator and the function name, if present
+        if (func_name := record.funcName) and func_name != "<module>":
+            text.append(".", style="log.name.sep")
+            text.append(func_name, style="log.funcName")
+
+        # Linking, only works on local vscode instance
+        #
+        if self.link_path:
+            text.append(" ")
+            text.append(
+                "📂",
+                style=Style(link=self.linker(record.pathname, record.lineno)),
+            )
+
+        return text
+
+    def render_record_msg(self, record: logging.LogRecord) -> str | Rich:
+        """ """
         if not getattr(record, "_splatlog_", None):
             return record.getMessage()
 
@@ -78,87 +239,3 @@ class RichHandler(logging.Handler):
         msg = msg.format(*args, **kwds)
 
         return Text.from_markup(msg)
-
-    def _get_name_cell(self, record: logging.LogRecord):
-        text = Text()
-
-        # Add the logger name
-        text.append(record.name)
-
-        start = 0
-        for i in str_find_all(record.name, "."):
-            text.stylize("log.name", start, i)
-            start = i + 1
-            text.stylize("log.name.sep", i, start)
-
-        # If we have a `class_name: str` attribute, and it's the terminal
-        # segment of the `LogRecord.name`, then style it differently
-        match getattr(record, "class_name", None):
-            case str(class_name):
-                if record.name[start:] == class_name:
-                    # Style the last segment
-                    text.stylize("log.class", start)
-            case _:
-                text.stylize("log.name", start)
-
-        if (func_name := record.funcName) and func_name != "<module>":
-            text.append(".", style="log.name.sep")
-            text.append(func_name, style="log.funcName")
-
-        # Linking, only works on local vscode instance
-        #
-        # text.append(" ")
-        # text.append(
-        #     "📂",
-        #     style=Style(
-        #         link=f"vscode://file/{record.pathname}:{record.lineno}"
-        #     ),
-        # )
-
-        return text
-
-    def _emit_table(self, record):
-        # SEE   https://github.com/willmcgugan/rich/blob/25a1bf06b4854bd8d9239f8ba05678d2c60a62ad/rich/_log_render.py#L26
-
-        output = Table.grid(padding=(0, 1))
-        output.expand = True
-
-        # Left column -- log level, time
-        output.add_column(width=8)
-
-        # Main column -- log name, message, args
-        output.add_column(ratio=1, overflow="fold")
-
-        output.add_row(
-            Text(
-                record.levelname,
-                style=f"logging.level.{record.levelname.lower()}",
-            ),
-            self._get_name_cell(record),
-        )
-
-        # output.add_row(
-        #     Text("loc", style="log.label"), f"{record.pathname}:{record.lineno}"
-        # )
-
-        if src := getattr(record, "self", None):
-            output.add_row(
-                Text("self", style="log.label"),
-                ntv_table(src) if isinstance(src, Mapping) else enrich(src),
-            )
-
-        output.add_row(
-            Text("msg", style="log.label"),
-            self._get_rich_msg(record),
-        )
-
-        if data := getattr(record, "data", None):
-            output.add_row(Text("data", style="log.label"), ntv_table(data))
-
-        if record.exc_info:
-            output.add_row(
-                Text("err", style="log.label"),
-                Traceback.from_exception(*record.exc_info),
-            )
-
-        self.console.print(output)

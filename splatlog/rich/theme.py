@@ -32,7 +32,7 @@ THEME = Theme(
         "log.name.sep": Style(color="bright_black"),
         "log.class": Style(color="yellow", dim=True),
         "log.funcName": Style(color="cyan", dim=True),
-        "log.label": Style(color="white", dim=True),
+        "log.label": Style(color="bright_black"),
         "log.data.name": Style(color="blue", italic=True),
         "log.data.type": Style(color="#4ec9b0", italic=True),
     }

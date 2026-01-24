@@ -2,7 +2,6 @@ import logging
 
 from splatlog.locking import lock
 from splatlog.typings import (
-    Level,
     LevelName,
     LevelSpec,
     LevelValue,
@@ -11,7 +10,6 @@ from splatlog.typings import (
     is_verbosity_spec,
     to_level_name,
     assert_never,
-    to_level_value,
 )
 
 # Submodule Exports
