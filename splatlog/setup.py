@@ -48,7 +48,7 @@ def setup(
         {py:data}`sys.stderr` streams).
 
         Focused on providing feedback during development. Defaults to using
-        {py:class}`splatlog.rich_handler.RichHandler` for colored, tabular
+        {py:class}`splatlog.RichHandler` for colored, tabular
         output.
 
         Accepts the following:
@@ -66,12 +66,12 @@ def setup(
             implementation.
 
         4.  Everything else is used to construct a
-            {py:class}`splatlog.rich_handler.RichHandler`. Full details in
+            {py:class}`splatlog.RichHandler`. Full details in
             {py:func}`splatlog.named_handlers.to_console_handler`, but in brief:
 
             -   {py:data}`True` — all defaults, logs to {py:data}`sys.stderr`.
             -   {py:class}`collections.abc.Mapping` — keyword arguments for the
-                {py:class}`splatlog.rich_handler.RichHandler` constructor.
+                {py:class}`splatlog.RichHandler` constructor.
             -   {py:type}`splatlog.typings.Level` — specify log level.
             -   {py:type}`splatlog.typings.StdioName`, {py:class}`typing.IO`, or
                 {py:class}`rich.console.Console` — where to write output.

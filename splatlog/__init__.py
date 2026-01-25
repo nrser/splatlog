@@ -83,10 +83,12 @@ from splatlog.setup import (
 
 
 setup.__module__ = __name__
+RichHandler.__module__ = __name__
 
 V = Verbosity
 
 __all__ = [
     "setup",
     "V",
+    "RichHandler",
 ]

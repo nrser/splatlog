@@ -115,12 +115,7 @@ This corresponds to the `logging._Level` type used for the argument to
 Verbosity = NewType("Verbosity", int)
 """
 Representation of a common "verbose" flag, where the repetition is stored as
-a count:
-
-    (no flag) -> 0
-    -v        -> 1
-    -vv       -> 2
-    -vvv      -> 3
+a count — no flag is `0`, `-v` is `1`, `-vv` is `2`, etc.
 
 Implemented as a {py:class}`typing.NewType` because using bare {py:class}`int`
 in verbosity/level associations easily loses context. Consider
@@ -210,7 +205,7 @@ ToConsoleHandler = (
 )
 """
 What can be converted to a `console` named handler, mainly via constructing a
-{py:class}`splatlog.rich_handler.RichHandler`.
+{py:class}`splatlog.RichHandler`.
 
 See {py:func}`splatlog.named_handlers.to_console_handler` for details.
 """
@@ -542,8 +537,7 @@ def to_level_value(level: Level) -> LevelValue:
 
         raise TypeError(
             (
-                "Neither given value {} or upper-case version {} are valid "
-                "level names"
+                "Neither given value {} or upper-case version {} are valid level names"
             ).format(fmt(level), fmt(upper_level))
         )
 

@@ -16,7 +16,7 @@ from splatlog.lib import str_find_all
 from splatlog.rich import Rich, ntv_table, to_theme, enrich
 from splatlog.rich import ToRichConsole, ToTheme, to_console
 from splatlog.rich.link import RichLinker, vscode_linker
-from splatlog.typings import LevelName, LevelSpec
+from splatlog.typings import LevelSpec
 
 LABEL_LOC: Text = Text("loc", style="log.label")
 LABEL_SELF: Text = Text("self", style="log.label")
