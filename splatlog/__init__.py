@@ -80,6 +80,11 @@ from splatlog.named_handlers import (
 from splatlog.setup import (
     setup as setup,
 )
+from splatlog.report import (
+    LoggingReport as LoggingReport,
+    LoggerFilter as LoggerFilter,
+    report as report,
+)
 
 
 setup.__module__ = __name__
