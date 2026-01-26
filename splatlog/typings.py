@@ -10,6 +10,7 @@ from typing import (
     Never,
     NewType,
     Optional,
+    Protocol,
     Type,
     TypeAlias,
     Union,
@@ -69,6 +70,33 @@ def assert_never(arg: Never, typ: Any) -> Never:
 
 # Types
 # ============================================================================
+
+# Stdlib Types
+# ----------------------------------------------------------------------------
+#
+# Adapted from Pyright types in order to conform to the stdlib
+
+
+class SupportsFilter(Protocol):
+    """
+    Type for objects that can filter, in the sense of
+    {py:class}`logging.Filter`.
+    """
+
+    def filter(
+        self, record: logging.LogRecord, /
+    ) -> bool | logging.LogRecord: ...
+
+
+FilterType: TypeAlias = (
+    logging.Filter
+    | Callable[[logging.LogRecord], bool | logging.LogRecord]
+    | SupportsFilter
+)
+"""
+The type of items in the `filters` list of {py:class}`logging.Filterer`.
+"""
+
 
 # Level Types
 # ----------------------------------------------------------------------------

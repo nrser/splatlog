@@ -6,10 +6,10 @@ Provides a rich-formatted view of all loggers, handlers, and filters.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 import dataclasses as dc
 import logging
 from enum import Enum
-from typing import TYPE_CHECKING
 
 from rich.console import Console, ConsoleOptions, RenderResult
 from rich.text import Text
@@ -17,9 +17,7 @@ from rich.tree import Tree
 
 from splatlog.rich.console import to_console, ToRichConsole
 from splatlog.rich.theme import to_theme
-
-if TYPE_CHECKING:
-    from splatlog.splat_logger import SplatLogger
+from splatlog.typings import FilterType
 
 
 class LoggerFilter(Enum):
@@ -120,7 +118,7 @@ def _format_handler_label(handler: logging.Handler, console: Console) -> Text:
     return label
 
 
-def _format_filter_label(filter: logging.Filter) -> Text:
+def _format_filter_label(filter: FilterType) -> Text:
     """Format a filter's label."""
     label = Text()
     label.append("Filter: ", style="repr.attrib_name")
@@ -129,7 +127,7 @@ def _format_filter_label(filter: logging.Filter) -> Text:
 
 
 def _add_filters_to_tree(
-    tree: Tree, filters: list[logging.Filter], console: Console
+    tree: Tree, filters: Sequence[FilterType], console: Console
 ) -> None:
     """Add filter entries to a tree branch."""
     for f in filters:
@@ -164,7 +162,10 @@ def _build_logger_tree(
         loggers.append(root_logger)
 
     # Add loggers from the manager
-    for name, logger_or_placeholder in logging.Logger.manager.loggerDict.items():
+    for (
+        name,
+        logger_or_placeholder,
+    ) in logging.Logger.manager.loggerDict.items():
         if isinstance(logger_or_placeholder, logging.Logger):
             if _should_include(logger_or_placeholder, filter):
                 loggers.append(logger_or_placeholder)
@@ -173,7 +174,7 @@ def _build_logger_tree(
             pass
 
     # Sort loggers by name for consistent output
-    loggers.sort(key=lambda l: l.name)
+    loggers.sort(key=lambda lg: lg.name)
 
     # Build a map of logger names to their tree branches for hierarchy
     branches: dict[str, Tree] = {}
