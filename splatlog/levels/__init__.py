@@ -24,6 +24,7 @@ from .filter import (
     LevelFilter,
     VerbosityFilter,
     NameMapFilter,
+    sync_verbosity_logger_levels,
 )
 from .verbosity import get_verbosity, set_verbosity
 
@@ -32,6 +33,7 @@ Filter.__module__ = __name__
 LevelFilter.__module__ = __name__
 VerbosityFilter.__module__ = __name__
 NameMapFilter.__module__ = __name__
+sync_verbosity_logger_levels.__module__ = __name__
 get_verbosity.__module__ = __name__
 set_verbosity.__module__ = __name__
 
@@ -41,6 +43,7 @@ __all__ = [
     "LevelFilter",
     "VerbosityFilter",
     "NameMapFilter",
+    "sync_verbosity_logger_levels",
     "get_verbosity",
     "set_verbosity",
 ]

@@ -45,3 +45,9 @@ def set_verbosity(verbosity: ToVerbosity) -> None:
     # that are inconsistent with the final _verbosity_ value.
     with lock():
         _verbosity = verbosity
+
+        # Update all loggers that have a VerbosityFilter to use the new
+        # effective level. Import here to avoid circular dependency.
+        from splatlog.levels.filter import sync_verbosity_logger_levels
+
+        sync_verbosity_logger_levels()

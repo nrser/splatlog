@@ -28,6 +28,33 @@ from splatlog.typings import (
 from .verbosity import get_verbosity
 
 
+def sync_verbosity_logger_levels() -> None:
+    """
+    Update the level of all loggers that have a VerbosityFilter to match the
+    filter's effective level for the current verbosity.
+
+    Called by `set_verbosity()` after updating the global verbosity value.
+
+    This is necessary because logger filters only run for the origin logger,
+    not for records propagating up the hierarchy. By setting the logger's level
+    to match the filter's effective level, we ensure proper filtering for
+    propagated records.
+    """
+    # Check the root logger
+    root = logging.getLogger()
+    filter = Filter.get_from(root)
+    if isinstance(filter, VerbosityFilter):
+        root.setLevel(filter.effective_level)
+
+    # Check all other loggers tracked by the logging module
+    for logger in logging.Logger.manager.loggerDict.values():
+        # loggerDict values can be Logger or PlaceHolder instances
+        if isinstance(logger, logging.Logger):
+            filter = Filter.get_from(logger)
+            if isinstance(filter, VerbosityFilter):
+                logger.setLevel(filter.effective_level)
+
+
 def fmt_level(level: Level) -> str:
     """
     Format a logging level, displaying both the integer value and name.
@@ -150,10 +177,15 @@ class Filter(logging.Filter):
         else:
             filter = Filter.make(spec)
             filterer.addFilter(filter)
-            # If we can set the `level` of the `filterer` then set it to
-            # `NOTSET`, clearing any previous application of a `Level`
-            if has_method(filterer, "setLevel", 1):
-                filterer.setLevel(logging.NOTSET)  # type: ignore
+
+            # For VerbosityFilter on a Logger, set the level to the
+            # filter's effective level. This is necessary because logger
+            # filters only run for the origin logger, not for records
+            # propagating up the hierarchy.
+            if isinstance(filter, VerbosityFilter) and isinstance(
+                filterer, logging.Logger
+            ):
+                filterer.setLevel(filter.effective_level)
 
     @staticmethod
     def remove_from(filterer: logging.Filterer):
