@@ -6,29 +6,28 @@ Provides a rich-formatted view of all loggers, handlers, and filters.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 import dataclasses as dc
 import logging
-from multiprocessing.connection import answer_challenge
 from typing import Literal, TypeAlias
 
-from rich.console import Console, ConsoleOptions, RenderResult
+from rich.console import Console
 from rich.style import Style
 from rich.text import Text
 from rich.tree import Tree
 
+from splatlog.rich import ToTheme
 from splatlog.rich.console import to_console, ToRichConsole
 from splatlog.rich.theme import to_theme
 from splatlog.typings import FilterType
 
 
-ReportFilter: TypeAlias = Literal["all", "configured", "splatlog"]
+ReportInclude: TypeAlias = Literal["all", "configured"]
 """
 Filter options for which loggers to include in the report.
 
 -   `"all"`: Include all loggers registered in the logging manager.
 -   `"configured"`: Include only loggers with handlers or non-NOTSET level.
--   `"splatlog"`: Include only loggers created via splatlog APIs.
 """
 
 
@@ -45,25 +44,31 @@ def _is_splatlog_logger(logger: logging.Logger) -> bool:
         return False
 
 
-def _is_configured(logger: logging.Logger) -> bool:
+def _iter_handlers(
+    opts: ReportOpts, logger: logging.Logger
+) -> Iterable[logging.Handler]:
+    for handler in logger.handlers:
+        if isinstance(handler, logging.NullHandler):
+            if opts.show_null_handlers:
+                yield handler
+        else:
+            yield handler
+
+
+def _is_configured(opts: ReportOpts, logger: logging.Logger) -> bool:
     """
     Check if a logger has been configured (has handlers or non-NOTSET level).
     """
-    return (
-        any((not isinstance(h, logging.NullHandler)) for h in logger.handlers)
-        or logger.level != logging.NOTSET
-    )
+    return any(_iter_handlers(opts, logger)) or logger.level != logging.NOTSET
 
 
-def _should_include(logger: logging.Logger, filter: ReportFilter) -> bool:
+def _should_include(opts: ReportOpts, logger: logging.Logger) -> bool:
     """Determine if a logger should be included based on the filter."""
-    match filter:
+    match opts.include:
         case "all":
             return True
         case "configured":
-            return _is_configured(logger)
-        case "splatlog":
-            return _is_splatlog_logger(logger)
+            return _is_configured(opts, logger)
 
 
 def _format_level(level: int, console: Console, *, dim: bool = False) -> Text:
@@ -152,8 +157,7 @@ def _add_handlers_to_tree(
 
 
 def _build_logger_tree(
-    filter: ReportFilter,
-    show_placeholder_loggers: bool,
+    opts: ReportOpts,
     console: Console,
 ) -> Tree:
     """Build the complete logger tree."""
@@ -169,9 +173,9 @@ def _build_logger_tree(
         logger_or_placeholder,
     ) in logging.Logger.manager.loggerDict.items():
         if isinstance(logger_or_placeholder, logging.Logger):
-            if _should_include(logger_or_placeholder, filter):
+            if _should_include(opts, logger_or_placeholder):
                 loggers.append(logger_or_placeholder)
-        elif show_placeholder_loggers:
+        elif opts.show_placeholder_loggers:
             # PlaceHolder - could optionally show these
             pass
 
@@ -183,7 +187,7 @@ def _build_logger_tree(
 
     # Add root logger
     root_logger = logging.getLogger()
-    if _should_include(root_logger, filter):
+    if _should_include(opts, root_logger):
         root_branch = tree.add(_format_logger_label(root_logger, console))
 
         # Add handlers
@@ -230,49 +234,29 @@ def _build_logger_tree(
 
 
 @dc.dataclass
-class LoggingReport:
-    """
-    A rich renderable that displays the current state of the logging system.
-
-    Shows all loggers, their handlers, and filters in a tree structure.
-
-    ## Example
-
-    ```python
-    import splatlog
-    from rich import print
-
-    # Print the report
-    print(splatlog.LoggingReport())
-
-    # Or with filtering
-    print(splatlog.LoggingReport(filter=splatlog.LoggerFilter.CONFIGURED))
-    ```
-    """
-
-    filter: ReportFilter = "all"
+class ReportOpts:
+    include: ReportInclude = "all"
     """Which loggers to include in the report."""
 
     show_placeholder_loggers: bool = False
     """Whether to show PlaceHolder entries (loggers that exist only as
     parents in the hierarchy)."""
 
-    def __rich_console__(
-        self, console: Console, options: ConsoleOptions
-    ) -> RenderResult:
-        """Render the logging report as a rich Tree."""
-        yield _build_logger_tree(
-            filter=self.filter,
-            show_placeholder_loggers=self.show_placeholder_loggers,
-            console=console,
-        )
+    show_null_handlers: bool = False
+    """
+    Whether to show {py:class}`logging.NullHandler` entries (no-op handlers
+    added by libraries to suppress "No handlers could be found for logger XXX"
+    warnings).
+    """
 
 
 def report(
-    filter: ReportFilter = "all",
+    include: ReportInclude = "all",
     *,
     console: ToRichConsole | None = None,
+    theme: ToTheme | None = None,
     show_placeholder_loggers: bool = False,
+    show_null_handlers: bool = False,
 ) -> None:
     """
     Print a logging system report to the console.
@@ -297,11 +281,16 @@ def report(
     splatlog.report(filter=splatlog.LoggerFilter.CONFIGURED)
     ```
     """
-    renderable = LoggingReport(
-        filter=filter,
+    opts = ReportOpts(
+        include=include,
         show_placeholder_loggers=show_placeholder_loggers,
+        show_null_handlers=show_null_handlers,
     )
 
     # Create console with splatlog theme
-    actual_console = to_console(console, theme=to_theme())
-    actual_console.print(renderable)
+    console = to_console(console, theme=to_theme(theme))
+    tree = _build_logger_tree(
+        opts=opts,
+        console=console,
+    )
+    console.print(tree)

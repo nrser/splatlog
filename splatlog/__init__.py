@@ -81,8 +81,7 @@ from splatlog.setup import (
     setup as setup,
 )
 from splatlog.report import (
-    LoggingReport as LoggingReport,
-    ReportFilter as ReportFilter,
+    ReportInclude as ReportInclude,
     report as report,
 )
 
