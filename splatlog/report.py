@@ -9,9 +9,11 @@ from __future__ import annotations
 from collections.abc import Sequence
 import dataclasses as dc
 import logging
-from enum import Enum
+from multiprocessing.connection import answer_challenge
+from typing import Literal, TypeAlias
 
 from rich.console import Console, ConsoleOptions, RenderResult
+from rich.style import Style
 from rich.text import Text
 from rich.tree import Tree
 
@@ -20,17 +22,14 @@ from splatlog.rich.theme import to_theme
 from splatlog.typings import FilterType
 
 
-class LoggerFilter(Enum):
-    """Filter options for which loggers to include in the report."""
+ReportFilter: TypeAlias = Literal["all", "configured", "splatlog"]
+"""
+Filter options for which loggers to include in the report.
 
-    ALL = "all"
-    """Include all loggers registered in the logging manager."""
-
-    CONFIGURED = "configured"
-    """Include only loggers with handlers or non-NOTSET level."""
-
-    SPLATLOG = "splatlog"
-    """Include only loggers created via splatlog APIs."""
+-   `"all"`: Include all loggers registered in the logging manager.
+-   `"configured"`: Include only loggers with handlers or non-NOTSET level.
+-   `"splatlog"`: Include only loggers created via splatlog APIs.
+"""
 
 
 def _is_splatlog_logger(logger: logging.Logger) -> bool:
@@ -47,32 +46,41 @@ def _is_splatlog_logger(logger: logging.Logger) -> bool:
 
 
 def _is_configured(logger: logging.Logger) -> bool:
-    """Check if a logger has been configured (has handlers or non-NOTSET level)."""
-    return bool(logger.handlers) or logger.level != logging.NOTSET
+    """
+    Check if a logger has been configured (has handlers or non-NOTSET level).
+    """
+    return (
+        any((not isinstance(h, logging.NullHandler)) for h in logger.handlers)
+        or logger.level != logging.NOTSET
+    )
 
 
-def _should_include(logger: logging.Logger, filter: LoggerFilter) -> bool:
+def _should_include(logger: logging.Logger, filter: ReportFilter) -> bool:
     """Determine if a logger should be included based on the filter."""
     match filter:
-        case LoggerFilter.ALL:
+        case "all":
             return True
-        case LoggerFilter.CONFIGURED:
+        case "configured":
             return _is_configured(logger)
-        case LoggerFilter.SPLATLOG:
+        case "splatlog":
             return _is_splatlog_logger(logger)
 
 
-def _format_level(level: int, *, dim: bool = False) -> Text:
+def _format_level(level: int, console: Console, *, dim: bool = False) -> Text:
     """Format a logging level as styled text."""
     name = logging.getLevelName(level)
-    style = "dim" if dim else "log.level"
+    style = console.get_style(f"logging.level.{name.lower()}")
+    if style and dim:
+        style = Style.chain(style, Style(dim=True))
     return Text(name, style=style)
 
 
-def _format_logger_label(logger: logging.Logger, console: Console) -> Text:
+def _format_logger_label(
+    logger: logging.Logger, console: Console, parent_name: str | None = None
+) -> Text:
     """Format a logger's label showing name, level, and effective level."""
     # Get styles with fallbacks
-    name_style = console.get_style("log.name", default="blue dim")
+    name_style = console.get_style("report.logger.name")
 
     # Build the label
     label = Text()
@@ -82,16 +90,14 @@ def _format_logger_label(logger: logging.Logger, console: Console) -> Text:
     label.append(name, style=name_style)
 
     # Level
-    label.append(" [")
-    label.append_text(_format_level(logger.level))
-    label.append("]")
+    label.append(" ")
+    label.append_text(_format_level(logger.level, console))
 
     # Effective level (if different from set level)
     effective = logger.getEffectiveLevel()
     if effective != logger.level:
-        label.append(" (eff: ", style="dim")
-        label.append_text(_format_level(effective, dim=True))
-        label.append(")", style="dim")
+        label.append("/", style="dim")
+        label.append_text(_format_level(effective, console, dim=True))
 
     # Propagate (only show if False, since True is the default)
     if not logger.propagate:
@@ -107,13 +113,13 @@ def _format_handler_label(handler: logging.Handler, console: Console) -> Text:
 
     # Handler type
     handler_type = type(handler).__name__
-    label.append("Handler: ", style="repr.attrib_name")
+    label.append(" Handler ", style="report.handler")
+    label.append(" ")
     label.append(handler_type, style="repr.tag_name")
 
     # Level
-    label.append(" [")
-    label.append_text(_format_level(handler.level))
-    label.append("]")
+    label.append(" ")
+    label.append_text(_format_level(handler.level, console))
 
     return label
 
@@ -121,7 +127,8 @@ def _format_handler_label(handler: logging.Handler, console: Console) -> Text:
 def _format_filter_label(filter: FilterType) -> Text:
     """Format a filter's label."""
     label = Text()
-    label.append("Filter: ", style="repr.attrib_name")
+    label.append(" Filter ", style="report.filter")
+    label.append(" ")
     label.append(repr(filter), style="repr.tag_name")
     return label
 
@@ -145,7 +152,7 @@ def _add_handlers_to_tree(
 
 
 def _build_logger_tree(
-    filter: LoggerFilter,
+    filter: ReportFilter,
     show_placeholder_loggers: bool,
     console: Console,
 ) -> Tree:
@@ -155,11 +162,6 @@ def _build_logger_tree(
 
     # Collect all loggers
     loggers: list[logging.Logger] = []
-
-    # Add root logger
-    root_logger = logging.getLogger()
-    if _should_include(root_logger, filter):
-        loggers.append(root_logger)
 
     # Add loggers from the manager
     for (
@@ -179,22 +181,40 @@ def _build_logger_tree(
     # Build a map of logger names to their tree branches for hierarchy
     branches: dict[str, Tree] = {}
 
+    # Add root logger
+    root_logger = logging.getLogger()
+    if _should_include(root_logger, filter):
+        root_branch = tree.add(_format_logger_label(root_logger, console))
+
+        # Add handlers
+        if root_logger.handlers:
+            _add_handlers_to_tree(root_branch, root_logger.handlers, console)
+
+        # Add direct filters on the logger
+        if root_logger.filters:
+            _add_filters_to_tree(root_branch, root_logger.filters, console)
+
+    else:
+        root_branch = tree
+
     for logger in loggers:
         name = logger.name if logger.name else "root"
-        label = _format_logger_label(logger, console)
 
         # Find parent branch
-        parent_branch = tree
+        parent_branch = root_branch
+        parent_name: str | None = None
         if logger.name:
             # Try to find the closest parent in our branches
             parts = logger.name.split(".")
             for i in range(len(parts) - 1, 0, -1):
-                parent_name = ".".join(parts[:i])
-                if parent_name in branches:
-                    parent_branch = branches[parent_name]
+                ancestor_name = ".".join(parts[:i])
+                if ancestor_name in branches:
+                    parent_name = ancestor_name
+                    parent_branch = branches[ancestor_name]
                     break
 
         # Add this logger as a branch
+        label = _format_logger_label(logger, console, parent_name)
         logger_branch = parent_branch.add(label)
         branches[name] = logger_branch
 
@@ -230,7 +250,7 @@ class LoggingReport:
     ```
     """
 
-    filter: LoggerFilter = LoggerFilter.ALL
+    filter: ReportFilter = "all"
     """Which loggers to include in the report."""
 
     show_placeholder_loggers: bool = False
@@ -249,7 +269,7 @@ class LoggingReport:
 
 
 def report(
-    filter: LoggerFilter = LoggerFilter.ALL,
+    filter: ReportFilter = "all",
     *,
     console: ToRichConsole | None = None,
     show_placeholder_loggers: bool = False,

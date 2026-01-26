@@ -82,7 +82,7 @@ from splatlog.setup import (
 )
 from splatlog.report import (
     LoggingReport as LoggingReport,
-    LoggerFilter as LoggerFilter,
+    ReportFilter as ReportFilter,
     report as report,
 )
 

@@ -27,6 +27,8 @@ What we can convert to a {py:class}`rich.theme.Theme`. See
 
 THEME = Theme(
     {
+        # `log` — Used to print log records
+        # ====================================================================
         "log.level": Style(bold=True),
         "log.name": Style(color="blue", dim=True),
         "log.name.sep": Style(color="bright_black"),
@@ -35,6 +37,11 @@ THEME = Theme(
         "log.label": Style(color="bright_black"),
         "log.data.name": Style(color="blue", italic=True),
         "log.data.type": Style(color="#4ec9b0", italic=True),
+        # `report` — Used to print logging state reports
+        # ====================================================================
+        "report.logger.name": Style(color="cyan", bold=True),
+        "report.handler": Style(color="green", bold=True, reverse=True),
+        "report.filter": Style(color="red", bold=True, reverse=True),
     }
 )
 """
