@@ -27,7 +27,7 @@ class TestToLevelSpecWithLevelValue:
         assert to_level_spec(logging.DEBUG) == logging.DEBUG
 
     def test_arbitrary_int_values(self):
-        # Any int is accepted by to_level_value
+        # Any int is accepted by to_level
         assert to_level_spec(15) == 15
         assert to_level_spec(25) == 25
 

@@ -9,18 +9,18 @@ from itertools import pairwise
 import logging
 from typing import overload
 
-from splatlog import LevelValue
+from splatlog import Level
 from splatlog.lib import has_method
 from splatlog.lib.collections.classifier import Classifier
 from splatlog.names import is_in_hierarchy
 from splatlog.typings import (
-    Level,
+    ToLevel,
     LevelSpec,
     VerbositySpec,
-    is_level,
+    can_be_level,
     is_verbosity_spec,
     to_level_name,
-    to_level_value,
+    to_level,
     to_verbosity,
     VERBOSITY_MAX,
 )
@@ -55,11 +55,11 @@ def sync_verbosity_logger_levels() -> None:
                 logger.setLevel(filter.effective_level)
 
 
-def fmt_level(level: Level) -> str:
+def fmt_level(level: ToLevel) -> str:
     """
     Format a logging level, displaying both the integer value and name.
     """
-    level = to_level_value(level)
+    level = to_level(level)
     return f"{level!r} ({to_level_name(level)})"
 
 
@@ -125,7 +125,7 @@ class Filter(logging.Filter):
 
     @overload
     @staticmethod
-    def make(spec: Level) -> LevelFilter:
+    def make(spec: ToLevel) -> LevelFilter:
         pass
 
     @overload
@@ -135,7 +135,7 @@ class Filter(logging.Filter):
 
     @overload
     @staticmethod
-    def make(spec: Mapping[str, Level | VerbositySpec]) -> NameMapFilter:
+    def make(spec: Mapping[str, ToLevel | VerbositySpec]) -> NameMapFilter:
         pass
 
     @staticmethod
@@ -143,7 +143,7 @@ class Filter(logging.Filter):
         """
         Factory method to create concrete subclass instances.
         """
-        if is_level(spec):
+        if can_be_level(spec):
             return LevelFilter(spec)
         if is_verbosity_spec(spec):
             return VerbosityFilter(spec)
@@ -171,8 +171,8 @@ class Filter(logging.Filter):
         # `logging.Logger` or `logging.Handler`, both which have `setLevel`, but
         # the method is not included in the `logging.Filterer`
         # interface, so we can't "know it's there" and have to test.
-        if is_level(spec) and has_method(filterer, "setLevel", 1):
-            level = to_level_value(spec)
+        if can_be_level(spec) and has_method(filterer, "setLevel", 1):
+            level = to_level(spec)
             filterer.setLevel(level)  # type: ignore
         else:
             filter = Filter.make(spec)
@@ -198,7 +198,7 @@ class Filter(logging.Filter):
         super().__init__()
         self.spec = spec
 
-    def get_effective_level(self, record: logging.LogRecord) -> LevelValue:
+    def get_effective_level(self, record: logging.LogRecord) -> Level:
         raise NotImplementedError("abstract method")
 
     def filter(self, record: logging.LogRecord) -> bool:
@@ -206,31 +206,29 @@ class Filter(logging.Filter):
 
 
 class LevelFilter(Filter):
-    level: LevelValue
+    level: Level
 
-    def __init__(self, spec: Level):
+    def __init__(self, spec: ToLevel):
         super().__init__(spec)
 
-        self.level = to_level_value(spec)
+        self.level = to_level(spec)
 
     def __rich_repr__(self):
         yield "level", self.level
 
-    def get_effective_level(self, record: logging.LogRecord) -> LevelValue:
+    def get_effective_level(self, record: logging.LogRecord) -> Level:
         return self.level
 
 
 class VerbosityFilter(Filter):
-    classifier: Classifier[int, LevelValue]
+    classifier: Classifier[int, Level]
 
     def __init__(self, spec: VerbositySpec):
         super().__init__(spec)
 
         # Translate any `str` level names to their `int`` level value and check
         # the verbosity is in-bounds
-        pairs = [
-            (to_verbosity(v), to_level_value(lv)) for v, lv in spec.items()
-        ]
+        pairs = [(to_verbosity(v), to_level(lv)) for v, lv in spec.items()]
 
         # Add the "upper cap" with a max verbosity of `VERBOSITY_MAX`. The level
         # value doesn't matter, so we use `-1`
@@ -249,7 +247,7 @@ class VerbosityFilter(Filter):
         yield "classifier", self.classifier
 
     @property
-    def effective_level(self) -> LevelValue:
+    def effective_level(self) -> Level:
         """
         Get the effective logging level. Returns the
         {py:type}`splatlog.typings.LevelValue` that this instances associates
@@ -261,7 +259,7 @@ class VerbosityFilter(Filter):
             logging.NOTSET,
         )
 
-    def get_effective_level(self, record: logging.LogRecord) -> LevelValue:
+    def get_effective_level(self, record: logging.LogRecord) -> Level:
         return self.effective_level
 
     def __repr__(self) -> str:
@@ -296,13 +294,13 @@ class NameMapFilter(Filter):
 
     filters: dict[str, Filter]
 
-    def __init__(self, spec: Mapping[str, Level | VerbositySpec]):
+    def __init__(self, spec: Mapping[str, ToLevel | VerbositySpec]):
         super().__init__(spec)
 
         self.filters = {}
 
         for name, sub_spec in spec.items():
-            if is_level(sub_spec):
+            if can_be_level(sub_spec):
                 self.filters[name] = LevelFilter(sub_spec)
             else:
                 self.filters[name] = VerbosityFilter(sub_spec)
@@ -310,7 +308,7 @@ class NameMapFilter(Filter):
     def __rich_repr__(self):
         yield "filters", self.filters
 
-    def get_effective_level(self, record: logging.LogRecord) -> LevelValue:
+    def get_effective_level(self, record: logging.LogRecord) -> Level:
         for hierarchy_name, filter in self.filters.items():
             if is_in_hierarchy(hierarchy_name, record.name):
                 return filter.get_effective_level(record)

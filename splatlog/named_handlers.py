@@ -17,8 +17,8 @@ from splatlog.typings import (
     NamedHandlerCast,
     ToExportHandler,
     OnConflict,
-    to_level_value,
-    is_level,
+    to_level,
+    can_be_level,
 )
 
 
@@ -344,7 +344,7 @@ def to_console_handler(value: ToConsoleHandler) -> logging.Handler:
     if is_to_rich_console(value):
         return RichHandler(console=value)
 
-    if is_level(value):
+    if can_be_level(value):
         return RichHandler(level=value)
 
     raise TypeError(
@@ -381,7 +381,7 @@ def to_export_handler(value) -> logging.Handler:
         handler = cls(**init_kwds)
 
         if "level" in post_kwds:
-            handler.setLevel(to_level_value(post_kwds["level"]))
+            handler.setLevel(to_level(post_kwds["level"]))
 
         formatter = post_kwds.get("formatter")
 

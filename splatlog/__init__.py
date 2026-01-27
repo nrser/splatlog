@@ -4,9 +4,9 @@ that `import splatlog` should give you everything you need in nearly all cases.
 """
 
 from splatlog.typings import (
-    LevelValue as LevelValue,
-    LevelName as LevelName,
     Level as Level,
+    LevelName as LevelName,
+    ToLevel as ToLevel,
     Verbosity as Verbosity,
     is_verbosity as is_verbosity,
     to_verbosity as to_verbosity,
@@ -22,9 +22,9 @@ from splatlog.typings import (
     FileHandlerMode as FileHandlerMode,
     ExcInfo as ExcInfo,
     is_level_name as is_level_name,
-    is_level_value as is_level_value,
-    to_level_value as to_level_value,
     is_level as is_level,
+    to_level as to_level,
+    can_be_level as can_be_level,
 )
 from splatlog import rich as rich
 from splatlog import lib as lib

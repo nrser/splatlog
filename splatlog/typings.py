@@ -27,7 +27,7 @@ else:
 
 from typeguard import check_type, TypeCheckError
 
-from splatlog.lib import fmt_type_of
+from splatlog.lib import fmt_type_of, fmt_type_value
 from splatlog.lib.text import fmt
 from splatlog.rich import ToRichConsole
 
@@ -100,14 +100,8 @@ The type of items in the `filters` list of {py:class}`logging.Filterer`.
 
 # Level Types
 # ----------------------------------------------------------------------------
-#
-# There has always been some... frustration... typing `logging` levels. There is
-# no typing in the builtin module. As such, this _kind-of_ follows the VSCode /
-# PyLance typings from Microsoft. At least that way it corresponds decently to
-# _something_ we're likely to be using.
-#
 
-LevelValue: TypeAlias = int
+Level: TypeAlias = int
 """
 The operational representation of a log level, per the built-in `logging`
 package. When a {py:class}`logging.Handler` is assigned a level value it acts as
@@ -124,16 +118,24 @@ strings are valid level names.
 
 ## See Also
 
-1.  {py:func}`splatlog.levels.is_level_name`
+1.  {py:func}`is_level_name`
+2.  {py:func}`logging.addLevelName`
+3.  {py:func}`logging.getLevelNamesMapping` (Python 3.11+)
 """
 
-Level: TypeAlias = LevelValue | LevelName
+ToLevel: TypeAlias = Level | LevelName
 """
-What `splatlog` accepts as a log level; either a {py:type}`LevelValue` or a
-{py:type}`LevelName`.
+What can be converted into a {py:type}`Level`:
 
-This corresponds to the `logging._Level` type used for the argument to
-{py:meth}`logging.Logger.setLevel` in PyLance.
+1.  Already a {py:type}`Level` integer,
+2.  a {py:class}`str` encoding of one, or
+3.  a {py:class}`str` that is a registered {py:type}`LevelName`
+    (case-insensitive).
+
+## See Also
+
+1.  {py:func}`can_be_level`
+2.  {py:func}`to_level`
 """
 
 
@@ -179,7 +181,7 @@ VERBOSITY_MAX: Verbosity = Verbosity(16)
 # Spec Types
 # ----------------------------------------------------------------------------
 
-VerbositySpec: TypeAlias = Mapping[Verbosity, Level]
+VerbositySpec: TypeAlias = Mapping[Verbosity, ToLevel]
 """
 A {py:class}`collections.abc.Mapping` of {py:type}`Verbosity` to
 {py:type}`Level`, indicating the level that takes effect at various verbosities.
@@ -190,9 +192,9 @@ Given a verbosity `v and spec `S`, the effective level is
 
 """
 
-NameMapSpec: TypeAlias = Mapping[str, Level | VerbositySpec]
+NameMapSpec: TypeAlias = Mapping[str, ToLevel | VerbositySpec]
 
-LevelSpec: TypeAlias = Level | VerbositySpec | NameMapSpec
+LevelSpec: TypeAlias = ToLevel | VerbositySpec | NameMapSpec
 """
 What you can set a logger of handler `level` to in Splatlog.
 
@@ -229,7 +231,7 @@ Once registered by a `name` {py:class}`str` with
 KwdMapping = Mapping[str, Any]
 
 ToConsoleHandler = (
-    logging.Handler | KwdMapping | Literal[True] | Level | ToRichConsole
+    logging.Handler | KwdMapping | Literal[True] | ToLevel | ToRichConsole
 )
 """
 What can be converted to a `console` named handler, mainly via constructing a
@@ -301,7 +303,7 @@ def is_level_name(
     # `logging.getLevelNamesMapping` was added in Python 3.11, providing a much
     # more sane way to figure out if a string is a level name.
 
-    if hasattr(logging, "getLevelNamesMapping"):
+    if sys.version_info >= (3, 11):
         return name in logging.getLevelNamesMapping()
 
     # As of writing (2025-12-03) we `requires-python = ">=3.10"`, so
@@ -319,59 +321,81 @@ def is_level_name(
     return False
 
 
-def is_level_value(value: object) -> TypeIs[LevelValue]:
+def is_level(value: object) -> TypeIs[Level]:
     """
-    Test if `value` is a level value.
-
-    Specifically, tests if `value` is a _named_ level value — a builtin one like
-    `logging.DEBUG` or a custom one added with `logging.addLevelName`.
-
-    Technically, it seems like you can use _any_ `int` as a level value, but it
-    seems like it makes things simpler if all `LevelValue` have `LevelName` and
-    vice-versa.
-
-    We explicitly reject the booleans {py:data}`True` and {py:data}`False`,
-    because `False` in particular is equal to {py:data}`logging.NOTSET` but
-    that's never what you mean by passing it.
+    Test if `value` is a {py:type}`Level`, which we define as any integer
+    greater or equal to {py:data}`logging.NOTSET` (any non-negative integer),
+    excluding the booleans {py:data}`True` and {py:data}`False`.
 
     ## Examples
 
     ```python
 
-    >>> is_level_value(logging.DEBUG)
+    >>> is_level(logging.DEBUG)
     True
 
-    >>> level_value = hash("LEVEL_VALUE_TEST") # Use somewhat unique int
-    >>> is_level_value(level_value)
-    False
-
-    >>> logging.addLevelName(level_value, "LEVEL_VALUE_TEST")
-    >>> is_level_value(level_value)
+    >>> is_level(1234)
     True
 
-    >>> is_level_value(True)
+    >>> is_level(-1)
     False
 
-    >>> is_level_value(False)
+    >>> is_level(True)
+    False
+
+    >>> is_level(False)
     False
 
     ```
     """
     return (
         isinstance(value, int)
+        and value >= logging.NOTSET
         and not (value is True or value is False)
-        and logging.getLevelName(value) != f"Level {value}"
     )
 
 
-def is_level(value: object, *, case_sensitive: bool = False) -> TypeIs[Level]:
+def can_be_level(
+    value: object, *, case_sensitive: bool = False
+) -> TypeIs[ToLevel]:
     """
-    Is `value` a logging level, in string or integer form? Tests if
-    {py:func}`is_level_name` or {py:func}`is_level_value`.
+    Can `value` be converted to a {py:type}`Level`?
+
+    Must be one of:
+
+    1.  Already a {py:type}`Level` (nonnegative {py:class}`int`),
+    2.  {py:class}`str` representation of a {py:type}`Level`, or
+    3.  {py:class}`str` that is a registered {py:type}`LevelName`
+        (case-insensitive).
+
+    ## Examples
+
+    ```python
+    >>> can_be_level(logging.DEBUG)
+    True
+
+    >>> can_be_level("10")
+    True
+
+    >>> can_be_level("debug")
+    True
+
+    >>> can_be_level("DEBUG")
+    True
+
+    >>> can_be_level(-1)
+    False
+
+    >>> can_be_level("not_a_level")
+    False
+
+    ```
     """
-    return is_level_name(
-        value, case_sensitive=case_sensitive
-    ) or is_level_value(value)
+    return (
+        is_level_name(value, case_sensitive=case_sensitive)
+        or (isinstance(value, str) and value.isdigit())
+        or is_level(value)
+    )
 
 
 # Verbosity Tests
@@ -407,7 +431,7 @@ def is_verbosity(x: object) -> TypeIs[Verbosity]:
 
 def is_verbosity_spec(x: object) -> TypeIs[VerbositySpec]:
     return isinstance(x, Mapping) and all(
-        isinstance(k, int) and is_level(v) for k, v in x.items()
+        isinstance(k, int) and can_be_level(v) for k, v in x.items()
     )
 
 
@@ -417,7 +441,7 @@ def is_verbosity_spec(x: object) -> TypeIs[VerbositySpec]:
 
 def is_name_map_spec(x: object) -> TypeIs[NameMapSpec]:
     return isinstance(x, Mapping) and all(
-        isinstance(k, str) and (is_level(v) or is_verbosity_spec(v))
+        isinstance(k, str) and (can_be_level(v) or is_verbosity_spec(v))
         for k, v in x.items()
     )
 
@@ -450,44 +474,51 @@ def is_stdout_name(value: Any) -> TypeIs[StdioName]:
 # ----------------------------------------------------------------------------
 
 
-def to_level_name(level_value: LevelValue) -> LevelName:
+def to_level_name(level_value: Level) -> LevelName:
     return logging.getLevelName(level_value)
 
 
-def to_level_value(level: Level) -> LevelValue:
+def to_level(value: ToLevel, *, case_sensitive: bool = False) -> Level:
     """
-    Make a `logging` level number from more useful/intuitive things, like string
-    you might get from an environment variable or command option.
+    Make a {py:mod}`logging` {py:type}`Level` integer from more useful/intuitive
+    things, like string you might get from an environment variable or command
+    option.
 
-    ##### Examples #####
+    Parameters
+    --------------------------------------------------------------------------
 
-    ##### Integers #####
+    -   `value`: {py:type}`ToLevel` value to convert
+
+    Examples
+    --------------------------------------------------------------------------
+
+    ### Integers ###
 
     Any integer is simply returned. This follows the logic in the stdlib
     `logging` package, `logging._checkLevel` in particular.
 
     ```python
-    >>> to_level_value(logging.DEBUG)
+    >>> to_level(logging.DEBUG)
     10
 
-    >>> to_level_value(123)
+    >>> to_level(123)
     123
 
-    >>> to_level_value(-1)
-    -1
+    >>> to_level("10")
+    10
 
     ```
 
     No, I have no idea what kind of mess using negative level values might
     cause.
 
-    ##### Strings #####
+    ### Strings ###
 
     Integer levels can be provided as strings. Again, they don't have to
     correspond to any named level.
 
     ```python
-    >>> to_level_value("8")
+    >>> to_level("8")
     8
 
     ```
@@ -495,7 +526,7 @@ def to_level_value(level: Level) -> LevelValue:
     We also accept level *names*.
 
     ```python
-    >>> to_level_value("debug")
+    >>> to_level("debug")
     10
 
     ```
@@ -508,9 +539,9 @@ def to_level_value(level: Level) -> LevelValue:
     version of the string.
 
     ```python
-    >>> to_level_value("DEBUG")
+    >>> to_level("DEBUG")
     10
-    >>> to_level_value("Debug")
+    >>> to_level("Debug")
     10
 
     ```
@@ -519,17 +550,17 @@ def to_level_value(level: Level) -> LevelValue:
 
     ```python
     >>> logging.addLevelName(8, "LUCKY")
-    >>> to_level_value("lucky")
+    >>> to_level("lucky")
     8
 
     ```
 
-    ##### Other #####
+    ### Other ###
 
     Everything else can kick rocks:
 
     ```python
-    >>> to_level_value([])
+    >>> to_level([])
     Traceback (most recent call last):
         ...
     AssertionError: Expected `int | str`, given `list`: `[]`
@@ -537,39 +568,76 @@ def to_level_value(level: Level) -> LevelValue:
     ```
     """
 
-    if isinstance(level, int):
-        # TODO Make consistent with `is_level_value`?
-        #
-        # if is_level_value(level):
-        #     return level
+    if isinstance(value, int):
+        assert_level(value)
+        return value
 
-        # raise TypeError(f"`int` {level!r} is not a named log level")
+    if isinstance(value, str):
+        # Accept string representation of integer, like `"10" → 10`
+        if value.isdigit():
+            level = int(value)
+            assert_level(level)
+            return level
 
-        return level
+        if sys.version_info >= (3, 11):
+            mapping = logging.getLevelNamesMapping()
 
-    if isinstance(level, str):
-        if level.isdigit():
-            return int(level)
+            if value in mapping:
+                return mapping[value]
 
-        level_value = logging.getLevelName(level)
+            if case_sensitive:
+                raise TypeError(
+                    (
+                        "{} is not a valid level name (case-sensitive), "
+                        "valid names: {}"
+                    ).format(fmt(value), ", ".join(mapping.keys()))
+                )
 
-        if isinstance(level_value, int):
-            return level_value
+            upper_value = value.upper()
 
-        upper_level = level.upper()
+            if upper_value in mapping:
+                return mapping[upper_value]
 
-        level_value = logging.getLevelName(upper_level)
+            raise TypeError(
+                (
+                    "Neither given value {} or upper-case version {} are valid "
+                    "level names, valid names: {}"
+                ).format(
+                    fmt(value), fmt(upper_value), ", ".join(mapping.keys())
+                )
+            )
 
-        if isinstance(level_value, int):
-            return level_value
+        # This is the funky, pre-3.11 way (that I know) to go about it...
+
+        # If `value` _is_ a registered level name then `getLevelName` will
+        # return the level value (go figure)
+        level = logging.getLevelName(value)
+
+        if isinstance(level, int):
+            return level
+
+        if case_sensitive:
+            raise TypeError(
+                "{} is not a valid level name (case-sensitive)".format(
+                    fmt_type_value(value)
+                )
+            )
+
+        upper_value = value.upper()
+
+        level = logging.getLevelName(upper_value)
+
+        if isinstance(level, int):
+            return level
 
         raise TypeError(
             (
-                "Neither given value {} or upper-case version {} are valid level names"
-            ).format(fmt(level), fmt(upper_level))
+                "Neither given value {} or upper-case version {} are valid "
+                "level names"
+            ).format(fmt(value), fmt(upper_value))
         )
 
-    assert_never(level, Level)
+    assert_never(value, ToLevel)
 
 
 # Verbosity Conversions
@@ -617,20 +685,20 @@ def to_verbosity(x: object) -> Verbosity:
 # ============================================================================
 
 
-def assert_level(level: Level, *, var_name: str = "level"):
+def assert_level(level: ToLevel, *, var_name: str = "level"):
     if isinstance(level, str):
         if not is_level_name(level):
             raise ValueError(
                 "Expected `{}` to be `{}`, given `str` but {} is not a valid level name".format(
-                    var_name, fmt(Level), fmt(level)
+                    var_name, fmt(ToLevel), fmt(level)
                 )
             )
     elif isinstance(level, int):
-        if not is_level_value(level):
+        if not is_level(level):
             raise ValueError(
-                "Expected `{}` to be `{}`, given `int` but {} is not a valid level value".format(
-                    var_name, fmt(Level), fmt(level)
+                "Expected `{}` to be `{}`, given `int` but {} is not a valid level".format(
+                    var_name, fmt(ToLevel), fmt(level)
                 )
             )
     else:
-        assert_never(level, Level)
+        assert_never(level, ToLevel)

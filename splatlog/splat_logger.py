@@ -17,7 +17,7 @@ import rich.repr
 from splatlog.levels import fmt_level
 from splatlog.lib.collections import partition_mapping
 from splatlog.lib.text import fmt
-from splatlog.typings import KwdMapping, Level, LevelValue, to_level_value
+from splatlog.typings import KwdMapping, ToLevel, Level, to_level
 
 #: Unique sentinel object used by `LoggerProperty` to tell when a default
 #: was returned.
@@ -353,11 +353,11 @@ class SplatLogger(logging.LoggerAdapter):
         return self.logger.removeHandler(hdlr)
 
     @property
-    def level(self) -> LevelValue:
+    def level(self) -> Level:
         return self.logger.level
 
-    def setLevel(self, level: Level) -> None:
-        super().setLevel(to_level_value(level))
+    def setLevel(self, level: ToLevel) -> None:
+        super().setLevel(to_level(level))
 
     def getChild(self, suffix):
         if self.logger.root is not self.logger:

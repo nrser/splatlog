@@ -4,7 +4,7 @@ from splatlog.locking import lock
 from splatlog.typings import (
     LevelName,
     LevelSpec,
-    LevelValue,
+    Level,
     assert_level,
     is_name_map_spec,
     is_verbosity_spec,
@@ -63,7 +63,7 @@ DEBUG = logging.DEBUG  # 10
 NOTSET = logging.NOTSET  # 0
 
 
-def get_level() -> LevelValue:
+def get_level() -> Level:
     """
     Get the root log level.
     """

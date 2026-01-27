@@ -27,7 +27,7 @@ from rich.tree import Tree
 from splatlog.rich import ToTheme
 from splatlog.rich.console import to_console, ToRichConsole
 from splatlog.rich.theme import to_theme
-from splatlog.typings import FilterType, LevelValue
+from splatlog.typings import FilterType, Level
 
 
 ReportInclude: TypeAlias = Literal["all", "configured"]
@@ -79,9 +79,7 @@ def _should_include(opts: ReportOpts, logger: logging.Logger) -> bool:
             return _is_configured(opts, logger)
 
 
-def _format_level(
-    opts: ReportOpts, level: LevelValue, *, dim: bool = False
-) -> Text:
+def _format_level(opts: ReportOpts, level: Level, *, dim: bool = False) -> Text:
     """Format a logging level as styled text."""
     name = logging.getLevelName(level)
     style = opts.console.get_style(f"logging.level.{name.lower()}")
@@ -91,7 +89,7 @@ def _format_level(
 
 
 def _format_effective_level(
-    opts: ReportOpts, set_level: LevelValue, effective_level: LevelValue
+    opts: ReportOpts, set_level: Level, effective_level: Level
 ) -> Text:
     text = Text()
     text.append_text(_format_level(opts, set_level))
