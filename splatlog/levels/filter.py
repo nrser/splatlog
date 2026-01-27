@@ -213,6 +213,9 @@ class LevelFilter(Filter):
 
         self.level = to_level_value(spec)
 
+    def __rich_repr__(self):
+        yield "level", self.level
+
     def get_effective_level(self, record: logging.LogRecord) -> LevelValue:
         return self.level
 
@@ -241,6 +244,9 @@ class VerbosityFilter(Filter):
         self.classifier = Classifier(
             {range(v_1, v_2): l_1 for (v_1, l_1), (v_2, _) in pairwise(pairs)}
         )
+
+    def __rich_repr__(self):
+        yield "classifier", self.classifier
 
     @property
     def effective_level(self) -> LevelValue:
@@ -300,6 +306,9 @@ class NameMapFilter(Filter):
                 self.filters[name] = LevelFilter(sub_spec)
             else:
                 self.filters[name] = VerbosityFilter(sub_spec)
+
+    def __rich_repr__(self):
+        yield "filters", self.filters
 
     def get_effective_level(self, record: logging.LogRecord) -> LevelValue:
         for hierarchy_name, filter in self.filters.items():
