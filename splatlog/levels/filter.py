@@ -4,6 +4,7 @@ Advanced filtering functionality, through extension of
 """
 
 from __future__ import annotations
+from abc import ABCMeta, abstractmethod
 from collections.abc import Mapping
 from itertools import pairwise
 import logging
@@ -63,64 +64,17 @@ def fmt_level(level: ToLevel) -> str:
     return f"{level!r} ({to_level_name(level)})"
 
 
-class Filter(logging.Filter):
+class Filter(logging.Filter, metaclass=ABCMeta):
     """
-    A {py:class}`logging.Filter` that applies a
-    {py:type}`splatlog.typing.LevelSpec`
-
-    ## Examples
-
-    Here we create a filter that applies to a `some_module` logger (and all it's
-    descendant loggers).
-
-    ```python
-
-    >>> from splatlog._testing import make_log_record
-
-    >>> filter = VerbosityLevelsFilter(
-    ...     {
-    ...         "some_module": (
-    ...             (0, "WARNING"),
-    ...             (2, "INFO"),
-    ...             (4, "DEBUG"),
-    ...         )
-    ...     },
-    ...     verbosity=0,
-    ... )
-
-    ```
-
-    At verbosity 0, only WARNING and above are allowed through.
-
-    ```python
-
-    >>> filter.filter(make_log_record(name="some_module", level="WARNING"))
-    True
-    >>> filter.filter(make_log_record(name="some_module", level="INFO"))
-    False
-    >>> filter.filter(make_log_record(name="some_module", level="DEBUG"))
-    False
-
-    ```
-
-    Descendant loggers follow the same logic.
-
-    ```python
-    >>> filter.filter(make_log_record(name="some_module.blah", level="INFO"))
-    False
-
-    ```
-
-    Loggers that are not in the hierarchy are all allowed through.
-
-    ```python
-    >>> filter.filter(make_log_record(name="other_module", level="DEBUG"))
-    True
-    ```
+    Abstract base class for filters that filter {py:class}`logging.LogRecord`
+    based on computing an _effective level_ from some combination of global
+    state, internal state, and the record.
 
     ## See Also
 
-    1.  `splatlog.verbosity.verbosity_state.get_verbosity`
+    1.  {py:class}`LevelFilter`
+    2.  {py:class}`VerbosityFilter`
+    3.  {py:class}`NameMapFilter`
     """
 
     @overload
@@ -198,11 +152,29 @@ class Filter(logging.Filter):
         super().__init__()
         self.spec = spec
 
-    def get_effective_level(self, record: logging.LogRecord) -> Level:
-        raise NotImplementedError("abstract method")
+    # `logging.Filter` Integration
+    # ========================================================================
 
-    def filter(self, record: logging.LogRecord) -> bool:
+    def filter(self, record: logging.LogRecord) -> bool | logging.LogRecord:
+        """
+        Override of {py:meth}`logging.Filter.filter` to implement
+        effective-level-based filtering.
+        """
         return record.levelno >= self.get_effective_level(record)
+
+    # Abstract Interface
+    # ========================================================================
+
+    @abstractmethod
+    def get_effective_level(self, record: logging.LogRecord) -> Level:
+        """
+        Responsible for returning the effective
+        {py:type}`splatlog.typings.Level` so that {py:meth}`filter` can do its
+        job.
+
+        This is the only method concrete realizations need to override.
+        """
+        pass
 
 
 class LevelFilter(Filter):
@@ -243,6 +215,9 @@ class VerbosityFilter(Filter):
             {range(v_1, v_2): l_1 for (v_1, l_1), (v_2, _) in pairwise(pairs)}
         )
 
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} {fmt_level(self.effective_level)}>"
+
     def __rich_repr__(self):
         yield "classifier", self.classifier
 
@@ -261,9 +236,6 @@ class VerbosityFilter(Filter):
 
     def get_effective_level(self, record: logging.LogRecord) -> Level:
         return self.effective_level
-
-    def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} {fmt_level(self.effective_level)}>"
 
 
 class NameMapFilter(Filter):
@@ -286,10 +258,58 @@ class NameMapFilter(Filter):
     the `root` logger, where the handlers are attached. Suppose we want the
     `file` handler to emit all records, but only emit `WARNING` and above from
     loggers `a` and `a.b` on the `console`. This can be accomplished by
-    assigning a {py:class}`MapFilter` to the `console` handler
+    assigning a {py:class}`NameMapFilter` to the `console` handler
 
-        consoleHandler.addFilter(MapFilter({"a": splatlog.WARNING}))
+        consoleHandler.addFilter(NameMapFilter({"a": splatlog.WARNING}))
 
+    ## Examples
+
+    Here we create a filter that applies to a `some_module` logger (and all it's
+    descendant loggers).
+
+    ```python
+    >>> from splatlog._testing import make_log_record
+    >>> from splatlog import Verbosity
+
+    >>> filter = NameMapFilter(
+    ...     {
+    ...         "some_module": {
+    ...             Verbosity(0): "WARNING",
+    ...             Verbosity(2): "INFO",
+    ...             Verbosity(4): "DEBUG",
+    ...         }
+    ...     }
+    ... )
+
+    ```
+
+    At verbosity 0, only WARNING and above are allowed through.
+
+    ```python
+    >>> filter.filter(make_log_record(name="some_module", level="WARNING"))
+    True
+    >>> filter.filter(make_log_record(name="some_module", level="INFO"))
+    False
+    >>> filter.filter(make_log_record(name="some_module", level="DEBUG"))
+    False
+
+    ```
+
+    Descendant loggers follow the same logic.
+
+    ```python
+    >>> filter.filter(make_log_record(name="some_module.blah", level="INFO"))
+    False
+
+    ```
+
+    Loggers that are not in the hierarchy are all allowed through.
+
+    ```python
+    >>> filter.filter(make_log_record(name="other_module", level="DEBUG"))
+    True
+
+    ```
     """
 
     filters: dict[str, Filter]

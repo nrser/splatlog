@@ -22,12 +22,12 @@ def get_verbosity() -> Verbosity:
     > 📝 NOTE — Thread Safety
     >
     > There is no locking around the read, it simply returns whatever value is
-    > visible to the thread at the time. This is because `VerbosityLevelsFilter`
-    > reads on every filter, so we want it to be fast.
+    > visible to the thread at the time. This is because
+    > {py:class}`splatlog.levels.VerbosityFilter` reads on every filter, so we
+    > want it to be fast.
     >
     > This does mean that the various logger levels are not guaranteed to be in
     > a state consistent near calls to {py:func}`set_verbosity`.
-    >
     """
     return _verbosity
 

@@ -6,6 +6,7 @@ from typing import IO, Any, Literal, Union, overload
 from collections.abc import Callable, Mapping
 
 from splatlog.json.json_formatter import JSONFormatter
+from splatlog.levels import Filter
 from splatlog.lib import satisfies
 from splatlog.lib.collections import partition_mapping
 from splatlog.lib.text import fmt
@@ -378,14 +379,12 @@ def to_export_handler(value) -> logging.Handler:
                 )
             )
 
-        post_kwds, init_kwds = partition_mapping(
-            value, {"level", "formatter", "verbosity_levels"}
-        )
+        post_kwds, init_kwds = partition_mapping(value, {"level", "formatter"})
 
         handler = cls(**init_kwds)
 
         if "level" in post_kwds:
-            handler.setLevel(to_level(post_kwds["level"]))
+            Filter.apply(handler, post_kwds["level"])
 
         formatter = post_kwds.get("formatter")
 
@@ -395,10 +394,6 @@ def to_export_handler(value) -> logging.Handler:
         else:
             # Cast to a `JSONFormatter`
             handler.formatter = JSONFormatter.from_(formatter)
-
-        if _verbosity_levels := post_kwds.get("verbosity_levels"):
-            raise NotImplementedError("TODO..? Verbosity levels on handlers?")
-            # VerbosityLevelsFilter.set_on(handler, verbosity_levels)
 
         return handler
 
