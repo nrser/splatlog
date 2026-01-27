@@ -50,6 +50,10 @@ class RichHandler(logging.Handler):
     """
 
     linker: RichLinker
+    """
+    Function to produce link URI from file path, line number, and optional base
+    path.
+    """
 
     # Construction
     # ========================================================================
