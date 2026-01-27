@@ -18,7 +18,6 @@ from splatlog.typings import (
     NamedHandlerCast,
     ToExportHandler,
     OnConflict,
-    to_level,
     can_be_level,
 )
 
