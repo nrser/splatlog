@@ -11,14 +11,7 @@ import dataclasses as dc
 import logging
 from typing import Any, Literal, TypeAlias
 
-from rich.console import (
-    Console,
-    ConsoleRenderable,
-    Group,
-    RenderableType,
-    group,
-)
-from rich.containers import Renderables
+from rich.console import Console, ConsoleRenderable, group
 from rich.pretty import Pretty
 from rich.style import Style
 from rich.text import Text
