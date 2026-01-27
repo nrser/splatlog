@@ -40,6 +40,7 @@ THEME = Theme(
         # `report` — Used to print logging state reports
         # ====================================================================
         "report.logger.name": Style(color="cyan", bold=True),
+        "report.logger.name.sep": Style(color="bright_black"),
         "report.handler": Style(color="green", bold=True, reverse=True),
         "report.filter": Style(color="red", bold=True, reverse=True),
     }

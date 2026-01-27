@@ -19,7 +19,7 @@ from rich.tree import Tree
 from splatlog.rich import ToTheme
 from splatlog.rich.console import to_console, ToRichConsole
 from splatlog.rich.theme import to_theme
-from splatlog.typings import FilterType
+from splatlog.typings import FilterType, LevelValue
 
 
 ReportInclude: TypeAlias = Literal["all", "configured"]
@@ -71,48 +71,81 @@ def _should_include(opts: ReportOpts, logger: logging.Logger) -> bool:
             return _is_configured(opts, logger)
 
 
-def _format_level(level: int, console: Console, *, dim: bool = False) -> Text:
+def _format_level(
+    opts: ReportOpts, level: LevelValue, *, dim: bool = False
+) -> Text:
     """Format a logging level as styled text."""
     name = logging.getLevelName(level)
-    style = console.get_style(f"logging.level.{name.lower()}")
+    style = opts.console.get_style(f"logging.level.{name.lower()}")
     if style and dim:
         style = Style.chain(style, Style(dim=True))
     return Text(name, style=style)
 
 
+def _format_effective_level(
+    opts: ReportOpts, set_level: LevelValue, effective_level: LevelValue
+) -> Text:
+    text = Text()
+    text.append_text(_format_level(opts, set_level))
+
+    # Effective level (if different from set level)
+    if effective_level != set_level:
+        text.append(" → ", style="dim")
+        text.append_text(_format_level(opts, effective_level, dim=True))
+
+    return text
+
+
 def _format_logger_label(
-    logger: logging.Logger, console: Console, parent_name: str | None = None
+    opts: ReportOpts, logger: logging.Logger, parent_name: str | None = None
 ) -> Text:
     """Format a logger's label showing name, level, and effective level."""
     # Get styles with fallbacks
-    name_style = console.get_style("report.logger.name")
+    name_style = opts.console.get_style("report.logger.name")
+
+    # Style for parts of name shared with parent
+    parent_name_style = Style.chain(name_style, Style(dim=True, bold=False))
 
     # Build the label
     label = Text()
 
     # Logger name
     name = logger.name if logger.name else "root"
-    label.append(name, style=name_style)
 
-    # Level
+    if parent_name:
+        parent_name_parts = parent_name.split(".")
+
+        for i, part in enumerate(name.split(".")):
+            if i > 0:
+                label.append(".", style="report.logger.name.sep")
+
+            if i < len(parent_name_parts) and part == parent_name_parts[i]:
+                label.append(part, style=parent_name_style)
+            else:
+                label.append(part, style=name_style)
+    else:
+        label.append(name, style=name_style)
+
     label.append(" ")
-    label.append_text(_format_level(logger.level, console))
-
-    # Effective level (if different from set level)
-    effective = logger.getEffectiveLevel()
-    if effective != logger.level:
-        label.append("/", style="dim")
-        label.append_text(_format_level(effective, console, dim=True))
+    label.append_text(
+        _format_effective_level(
+            opts=opts,
+            set_level=logger.level,
+            effective_level=logger.getEffectiveLevel(),
+        )
+    )
 
     # Propagate (only show if False, since True is the default)
     if not logger.propagate:
-        label.append(" ", style="dim")
+        label.append(" ")
         label.append("propagate=False", style="dim italic")
 
     return label
 
 
-def _format_handler_label(handler: logging.Handler, console: Console) -> Text:
+def _format_handler_label(
+    opts: ReportOpts, handler: logging.Handler, logger: logging.Logger
+) -> Text:
     """Format a handler's label showing type and level."""
     label = Text()
 
@@ -124,12 +157,20 @@ def _format_handler_label(handler: logging.Handler, console: Console) -> Text:
 
     # Level
     label.append(" ")
-    label.append_text(_format_level(handler.level, console))
+
+    logger_effective_level = logger.getEffectiveLevel()
+
+    if handler.level >= logger_effective_level:
+        label.append_text(_format_level(opts, handler.level))
+    else:
+        label.append_text(
+            _format_effective_level(opts, handler.level, logger_effective_level)
+        )
 
     return label
 
 
-def _format_filter_label(filter: FilterType) -> Text:
+def _format_filter_label(opts: ReportOpts, filter: FilterType) -> Text:
     """Format a filter's label."""
     label = Text()
     label.append(" Filter ", style="report.filter")
@@ -139,27 +180,26 @@ def _format_filter_label(filter: FilterType) -> Text:
 
 
 def _add_filters_to_tree(
-    tree: Tree, filters: Sequence[FilterType], console: Console
+    opts: ReportOpts, tree: Tree, filters: Sequence[FilterType]
 ) -> None:
     """Add filter entries to a tree branch."""
     for f in filters:
-        tree.add(_format_filter_label(f))
+        tree.add(_format_filter_label(opts, f))
 
 
 def _add_handlers_to_tree(
-    tree: Tree, handlers: list[logging.Handler], console: Console
+    opts: ReportOpts,
+    tree: Tree,
+    logger: logging.Logger,
 ) -> None:
     """Add handler entries (with their filters) to a tree branch."""
-    for handler in handlers:
-        handler_branch = tree.add(_format_handler_label(handler, console))
+    for handler in _iter_handlers(opts, logger):
+        handler_branch = tree.add(_format_handler_label(opts, handler, logger))
         if handler.filters:
-            _add_filters_to_tree(handler_branch, handler.filters, console)
+            _add_filters_to_tree(opts, handler_branch, handler.filters)
 
 
-def _build_logger_tree(
-    opts: ReportOpts,
-    console: Console,
-) -> Tree:
+def _build_logger_tree(opts: ReportOpts) -> Tree:
     """Build the complete logger tree."""
     # Create the root of the tree
     tree = Tree("Logging System", guide_style="dim")
@@ -188,15 +228,15 @@ def _build_logger_tree(
     # Add root logger
     root_logger = logging.getLogger()
     if _should_include(opts, root_logger):
-        root_branch = tree.add(_format_logger_label(root_logger, console))
+        root_branch = tree.add(_format_logger_label(opts, root_logger))
 
         # Add handlers
         if root_logger.handlers:
-            _add_handlers_to_tree(root_branch, root_logger.handlers, console)
+            _add_handlers_to_tree(opts, root_branch, root_logger)
 
         # Add direct filters on the logger
         if root_logger.filters:
-            _add_filters_to_tree(root_branch, root_logger.filters, console)
+            _add_filters_to_tree(opts, root_branch, root_logger.filters)
 
     else:
         root_branch = tree
@@ -218,23 +258,28 @@ def _build_logger_tree(
                     break
 
         # Add this logger as a branch
-        label = _format_logger_label(logger, console, parent_name)
+        label = _format_logger_label(opts, logger, parent_name)
         logger_branch = parent_branch.add(label)
         branches[name] = logger_branch
 
         # Add handlers
         if logger.handlers:
-            _add_handlers_to_tree(logger_branch, logger.handlers, console)
+            _add_handlers_to_tree(opts, logger_branch, logger)
 
         # Add direct filters on the logger
         if logger.filters:
-            _add_filters_to_tree(logger_branch, logger.filters, console)
+            _add_filters_to_tree(opts, logger_branch, logger.filters)
 
     return tree
 
 
 @dc.dataclass
 class ReportOpts:
+    console: Console
+    """
+    {py:class}`rich.console.Console` to print the report to.
+    """
+
     include: ReportInclude = "all"
     """Which loggers to include in the report."""
 
@@ -281,16 +326,15 @@ def report(
     splatlog.report(filter=splatlog.LoggerFilter.CONFIGURED)
     ```
     """
+    # Create console with splatlog theme
+    console = to_console(console, theme=to_theme(theme))
+
     opts = ReportOpts(
+        console=console,
         include=include,
         show_placeholder_loggers=show_placeholder_loggers,
         show_null_handlers=show_null_handlers,
     )
 
-    # Create console with splatlog theme
-    console = to_console(console, theme=to_theme(theme))
-    tree = _build_logger_tree(
-        opts=opts,
-        console=console,
-    )
+    tree = _build_logger_tree(opts=opts)
     console.print(tree)
