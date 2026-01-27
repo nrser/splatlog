@@ -94,6 +94,24 @@ class FmtOpts(Generic[TFallback]):
     module_names: bool = True
     omit_builtins: bool = True
 
+    ls_sep: str = ","
+    """
+    List separator. {py:func}`fmt_list` will stick this between items (along
+    with a space).
+    """
+
+    ls_conj: str | None = None
+    """
+    List conjunction. When {py:data}`None` {py:func}`fmt_list` will use the
+    {py:attr}`FmtOpts.ls_sep` throughout, like `A, B, C`. Configuring a
+    conjunction `"and"` would get you `A, B, and C`.
+    """
+
+    ls_ox: bool = True
+    """
+    Should {py:func}`fmt_list` use the [Oxford comma][] style?
+    """
+
 
 DEFAULT_FMT_OPTS = FmtOpts()
 
@@ -368,3 +386,29 @@ def fmt_range(rng: range) -> str:
             return f"[{rng[0]}, ...]"
         return f"[{rng[0]}, {rng[1]}, ...]"
     return f"[{rng[0]}, {rng[1]}, ..., {rng.stop}]"
+
+
+@FmtOpts.provide
+def fmt_list(items: abc.Iterable, opts: FmtOpts[TFallback]) -> str:
+    """
+    Format a list of `items`. By default this is comma-separated, like
+    `A, B, C`.
+    """
+    if opts.ls_conj is None:
+        return f"{opts.ls_sep} ".join(fmt(item, opts) for item in items)
+
+    s = ""
+    sep_sp = f"{opts.ls_sep} "
+    ls = list(items)
+    i_end = len(ls) - 1
+    for i, item in enumerate(ls):
+        if i == i_end:
+            if opts.ls_ox:
+                s += opts.ls_sep
+            s += f" {opts.ls_conj} "
+        elif i > 0:
+            s += sep_sp
+
+        s += fmt(item, opts)
+
+    return s

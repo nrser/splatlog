@@ -23,6 +23,7 @@ from .text import (
     fmt_type_value as fmt_type_value,
     fmt_range as fmt_range,
     fmt_type_hint as fmt_type_hint,
+    fmt_list as fmt_list,
 )
 
 from .typeguard import satisfies as satisfies

@@ -1,0 +1,31 @@
+{
+    "MyST str": {
+        "prefix": "pystr",
+        "body": "{py:class}`str`",
+    },
+
+    "MyST int": {
+        "prefix": "pyint",
+        "body": "{py:class}`int`",
+    },
+
+    "MyST True": {
+        "prefix": "pytrue",
+        "body": "{py:data}`True`",
+    },
+
+    "MyST False": {
+        "prefix": "pyfalse",
+        "body": "{py:data}`False`",
+    },
+
+    "MyST logging": {
+        "prefix": "pylogging",
+        "body": "{py:mod}`logging`",
+    },
+
+    "MyST None": {
+        "prefix": "pynone",
+        "body": "{py:data}`None`",
+    },
+}

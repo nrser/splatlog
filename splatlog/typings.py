@@ -27,7 +27,7 @@ else:
 
 from typeguard import check_type, TypeCheckError
 
-from splatlog.lib import fmt_type_of, fmt_type_value
+from splatlog.lib import fmt_list, fmt_type_of, fmt_type_value
 from splatlog.lib.text import fmt
 from splatlog.rich import ToRichConsole
 
@@ -482,20 +482,26 @@ def to_level_name(level_value: Level) -> LevelName:
 
 def to_level(value: ToLevel, *, case_sensitive: bool = False) -> Level:
     """
-    Make a {py:mod}`logging` {py:type}`Level` integer from more useful/intuitive
-    things, like string you might get from an environment variable or command
-    option.
+    Obtain a {py:mod}`logging` {py:type}`Level` integer from more
+    useful/intuitive things, like strings you might get from an environment
+    variable or command line option.
 
     ## Parameters
 
     -   `value`: {py:type}`ToLevel` value to convert.
 
+    -   `case_sensitive`: when {py:data}`False` (default), both a given
+        {py:class}`str` `value` and its {py:meth}`str.upper` transformation will
+        be tried as level names.
+
+        When {py:data}`True`, level names must be verbatim.
+
     ## Examples
 
-    **Integers**
+    **{py:class}`int` Values**
 
-    Any integer is simply returned. This follows the logic in the stdlib
-    {py:mod}`logging` package, the `_checkLevel` function in particular.
+    Any integer is simply returned. This tracks the current {py:mod}`logging`
+    module logic, in particular the `_checkLevel` function.
 
     ```python
     >>> to_level(logging.DEBUG)
@@ -512,10 +518,11 @@ def to_level(value: ToLevel, *, case_sensitive: bool = False) -> Level:
     No, I have no idea what kind of mess using negative level values might
     cause.
 
-    **Strings**
+    **{py:class}`str` Values**
 
-    Integer levels can be provided as strings. Again, they don't have to
-    correspond to any named level.
+    Integer levels can be encoded as strings. IDK if this will happen much in
+    practice, but it's easy to tell what you mean, so we handle it. Again, the
+    integers don't have to correspond to any named level.
 
     ```python
     >>> to_level("8")
@@ -526,22 +533,32 @@ def to_level(value: ToLevel, *, case_sensitive: bool = False) -> Level:
     We also accept level *names*.
 
     ```python
-    >>> to_level("debug")
+    >>> to_level("DEBUG")
     10
 
     ```
 
-    We use the oddly-named `logging.getLevelName` to figure out if a string
-    is a level name (when given a string that is a level name it will
-    return the integer level value).
-
-    If we don't find the exact name we're given, we also try the upper-case
-    version of the string.
+    By default, both the `value` and the {py:meth}`str.upper` version are
+    tried.
 
     ```python
-    >>> to_level("DEBUG")
+    >>> to_level("debug")
     10
-    >>> to_level("Debug")
+    >>> to_level("DeBuG")
+    10
+
+    ```
+
+    If you specify `case_sensitive` behavior then level names must be exact.
+
+    ```python
+    >>> to_level("debug", case_sensitive=True)
+    Traceback (most recent call last):
+        ...
+    TypeError: 'debug' is not a valid level name (case-sensitive), valid names:
+    'CRITICAL', 'FATAL', 'ERROR', ...
+
+    >>> to_level("DEBUG", case_sensitive=True)
     10
 
     ```
@@ -590,7 +607,7 @@ def to_level(value: ToLevel, *, case_sensitive: bool = False) -> Level:
                     (
                         "{} is not a valid level name (case-sensitive), "
                         "valid names: {}"
-                    ).format(fmt(value), ", ".join(mapping.keys()))
+                    ).format(fmt(value), fmt_list(mapping.keys()))
                 )
 
             upper_value = value.upper()
@@ -602,9 +619,7 @@ def to_level(value: ToLevel, *, case_sensitive: bool = False) -> Level:
                 (
                     "Neither given value {} or upper-case version {} are valid "
                     "level names, valid names: {}"
-                ).format(
-                    fmt(value), fmt(upper_value), ", ".join(mapping.keys())
-                )
+                ).format(fmt(value), fmt(upper_value), fmt_list(mapping.keys()))
             )
 
         # This is the funky, pre-3.11 way (that I know) to go about it...
