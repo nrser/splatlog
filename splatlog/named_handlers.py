@@ -238,12 +238,16 @@ def to_console_handler(value: ToConsoleHandler) -> logging.Handler:
 
         ```python
         >>> import sys
+        >>> from splatlog import Verbosity
 
         >>> handler = to_console_handler(
         ...     dict(
         ...         console=sys.stdout,
         ...         level={
-        ...             "some_mod": ((0, "WARNING"), (1, "INFO")),
+        ...             "some_mod": {
+        ...                 Verbosity(0): "WARNING",
+        ...                 Verbosity(1): "INFO",
+        ...             }
         ...         }
         ...     )
         ... )
