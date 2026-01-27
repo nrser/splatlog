@@ -374,38 +374,6 @@ class SplatLogger(logging.LoggerAdapter):
 
         return log_inject_wrapper
 
-    def inspect(self) -> KwdMapping:
-        """
-        Produce a key/value mapping of useful information about the logger,
-        including any attached {py:class}`logging.Handler` and
-        {py:class}`logging.Filter` instances.
-        """
-        logger = self.logger
-        kw = {"name": logger.name, "level": fmt_level(logger.level)}
-
-        if logger.handlers:
-            handlers = []
-            for handler in logger.handlers:
-                h = {}
-                h["level"] = fmt_level(handler.level)
-
-                if handler.filters:
-                    filters = []
-                    for filter in handler.filters:
-                        filters.append(repr(filter))
-                    h["filters"] = filters
-
-                handlers.append(h)
-            kw["handlers"] = handlers
-
-        if logger.filters:
-            filters = []
-            for filter in logger.filters:
-                filters.append(repr(filter))
-            kw["filters"] = filters
-
-        return kw
-
     def __rich_repr__(self) -> rich.repr.Result:
         """
         Custom rich representation, consisting of the logger name, level, and
