@@ -7,7 +7,7 @@ import logging
 
 from rich.style import Style
 from rich.table import Table
-from rich.console import Console
+from rich.console import Console, RenderResult
 from rich.text import Text
 from rich.traceback import Traceback
 
@@ -76,6 +76,16 @@ class RichHandler(logging.Handler):
         self.show_path = show_path
         self.link_path = link_path
         self.linker = linker
+
+    # Rich
+    # ========================================================================
+
+    def __rich_repr__(self):
+        yield "level", self.level
+        yield "console", self.console
+        yield "show_path", self.show_path
+        yield "link_path", self.link_path
+        yield "linker", self.linker
 
     # `logging.Handler` Overrides
     # ========================================================================

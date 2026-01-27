@@ -6,12 +6,20 @@ Provides a rich-formatted view of all loggers, handlers, and filters.
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Sequence
+from collections.abc import Generator, Iterable, Sequence
 import dataclasses as dc
 import logging
-from typing import Literal, TypeAlias
+from typing import Any, Literal, TypeAlias
 
-from rich.console import Console
+from rich.console import (
+    Console,
+    ConsoleRenderable,
+    Group,
+    RenderableType,
+    group,
+)
+from rich.containers import Renderables
+from rich.pretty import Pretty
 from rich.style import Style
 from rich.text import Text
 from rich.tree import Tree
@@ -143,21 +151,20 @@ def _format_logger_label(
     return label
 
 
+@group(fit=True)
 def _format_handler_label(
     opts: ReportOpts, handler: logging.Handler, logger: logging.Logger
-) -> Text:
+) -> Generator[ConsoleRenderable, Any, None]:
     """Format a handler's label showing type and level."""
+
     label = Text()
 
     # Handler type
-    handler_type = type(handler).__name__
     label.append(" Handler ", style="report.handler")
+
     label.append(" ")
-    label.append(handler_type, style="repr.tag_name")
 
     # Level
-    label.append(" ")
-
     logger_effective_level = logger.getEffectiveLevel()
 
     if handler.level >= logger_effective_level:
@@ -167,16 +174,22 @@ def _format_handler_label(
             _format_effective_level(opts, handler.level, logger_effective_level)
         )
 
-    return label
+    yield label
+
+    yield Pretty(handler)
 
 
-def _format_filter_label(opts: ReportOpts, filter: FilterType) -> Text:
+@group(fit=True)
+def _format_filter_label(
+    opts: ReportOpts, filter: FilterType
+) -> Generator[ConsoleRenderable, Any, None]:
     """Format a filter's label."""
     label = Text()
     label.append(" Filter ", style="report.filter")
-    label.append(" ")
-    label.append(repr(filter), style="repr.tag_name")
-    return label
+
+    yield label
+
+    yield Pretty(filter)
 
 
 def _add_filters_to_tree(
