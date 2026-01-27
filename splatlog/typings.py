@@ -323,8 +323,7 @@ def is_level_name(
 
 def is_level(value: object) -> TypeIs[Level]:
     """
-    Test if `value` is a {py:type}`Level`, which we define as any integer
-    greater or equal to {py:data}`logging.NOTSET` (any non-negative integer),
+    Test if `value` is a {py:type}`Level`, which we define as any integer,
     excluding the booleans {py:data}`True` and {py:data}`False`.
 
     ## Examples
@@ -338,7 +337,7 @@ def is_level(value: object) -> TypeIs[Level]:
     True
 
     >>> is_level(-1)
-    False
+    True
 
     >>> is_level(True)
     False
@@ -348,11 +347,7 @@ def is_level(value: object) -> TypeIs[Level]:
 
     ```
     """
-    return (
-        isinstance(value, int)
-        and value >= logging.NOTSET
-        and not (value is True or value is False)
-    )
+    return isinstance(value, int) and not (value is True or value is False)
 
 
 def can_be_level(
@@ -363,7 +358,8 @@ def can_be_level(
 
     Must be one of:
 
-    1.  Already a {py:type}`Level` (nonnegative {py:class}`int`),
+    1.  Already a {py:type}`Level` (any {py:class}`int` besides {py:data}`True`
+        and {py:data}`False`),
     2.  {py:class}`str` representation of a {py:type}`Level`, or
     3.  {py:class}`str` that is a registered {py:type}`LevelName`
         (case-insensitive).
@@ -384,9 +380,15 @@ def can_be_level(
     True
 
     >>> can_be_level(-1)
+    True
+
+    >>> can_be_level("-1")
     False
 
     >>> can_be_level("not_a_level")
+    False
+
+    >>> can_be_level(True)
     False
 
     ```
@@ -484,18 +486,16 @@ def to_level(value: ToLevel, *, case_sensitive: bool = False) -> Level:
     things, like string you might get from an environment variable or command
     option.
 
-    Parameters
-    --------------------------------------------------------------------------
+    ## Parameters
 
-    -   `value`: {py:type}`ToLevel` value to convert
+    -   `value`: {py:type}`ToLevel` value to convert.
 
-    Examples
-    --------------------------------------------------------------------------
+    ## Examples
 
-    ### Integers ###
+    **Integers**
 
     Any integer is simply returned. This follows the logic in the stdlib
-    `logging` package, `logging._checkLevel` in particular.
+    {py:mod}`logging` package, the `_checkLevel` function in particular.
 
     ```python
     >>> to_level(logging.DEBUG)
@@ -504,15 +504,15 @@ def to_level(value: ToLevel, *, case_sensitive: bool = False) -> Level:
     >>> to_level(123)
     123
 
-    >>> to_level("10")
-    10
+    >>> to_level(-1)
+    -1
 
     ```
 
     No, I have no idea what kind of mess using negative level values might
     cause.
 
-    ### Strings ###
+    **Strings**
 
     Integer levels can be provided as strings. Again, they don't have to
     correspond to any named level.
@@ -555,7 +555,7 @@ def to_level(value: ToLevel, *, case_sensitive: bool = False) -> Level:
 
     ```
 
-    ### Other ###
+    **Other**
 
     Everything else can kick rocks:
 
