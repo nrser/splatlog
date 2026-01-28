@@ -1,5 +1,5 @@
 import json
-from typing import Optional, Self, IO, Union
+from typing import Optional, Self, IO
 from collections.abc import Iterable, Callable, Mapping
 
 from splatlog.lib import each, fmt_type
