@@ -6,7 +6,7 @@ from splatlog.lib import each, fmt_type
 from splatlog.lib.text import fmt
 from splatlog.typings import JSONEncoderCastable
 
-from .default_handlers import ALL_HANDLERS, DefaultHandler
+from .reducers import ALL_REDUCERS, JSONReducer
 
 __all__ = ["JSONEncoder"]
 
@@ -107,7 +107,7 @@ class JSONEncoder(json.JSONEncoder):
     that applies wins... or loses; if that path fails for some reason, we don't
     keep trying down-list.
 
-    **`to_json_encodable` Method Handler**
+    **`to_json_encodable` Method Reducer**
 
     Any object can implement a `to_json_encodable` method, and that will be
     used.
@@ -444,13 +444,13 @@ class JSONEncoder(json.JSONEncoder):
             )
         )
 
-    _handlers: Optional[list[DefaultHandler]] = None
-    _continue_on_handler_error: bool = True
+    _reducers: Optional[list[JSONReducer]] = None
+    _continue_on_reducer_error: bool = True
 
     def __init__(
         self,
         *,
-        handlers: DefaultHandler | Iterable[DefaultHandler] | None = None,
+        reducers: JSONReducer | Iterable[JSONReducer] | None = None,
         default: None = None,
         **kwds,
     ):
@@ -462,22 +462,22 @@ class JSONEncoder(json.JSONEncoder):
 
         super().__init__(**kwds)
 
-        if handlers is not None:
-            self.add_handlers(handlers)
+        if reducers is not None:
+            self.add_reducers(reducers)
 
     def default(self, obj):
-        for handler in (
-            ALL_HANDLERS if self._handlers is None else self._handlers
+        for reducer in (
+            ALL_REDUCERS if self._reducers is None else self._reducers
         ):
             try:
-                if handler.is_match(obj):
-                    return handler.handle(obj)
+                if reducer.is_match(obj):
+                    return reducer.reduce(obj)
             except Exception as error:
-                if self._continue_on_handler_error:
+                if self._continue_on_reducer_error:
                     pass
                 else:
                     raise TypeError(
-                        f"Encoding handler {handler.name} raised"
+                        f"Encoding reducer {reducer.name} raised"
                     ) from error
 
         return super().default(obj)
@@ -486,28 +486,28 @@ class JSONEncoder(json.JSONEncoder):
         for chunk in self.iterencode(obj):
             fp.write(chunk)
 
-    def get_handlers(self) -> tuple[DefaultHandler, ...]:
-        if self._handlers is None:
-            return ALL_HANDLERS
-        return tuple(self._handlers)
+    def get_reducers(self) -> tuple[JSONReducer, ...]:
+        if self._reducers is None:
+            return ALL_REDUCERS
+        return tuple(self._reducers)
 
-    def add_handlers(self, handlers) -> None:
-        if self._handlers is None:
-            self._handlers = list(ALL_HANDLERS)
+    def add_reducers(self, reducers) -> None:
+        if self._reducers is None:
+            self._reducers = list(ALL_REDUCERS)
 
-        self._handlers.extend(each(handlers))
+        self._reducers.extend(each(reducers))
 
-        self._handlers.sort()
+        self._reducers.sort()
 
-    def remove_handlers(
-        self, match: Callable[[DefaultHandler], bool]
-    ) -> tuple[DefaultHandler, ...]:
-        if self._handlers is None:
-            self._handlers = list(ALL_HANDLERS)
+    def remove_reducers(
+        self, match: Callable[[JSONReducer], bool]
+    ) -> tuple[JSONReducer, ...]:
+        if self._reducers is None:
+            self._reducers = list(ALL_REDUCERS)
 
-        matches = tuple(h for h in self._handlers if match(h))
+        matches = tuple(r for r in self._reducers if match(r))
 
-        for h in matches:
-            self._handlers.remove(h)
+        for r in matches:
+            self._reducers.remove(r)
 
         return matches

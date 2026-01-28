@@ -10,81 +10,81 @@ from splatlog.lib import fmt_type, has_method
 
 from .json_typings import JSONEncodable
 
-THandleFn = Callable[[Any], JSONEncodable]
+TReduceFn = Callable[[Any], JSONEncodable]
 
 
 @dataclasses.dataclass(frozen=True, order=True)
-class DefaultHandler:
+class JSONReducer:
     priority: int
     name: str
     is_match: Callable[[Any], bool]
-    handle: THandleFn
+    reduce: TReduceFn
 
 
-def instance_handler(
-    cls: Type, priority: int, handle: THandleFn
-) -> DefaultHandler:
-    return DefaultHandler(
+def instance_reducer(
+    cls: Type, priority: int, reduce: TReduceFn
+) -> JSONReducer:
+    return JSONReducer(
         name=fmt_type(cls),
         priority=priority,
         is_match=lambda obj: isinstance(obj, cls),
-        handle=handle,
+        reduce=reduce,
     )
 
 
-def method_handler(method_name: str, priority: int) -> DefaultHandler:
-    return DefaultHandler(
+def method_reducer(method_name: str, priority: int) -> JSONReducer:
+    return JSONReducer(
         name=f".{method_name}()",
         priority=priority,
         is_match=lambda obj: has_method(obj, method_name, req_arity=0),
-        handle=lambda obj: getattr(obj, method_name)(),
+        reduce=lambda obj: getattr(obj, method_name)(),
     )
 
 
-def handle_exception(error: BaseException) -> dict[str, JSONEncodable]:
+def reduce_exception(error: BaseException) -> dict[str, JSONEncodable]:
     dct: dict[str, JSONEncodable] = dict(
         type=fmt_type(error.__class__),
         msg=str(error),
     )
 
     if error.__traceback__ is not None:
-        dct["traceback"] = TRACEBACK_HANDLER.handle(error.__traceback__)
+        dct["traceback"] = TRACEBACK_REDUCER.reduce(error.__traceback__)
 
     if error.__cause__ is not None:
-        dct["cause"] = handle_exception(error.__cause__)
+        dct["cause"] = reduce_exception(error.__cause__)
 
     return dct
 
 
-TO_JSON_ENCODABLE_HANDLER = method_handler(
+TO_JSON_ENCODABLE_REDUCER = method_reducer(
     method_name="to_json_encodable",
     priority=10,
 )
 
-CLASS_HANDLER = DefaultHandler(
+CLASS_REDUCER = JSONReducer(
     name="class",
     priority=20,
     is_match=isclass,
-    handle=fmt_type,
+    reduce=fmt_type,
 )
 
-DATACLASS_HANDLER = DefaultHandler(
+DATACLASS_REDUCER = JSONReducer(
     name="dataclasses.dataclass",
     priority=30,
     is_match=dataclasses.is_dataclass,
-    handle=dataclasses.asdict,
+    reduce=dataclasses.asdict,
 )
 
-ENUM_HANDLER = instance_handler(
+ENUM_REDUCER = instance_reducer(
     cls=Enum,
     priority=40,
-    handle=lambda obj: f"{fmt_type(obj.__class__)}.{obj.name}",
+    reduce=lambda obj: f"{fmt_type(obj.__class__)}.{obj.name}",
 )
 
-TRACEBACK_HANDLER = instance_handler(
+TRACEBACK_REDUCER = instance_reducer(
     cls=TracebackType,
     priority=40,
-    handle=lambda tb: [
+    reduce=lambda tb: [
         dict(
             file=frame_summary.filename,
             line=frame_summary.lineno,
@@ -95,40 +95,40 @@ TRACEBACK_HANDLER = instance_handler(
     ],
 )
 
-EXCEPTION_HANDLER = instance_handler(
+EXCEPTION_REDUCER = instance_reducer(
     cls=BaseException,
     priority=40,
-    handle=handle_exception,
+    reduce=reduce_exception,
 )
 
-MAPPING_HANDLER = instance_handler(
+MAPPING_REDUCER = instance_reducer(
     cls=Mapping,
     priority=50,
-    handle=lambda obj: {
+    reduce=lambda obj: {
         "__class__": fmt_type(obj.__class__),
         "items": dict(obj),
     },
 )
 
-COLLECTION_HANDLER = instance_handler(
+COLLECTION_REDUCER = instance_reducer(
     cls=Collection,
     priority=60,
-    handle=lambda obj: {
+    reduce=lambda obj: {
         "__class__": fmt_type(obj.__class__),
         "items": tuple(obj),
     },
 )
 
-FALLBACK_HANDLER = DefaultHandler(
+FALLBACK_REDUCER = JSONReducer(
     name="fallback",
     priority=100,
     is_match=lambda obj: True,
-    handle=lambda obj: {
+    reduce=lambda obj: {
         "__class__": fmt_type(obj.__class__),
         "__repr__": repr(obj),
     },
 )
 
-ALL_HANDLERS: tuple[DefaultHandler, ...] = tuple(
-    sorted(x for x in locals().values() if isinstance(x, DefaultHandler))
+ALL_REDUCERS: tuple[JSONReducer, ...] = tuple(
+    sorted(x for x in locals().values() if isinstance(x, JSONReducer))
 )
