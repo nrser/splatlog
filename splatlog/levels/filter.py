@@ -10,8 +10,10 @@ from itertools import pairwise
 import logging
 from typing import overload
 
+from rich.text import Text
+
 from splatlog import Level
-from splatlog.lib import has_method
+from splatlog.lib import fmt, fmt_range, has_method
 from splatlog.lib.collections.classifier import Classifier
 from splatlog.names import is_in_hierarchy
 from splatlog.typings import (
@@ -219,7 +221,11 @@ class VerbosityFilter(Filter):
         return f"<{self.__class__.__name__} {fmt_level(self.effective_level)}>"
 
     def __rich_repr__(self):
-        yield "classifier", self.classifier
+        for rng, level in self.classifier.iter_rules():
+            if isinstance(rng, range):
+                yield Text(fmt_range(rng))
+            else:
+                yield fmt(rng)
 
     @property
     def effective_level(self) -> Level:

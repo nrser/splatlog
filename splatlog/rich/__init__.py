@@ -20,7 +20,7 @@ from .theme import (
 )
 from .typings import Rich as Rich, is_rich as is_rich
 from .enriched_type import EnrichedType as EnrichedType
-from .ntv_table import ntv_table as ntv_table
+from .ntv_table import NtvTable, TableSource
 from .enrich import (
     REPR_HIGHLIGHTER as REPR_HIGHLIGHTER,
     enrich as enrich,
@@ -43,6 +43,8 @@ to_theme.__module__ = __name__
 get_default_theme.__module__ = __name__
 set_default_theme.__module__ = __name__
 override_ansi_colors.__module__ = __name__
+NtvTable.__module__ = __name__
+TableSource.__module__ = __name__
 
 
 __all__ = [
@@ -54,6 +56,9 @@ __all__ = [
     "get_default_theme",
     "set_default_theme",
     "override_ansi_colors",
+    # .ntv_table
+    "NtvTable",
+    "TableSource",
     # .
     "capture_riches",
 ]

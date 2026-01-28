@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import (
     Any,
     Callable,
-    Optional,
+    ClassVar,
     Protocol,
     TypeAlias,
     TypeVar,
@@ -15,7 +15,12 @@ import dataclasses as dc
 from rich.table import Table, Column
 from rich.padding import PaddingDimensions
 from rich.box import Box
-from rich.console import Console, ConsoleOptions, RenderResult
+from rich.console import (
+    Console,
+    ConsoleOptions,
+    ConsoleRenderable,
+    RenderResult,
+)
 
 from .typings import is_rich
 from .enrich import enrich, enrich_type, enrich_type_of
@@ -74,29 +79,141 @@ TableSource = Mapping[str, object] | Iterable[tuple[str, object]]
 
 
 @dc.dataclass
-class NtvTable:
+class NtvTable(ConsoleRenderable):
     """
-    Renderable that constructs an NTV `Table` at render time so we can resolve
-    styles against the rendering `Console` with graceful fallbacks.
+    A {py:class}`rich.console.ConsoleRenderable` that renders a
+    {py:class}`rich.table.Table` with `(name, type, value)` columns from a
+    {py:type}`TableSource` mapping {py:class}`str` names to {py:class}`object`
+    values.
+
+    This {py:func}`dataclasses.dataclass` holds the configuration and constructs
+    the {py:class}`rich.table.Table` at render-time so we can resolve styles
+    against the given {py:class}`rich.console.Console` with graceful fallbacks.
+
+    ## Examples
+
+    1.  Basic usage
+
+        ```py
+        >>> import rich
+
+        >>> rich.print(NtvTable({"a": 1, "b": "bee!"}))
+        a           int          1
+        b           str          bee!
+
+        ```
+
+    2.  Show column names
+
+        ```py
+        >>> rich.print(NtvTable({"a": 1, "b": "bee!"}, show_header=True))
+        Name        Type        Value
+        a           int          1
+        b           str          bee!
+
+        ```
+
+    3.  Sort rows by name
+
+        ```py
+        >>> rich.print(
+        ...     NtvTable({"bob": 123, "carol": 456, "alice": 789}, sort=True)
+        ... )
+        alice       int          789
+        bob         int          123
+        carol       int          456
+
+        ```
+
+    4.  Custom sort (descending by value)
+
+        ```py
+        >>> rich.print(
+        ...     NtvTable(
+        ...         {"bob": 123, "carol": 456, "alice": 789},
+        ...         sort=lambda kv: -kv[1]
+        ...     )
+        ... )
+        alice       int          789
+        carol       int          456
+        bob         int          123
+
+        ```
+    """
+
+    DEFAULT_COL_SETUP: ClassVar[tuple[dict[str, Any], ...]] = (
+        {"min_width": 10},
+        {"min_width": 10, "max_width": 40},
+        {"min_width": 10},
+    )
+    """
+    Defaults values for header {py:class}`rich.table.Column`, by column index.
     """
 
     source: TableSource
-    headers: tuple[Column | str, ...] = dc.field(default_factory=tuple)
+    """
+    A {py:type}`TableSource` mapping {py:class}`str` names to {py:class}`object`
+    values.
+    """
+
+    headers: tuple[Column | str, ...] = dc.field(
+        default=("Name", "Type", "Value")
+    )
+    """
+    Column headers for the table, see {py:meth}`NtvTable.columns` for details.
+    """
+
     box: Box | None = None
+    """See {py:class}`rich.table.Table`."""
+
     padding: PaddingDimensions = (0, 1)
+    """See {py:class}`rich.table.Table`."""
+
     collapse_padding: bool = True
+    """See {py:class}`rich.table.Table`."""
+
     show_header: bool = False
+    """See {py:class}`rich.table.Table`."""
+
     show_footer: bool = False
+    """See {py:class}`rich.table.Table`."""
+
     show_edge: bool = False
+    """See {py:class}`rich.table.Table`."""
+
     pad_edge: bool = False
+    """See {py:class}`rich.table.Table`."""
+
     sort: bool | Callable[[tuple[str, object]], SupportsRichComparison] = False
-    rich_table_kwds: dict[str, Any] = dc.field(default_factory=dict)
+    """
+    How to sort the table rows:
+
+    1.  `False` (default) — source rows are added in iteration order. Note
+        that you can control this externally by passing an
+        `Iterable[tuple[str, object]]` instead of a `Mapping[str, object]`.
+
+    2.  `True` — source is converted to an `Iterable[tuple[str, object]]` (if
+        needed) and passed through {py:func}`sorted`, which pretty much amounts
+        to sorting the rows by name.
+
+    3.  `((str, object)) -> SupportsRichComparison` — same as (2) but with this
+        function given as the `key=` parameter, allowing you to customize the
+        sort order.
+    """
+
+    extras: dict[str, Any] = dc.field(default_factory=dict)
+    """Additional keyword arguments for {py:class}`rich.table.Table`."""
 
     def __rich_console__(
         self, console: Console, options: ConsoleOptions
     ) -> RenderResult:
+        """
+        Render the {py:class}`rich.table.Table`, using the instance attributes
+        as well as style (and potentially other) information from the given
+        {py:class}`rich.console.Console`.
+        """
         table = Table(
-            *self.headers,
+            *self.columns(console),
             box=self.box,
             padding=self.padding,
             collapse_padding=self.collapse_padding,
@@ -104,17 +221,8 @@ class NtvTable:
             show_footer=self.show_footer,
             show_edge=self.show_edge,
             pad_edge=self.pad_edge,
-            **self.rich_table_kwds,
+            **self.extras,
         )
-
-        if len(self.headers) == 0:
-            name_style = console.get_style(
-                "log.data.name", default="repr.attrib_name"
-            )
-            table.add_column("Name", style=name_style, min_width=10)
-            # table.add_column("Type", style="log.data.type")
-            table.add_column("Type", min_width=10, max_width=40)
-            table.add_column("Value", min_width=10)
 
         items = (
             cast(Iterable[tuple[str, object]], self.source.items())
@@ -143,123 +251,42 @@ class NtvTable:
                 rich_value = enrich(value)
             table.add_row(key, rich_value_type, rich_value)
 
-        yield table
+        return (table,)
 
+    def columns(self, console: Console) -> list[Column]:
+        """
+        Convert the {py:attr}`NtvTable.headers` to a {py:class}`list` of
+        {py:class}`rich.table.Column` to use as the {py:class}`rich.table.Table`
+        headers.
 
-# Functional API
-# ============================================================================
-#
-# Pre-dates the renderable class, now simply offers a convenient interface
-# similar to the `rich.table.Table` constructor to create a `NtvTable`.
+        Builds columns from {py:class}`str` headers, applying style and the
+        {py:data}`NtvTable.DEFAULT_COL_SETUP` values for the corresponding
+        index, if any.
 
+        {py:class}`rich.table.Column` headers have the style and defaults
+        applied if those attributes are {py:data}`None`.
 
-def ntv_table(
-    source: TableSource,
-    *headers: Column | str,
-    box: Optional[Box] = None,
-    padding: PaddingDimensions = (0, 1),
-    collapse_padding: bool = True,
-    show_header: bool = False,
-    show_footer: bool = False,
-    show_edge: bool = False,
-    pad_edge: bool = False,
-    sort: bool | Callable[[tuple[str, object]], SupportsRichComparison] = False,
-    **rich_table_kwds: Any,
-) -> NtvTable:
-    """
-    Create a renderable that prints a `rich.table.Table` with (name, type, value)
-    columns from a `TableSource` mapping `str` names to `object` values.
+        Needs the {py:class}`rich.console.Console` to get styles with fallback,
+        so we can prefer Splatlog styles but manage without them.
+        """
+        style = console.get_style("log.data.name", default="repr.attrib_name")
 
-    ##### Parameters #####
+        columns: list[Column] = []
 
-    -   `source` — a `TableSource` mapping `str` names to `object` values.
+        for i, header in enumerate(self.headers):
+            defaults: dict[str, Any] = {"style": style}
+            if i < len(self.DEFAULT_COL_SETUP):
+                defaults.update(self.DEFAULT_COL_SETUP[i])
 
-    -   `headers` — if given, passed to `rich.table.Table`. If omitted then then
-        Name, Type and Value columns are automatically added (see source).
+            match header:
+                case str(name):
+                    columns.append(Column(name, **defaults))
 
-    -   `sort` — when...
+                case col if isinstance(col, Column):
+                    for k, v in defaults.items():
+                        if getattr(col, k, None) is None:
+                            setattr(col, k, v)
 
-        1.  `False` (default) — source rows are added in iteration order. Note
-            that you can control this externally by passing an
-            `Iterable[tuple[str, object]]` instead of a `Mapping[str, object]`.
+                    columns.append(col)
 
-        2.  `True` — source is converted to an `Iterable[tuple[str, object]]`
-            (if needed) and passed through `sorted`, which pretty much amounts
-            to sorting the rows by name.
-
-        3.  `((str, object)) -> SupportsRichComparison` — same as (2) but with
-            `sort` given as the `key=` parameter, allowing you to customize the
-            sort order.
-
-    -   everything else — passed to `rich.table.Table`.
-
-    ##### Returns #####
-
-    A renderable that renders to a `rich.table.Table` with three columns (name,
-    type, value). Styles are resolved at render time with a fallback so it works
-    with `rich.print` even if the default console theme lacks custom styles.
-
-    ##### Examples #####
-
-    1.  Basic usage
-
-        ```py
-        >>> import rich
-
-        >>> rich.print(ntv_table({"a": 1, "b": "bee!"}))
-        a           int          1
-        b           str          bee!
-
-        ```
-
-    2.  Show column names
-
-        ```py
-        >>> rich.print(ntv_table({"a": 1, "b": "bee!"}, show_header=True))
-        Name        Type        Value
-        a           int          1
-        b           str          bee!
-
-        ```
-
-    3.  Sort rows by name
-
-        ```py
-        >>> rich.print(
-        ...     ntv_table({"bob": 123, "carol": 456, "alice": 789}, sort=True)
-        ... )
-        alice       int          789
-        bob         int          123
-        carol       int          456
-
-        ```
-
-    4.  Custom sort (descending by value)
-
-        ```py
-        >>> rich.print(
-        ...     ntv_table(
-        ...         {"bob": 123, "carol": 456, "alice": 789},
-        ...         sort=lambda kv: -kv[1]
-        ...     )
-        ... )
-        alice       int          789
-        carol       int          456
-        bob         int          123
-
-        ```
-    """
-
-    return NtvTable(
-        source=source,
-        headers=headers,
-        box=box,
-        padding=padding,
-        collapse_padding=collapse_padding,
-        show_header=show_header,
-        show_footer=show_footer,
-        show_edge=show_edge,
-        pad_edge=pad_edge,
-        sort=sort,
-        **rich_table_kwds,
-    )
+        return columns

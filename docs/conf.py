@@ -40,6 +40,7 @@ autodoc2_type_aliases = True
 # define `__all__` and set `__module__`
 autodoc2_module_all_regexes = [
     r"^splatlog\.levels$",
+    r"^splatlog\.rich$",
 ]
 
 ### `sphinx.ext.intersphinx` Options ###

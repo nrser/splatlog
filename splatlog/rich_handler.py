@@ -7,13 +7,13 @@ import logging
 
 from rich.style import Style
 from rich.table import Table
-from rich.console import Console, RenderResult
+from rich.console import Console
 from rich.text import Text
 from rich.traceback import Traceback
 
 from splatlog.levels import Filter
 from splatlog.lib import str_find_all
-from splatlog.rich import Rich, ntv_table, to_theme, enrich
+from splatlog.rich import NtvTable, Rich, to_theme, enrich
 from splatlog.rich import ToRichConsole, ToTheme, to_console
 from splatlog.rich.link import RichLinker, vscode_linker
 from splatlog.typings import LevelSpec
@@ -169,7 +169,7 @@ class RichHandler(logging.Handler):
         if src := getattr(record, "self", None):
             output.add_row(
                 LABEL_SELF,
-                ntv_table(src) if isinstance(src, Mapping) else enrich(src),
+                NtvTable(src) if isinstance(src, Mapping) else enrich(src),
             )
 
         # Row -- "msg", message
@@ -177,7 +177,7 @@ class RichHandler(logging.Handler):
 
         # Row (data-dependent) -- "data", data table
         if data := getattr(record, "data", None):
-            output.add_row(LABEL_DATA, ntv_table(data))
+            output.add_row(LABEL_DATA, NtvTable(data))
 
         # Row (data-dependent) -- "err", exception info (traceback)
         match record.exc_info:
