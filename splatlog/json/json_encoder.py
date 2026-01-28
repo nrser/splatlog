@@ -1,5 +1,5 @@
 import json
-from typing import Optional, TypeVar, IO, Union
+from typing import Optional, Self, IO, Union
 from collections.abc import Iterable, Callable, Mapping
 
 from splatlog.lib import each, fmt_type
@@ -10,25 +10,24 @@ from .default_handlers import ALL_HANDLERS, DefaultHandler
 
 __all__ = ["JSONEncoder"]
 
-Self = TypeVar("Self", bound="JSONEncoder")
-
 
 class JSONEncoder(json.JSONEncoder):
     """
-    An extension of `json.JSONEncoder` that attempts to deal with all the crap
-    you might splat into a log.
+    An extension of {py:class}`json.JSONEncoder` that attempts to deal with all
+    the crap you might splat into a log.
 
-    ##### Usage #####
+    ## Usage
 
-    ###### Usage with `json.dump` and `json.dumps` #######
+    **Usage with {py:func}`json.dump` and {py:func}`json.dumps`**
 
-    The encoder can be used with `json.dump` and `json.dumps` as follows.
+    The encoder can be used with {py:func}`json.dump` and {py:func}`json.dumps`
+    by setting the `cls` keyword argument to the class.
 
     ```python
     >>> import json
-    >>> from sys import stdout
+    >>> import sys
 
-    >>> json.dump(dict(x=1, y=2, z=3), stdout, cls=JSONEncoder)
+    >>> json.dump(dict(x=1, y=2, z=3), sys.stdout, cls=JSONEncoder)
     {"x": 1, "y": 2, "z": 3}
 
     >>> json.dumps(dict(x=1, y=2, z=3), cls=JSONEncoder)
@@ -36,52 +35,47 @@ class JSONEncoder(json.JSONEncoder):
 
     ```
 
-    ###### Instance Usage ######
+    **Reusable Instance Usage**
 
-    However, usage with `json.dump` and `json.dumps` will create a new
-    `splatlog.json.json_encoder.JSONEncoder` instance for each call. It's more
+    However, usage with {py:func}`json.dump` and {py:func}`json.dumps` will
+    create a new {py:class}`JSONEncoder` instance for each call. It's more
     efficient to create a single instance and use it repeatedly.
 
     ```python
-
     >>> encoder = JSONEncoder()
 
     ```
 
-    The encoder provides a `splatlog.json.json_encoder.JSONEncoder.dump`
-    convenience method for (chunked) encoding to a file-like object.
+    The encoder provides a {py:meth}`JSONEncoder.dump` convenience method for
+    (chunked) encoding to a file-like object.
 
     ```python
-
-    >>> encoder.dump(dict(x=1, y=2, z=3), stdout)
+    >>> encoder.dump(dict(x=1, y=2, z=3), sys.stdout)
     {"x": 1, "y": 2, "z": 3}
 
     ```
 
-    The inherited `json.JSONEncoder.encode` method stands-in for `json.dumps`.
+    The inherited {py:meth}`json.JSONEncoder.encode` method stands-in for
+    {py:func}`json.dumps`.
 
     ```python
-
     >>> encoder.encode(dict(x=1, y=2, z=3))
     '{"x": 1, "y": 2, "z": 3}'
 
     ```
 
-    ###### Construction Helpers #####
+    **Pretty Encoding**
 
-    Construction helper class methods are provided for common instance
-    configurations.
+    Class methods are provided to help construct common configurations.
 
-    The `splatlog.json.json_encoder.JSONEncoder.pretty` helper creates instances
-    that output "pretty" JSON by setting
-    `splatlog.json.json_encoder.JSONEncoder.indent` to `4`.
+    The {py:meth}`JSONEncoder.pretty` helper creates instances that output
+    "pretty" JSON by setting the `indent` attribute to `4`.
 
     Useful for human-read output.
 
     ```python
-
     >>> pretty_encoder = JSONEncoder.pretty()
-    >>> pretty_encoder.dump(dict(x=1, y=2, z=3), stdout)
+    >>> pretty_encoder.dump(dict(x=1, y=2, z=3), sys.stdout)
     {
         "x": 1,
         "y": 2,
@@ -90,36 +84,35 @@ class JSONEncoder(json.JSONEncoder):
 
     ```
 
-    The `splatlog.json.json_encoder.JSONEncoder.compact` helper creates
-    instances that output the most compact JSON, limiting each output to a
-    single line.
+    **Compact Encoding**
+
+    The {py:class}`JSONEncoder.compact` helper creates instances that output the
+    most compact JSON, limiting each output to a single line.
 
     Useful for machine-read output, especially log files.
 
     ```python
-
     >>> compact_encoder = JSONEncoder.compact()
-    >>> compact_encoder.dump(dict(x=1, y=2, z=3), stdout)
+    >>> compact_encoder.dump(dict(x=1, y=2, z=3), sys.stdout)
     {"x":1,"y":2,"z":3}
 
     ```
 
-    ##### Extended Encoding Capabilities #####
+    **Extended Encoding Capabilities**
 
     The whole point of this class is to be able to encode (far) more than the
-    standard `json.JSONEncoder`.
+    standard {py:class}`json.JSONEncoder`.
 
-    Extended capabilities are presented in resolution order — first one that
-    applies wins... or loses; if that path fails for some reason, we don't keep
-    trying down-list.
+    Extended capabilities are presented here in resolution order — first one
+    that applies wins... or loses; if that path fails for some reason, we don't
+    keep trying down-list.
 
-    ###### Custom Handler #######
+    **`to_json_encodable` Method Handler**
 
     Any object can implement a `to_json_encodable` method, and that will be
     used.
 
     ```python
-
     >>> class A:
     ...     def __init__(self, x, y, z):
     ...         self.x = x
@@ -129,12 +122,12 @@ class JSONEncoder(json.JSONEncoder):
     ...     def to_json_encodable(self):
     ...         return dict(x=self.x, y=self.y, z=self.z)
 
-    >>> encoder.dump(A(x=1, y=2, z=3), stdout)
+    >>> encoder.dump(A(x=1, y=2, z=3), sys.stdout)
     {"x": 1, "y": 2, "z": 3}
 
     ```
 
-    ###### Classes ######
+    **Classes**
 
     Classes are encoded _nominally_ as JSON strings, composed of the class
     `__module__` and `__qualname__`, joined with a `.` character.
@@ -147,7 +140,7 @@ class JSONEncoder(json.JSONEncoder):
     >>> class B:
     ...     pass
 
-    >>> encoder.dump(B, stdout)
+    >>> encoder.dump(B, sys.stdout)
     "splatlog.json.B"
 
     ```
@@ -160,7 +153,7 @@ class JSONEncoder(json.JSONEncoder):
 
     ```python
 
-    >>> encoder.dump(str, stdout)
+    >>> encoder.dump(str, sys.stdout)
     "str"
 
     ```
@@ -179,7 +172,7 @@ class JSONEncoder(json.JSONEncoder):
     ...     y: int
     ...     z: int
 
-    >>> encoder.dump(DC(x=1, y=2, z=3), stdout)
+    >>> encoder.dump(DC(x=1, y=2, z=3), sys.stdout)
     {"x": 1, "y": 2, "z": 3}
 
     ```
@@ -198,7 +191,7 @@ class JSONEncoder(json.JSONEncoder):
     ...     OK = "ok"
     ...     ERROR = "error"
 
-    >>> encoder.dump(Status.OK, stdout)
+    >>> encoder.dump(Status.OK, sys.stdout)
     "splatlog.json.Status.OK"
 
     ```
@@ -214,7 +207,7 @@ class JSONEncoder(json.JSONEncoder):
     ...     OK = 200
     ...     ERROR = 500
 
-    >>> encoder.dump(IntStatus.OK, stdout)
+    >>> encoder.dump(IntStatus.OK, sys.stdout)
     200
 
     ```
@@ -231,7 +224,7 @@ class JSONEncoder(json.JSONEncoder):
 
     ```python
 
-    >>> pretty_encoder.dump(RuntimeError("Never raised"), stdout)
+    >>> pretty_encoder.dump(RuntimeError("Never raised"), sys.stdout)
     {
         "type": "RuntimeError",
         "msg": "Never raised"
@@ -253,7 +246,7 @@ class JSONEncoder(json.JSONEncoder):
     >>> def f():
     ...     raise RuntimeError("Hey there")
 
-    >>> pretty_encoder.dump(capture_error(f), stdout)
+    >>> pretty_encoder.dump(capture_error(f), sys.stdout)
     {
         "type": "RuntimeError",
         "msg": "Hey there",
@@ -285,7 +278,7 @@ class JSONEncoder(json.JSONEncoder):
     ...     except Exception as error:
     ...         raise RuntimeError(f"{f} threw up") from error
 
-    >>> pretty_encoder.dump(capture_error(g, f), stdout)
+    >>> pretty_encoder.dump(capture_error(g, f), sys.stdout)
     {
         "type": "RuntimeError",
         "msg": "<function f at ...> threw up",
@@ -328,10 +321,10 @@ class JSONEncoder(json.JSONEncoder):
     ###### Tracebacks ######
 
     Exhibited in the _Exceptions_ section, but basically the encoder pulls the
-    `traceback.StackSummary` and iterates through it's `traceback.FrameSummay`
+    `traceback.StackSummary` and iterates through it's `traceback.FrameSummary`
     entries, encoding the attributes as (arguably) more general names.
 
-    >>> pretty_encoder.dump(capture_error(f).__traceback__, stdout)
+    >>> pretty_encoder.dump(capture_error(f).__traceback__, sys.stdout)
     [
         {
             "file": "<doctest ...>",
@@ -360,7 +353,7 @@ class JSONEncoder(json.JSONEncoder):
     >>> from collections import UserDict
 
     >>> ud = UserDict(dict(a=1, b=2, c=3))
-    >>> pretty_encoder.dump(ud, stdout)
+    >>> pretty_encoder.dump(ud, sys.stdout)
     {
         "__class__": "collections.UserDict",
         "items": {
@@ -377,7 +370,7 @@ class JSONEncoder(json.JSONEncoder):
 
     ```python
 
-    >>> pretty_encoder.dump({1, 2, 3}, stdout)
+    >>> pretty_encoder.dump({1, 2, 3}, sys.stdout)
     {
         "__class__": "set",
         "items": [
@@ -401,7 +394,7 @@ class JSONEncoder(json.JSONEncoder):
 
     ```python
 
-    >>> pretty_encoder.dump(lambda x: x, stdout)
+    >>> pretty_encoder.dump(lambda x: x, sys.stdout)
     {
         "__class__": "function",
         "__repr__": "<function <lambda> at ...>"
@@ -447,7 +440,7 @@ class JSONEncoder(json.JSONEncoder):
 
         raise TypeError(
             "Expected {}, given {}: {}".format(
-                fmt(Union[cls, str, Mapping]), fmt(type(value)), fmt(value)
+                fmt(cls | str | Mapping), fmt(type(value)), fmt(value)
             )
         )
 
@@ -457,7 +450,7 @@ class JSONEncoder(json.JSONEncoder):
     def __init__(
         self,
         *,
-        handlers: Union[None, DefaultHandler, Iterable[DefaultHandler]] = None,
+        handlers: DefaultHandler | Iterable[DefaultHandler] | None = None,
         default: None = None,
         **kwds,
     ):
