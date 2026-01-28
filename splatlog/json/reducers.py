@@ -7,10 +7,7 @@ from types import TracebackType
 from typing import Any, Type
 
 from splatlog.lib import fmt_type, has_method
-
-from .json_typings import JSONEncodable
-
-TReduceFn = Callable[[Any], JSONEncodable]
+from splatlog.typings import JSONEncodable, JSONReduceFn
 
 
 @dataclasses.dataclass(frozen=True, order=True)
@@ -18,11 +15,11 @@ class JSONReducer:
     priority: int
     name: str
     is_match: Callable[[Any], bool]
-    reduce: TReduceFn
+    reduce: JSONReduceFn
 
 
 def instance_reducer(
-    cls: Type, priority: int, reduce: TReduceFn
+    cls: Type, priority: int, reduce: JSONReduceFn
 ) -> JSONReducer:
     return JSONReducer(
         name=fmt_type(cls),
@@ -41,7 +38,7 @@ def method_reducer(method_name: str, priority: int) -> JSONReducer:
     )
 
 
-def reduce_exception(error: BaseException) -> dict[str, JSONEncodable]:
+def exception_reducer(error: BaseException) -> dict[str, JSONEncodable]:
     dct: dict[str, JSONEncodable] = dict(
         type=fmt_type(error.__class__),
         msg=str(error),
@@ -51,7 +48,7 @@ def reduce_exception(error: BaseException) -> dict[str, JSONEncodable]:
         dct["traceback"] = TRACEBACK_REDUCER.reduce(error.__traceback__)
 
     if error.__cause__ is not None:
-        dct["cause"] = reduce_exception(error.__cause__)
+        dct["cause"] = exception_reducer(error.__cause__)
 
     return dct
 
@@ -98,7 +95,7 @@ TRACEBACK_REDUCER = instance_reducer(
 EXCEPTION_REDUCER = instance_reducer(
     cls=BaseException,
     priority=40,
-    reduce=reduce_exception,
+    reduce=exception_reducer,
 )
 
 MAPPING_REDUCER = instance_reducer(

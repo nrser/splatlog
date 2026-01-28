@@ -13,7 +13,7 @@ from splatlog.rich import capture_riches, to_console
 from splatlog.lib.text import fmt
 from splatlog.typings import JSONEncoderCastable, ToJSONFormatter
 
-from .json_encoder import JSONEncoder
+from .encoder import JSONEncoder
 
 
 LOCAL_TIMEZONE = datetime.now().astimezone().tzinfo

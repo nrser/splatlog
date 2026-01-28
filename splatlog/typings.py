@@ -138,6 +138,12 @@ FilterType: TypeAlias = (
 The type of items in the `filters` list of {py:class}`logging.Filterer`.
 """
 
+KwdMapping: TypeAlias = Mapping[str, Any]
+"""
+{py:class}`collections.abc.Mapping` with {py:class}`str` keys, named such
+because it can be used as keyword arguments.
+"""
+
 
 # Level Types
 # ----------------------------------------------------------------------------
@@ -325,6 +331,28 @@ class RichTyped(Protocol):
     def __rich_type__(self) -> RenderableType: ...
 
 
+# JSON Types
+# ----------------------------------------------------------------------------
+
+# SEE https://docs.python.org/3.10/library/json.html#json.JSONEncoder
+JSONEncodable: TypeAlias = dict | list | tuple | str | int | float | bool | None
+"""
+Types that {py:class}`json.JSONEncoder` can encode (by default), from the list
+in the class docs.
+"""
+
+JSONReduceFn: TypeAlias = Callable[[Any], JSONEncodable]
+"""
+A function that performs reducing to a {py:type}`JSONEncodable`, which
+{py:class}`json.JSONEncoder` can then JSON encode.
+"""
+
+JSONEncoderStyle = Literal["compact", "pretty"]
+
+ToJSONFormatter = Union[None, "JSONFormatter", JSONEncoderStyle, KwdMapping]
+
+JSONEncoderCastable = Union[None, "JSONEncoder", JSONEncoderStyle, KwdMapping]
+
 # Named Handler Types
 # ----------------------------------------------------------------------------
 
@@ -340,8 +368,6 @@ Once registered by a `name` {py:class}`str` with
 {py:func}`splatlog.named_handlers.named_handler` decorator you can use the
 `name` in {py:func}`splatlog.setup` same as
 """
-
-KwdMapping = Mapping[str, Any]
 
 ToConsoleHandler = (
     logging.Handler | KwdMapping | Literal[True] | ToLevel | ToRichConsole
@@ -360,12 +386,6 @@ What can be converted to an `export` named handler, mainly via constructing a
 
 See {py:func}`splatlog.named_handlers.to_export_handler` for details.
 """
-
-JSONEncoderStyle = Literal["compact", "pretty"]
-
-ToJSONFormatter = Union[None, "JSONFormatter", JSONEncoderStyle, KwdMapping]
-
-JSONEncoderCastable = Union[None, "JSONEncoder", JSONEncoderStyle, KwdMapping]
 
 # Other Types
 # ----------------------------------------------------------------------------

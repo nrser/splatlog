@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import IO, Any, Literal, Union, overload
 from collections.abc import Callable, Mapping
 
-from splatlog.json.json_formatter import JSONFormatter
+from splatlog.json import JSONFormatter
 from splatlog.levels import Filter
 from splatlog.lib import satisfies
 from splatlog.lib.collections import partition_mapping
