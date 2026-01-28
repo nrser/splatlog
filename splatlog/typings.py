@@ -29,6 +29,8 @@ else:
     from typing_extensions import TypeIs
 
 from rich.console import Console, ConsoleRenderable, RenderableType, RichCast
+from rich.style import StyleType
+from rich.theme import Theme
 from typeguard import check_type, TypeCheckError
 
 from splatlog.lib import fmt_list, fmt_type_of, fmt_type_value
@@ -258,6 +260,12 @@ ToRichConsole: TypeAlias = Console | Mapping[str, Any] | StdioName | IO[str]
 """
 What we can convert to a {py:class}`rich.console.Console`. See
 {py:func}`splatlog.rich.console.to_console`.
+"""
+
+ToTheme: TypeAlias = Theme | IO[str] | Mapping[str, StyleType]
+"""
+What we can convert to a {py:class}`rich.theme.Theme`. See
+{py:func}`splatlog.rich.theme.to_theme` for details.
 """
 
 

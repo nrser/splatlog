@@ -3,8 +3,7 @@ Support for working with {py:class}`rich.theme.Theme`.
 """
 
 from __future__ import annotations
-from collections.abc import Mapping
-from typing import IO, TypeAlias, cast
+from typing import IO, cast
 
 from rich.color import Color, ColorType
 from rich.theme import Theme
@@ -12,15 +11,7 @@ from rich.style import Style, StyleType
 
 from splatlog.lib.text import fmt
 from splatlog.lib.typeguard import satisfies
-
-# Typings
-# ============================================================================
-
-ToTheme: TypeAlias = Theme | IO[str] | Mapping[str, StyleType]
-"""
-What we can convert to a {py:class}`rich.theme.Theme`. See
-{py:func}`splatlog.rich.theme.to_theme` for details.
-"""
+from splatlog.typings import ToTheme
 
 # Constants
 # ============================================================================
