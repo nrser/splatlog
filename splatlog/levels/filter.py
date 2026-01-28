@@ -16,7 +16,6 @@ from rich.console import (
     ConsoleRenderable,
     RenderResult,
 )
-from rich.segment import Segment
 from rich.text import Text
 
 from splatlog import Level

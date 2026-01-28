@@ -11,14 +11,13 @@ import dataclasses as dc
 import logging
 from typing import Any, Literal, TypeAlias
 
-from rich.console import Console, ConsoleOptions, ConsoleRenderable, group
+from rich.console import Console, ConsoleRenderable, group
 from rich.pretty import Pretty
-from rich.segment import Segment
 from rich.style import Style
 from rich.text import Text
 from rich.tree import Tree
 
-from splatlog.levels.filter import Filter, VerbosityFilter
+from splatlog.levels.filter import VerbosityFilter
 from splatlog.rich import ToTheme
 from splatlog.rich.console import to_console, ToRichConsole
 from splatlog.rich.theme import to_theme
