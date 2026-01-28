@@ -25,7 +25,7 @@ class JSONEncoder(json.JSONEncoder):
     The encoder can be used with `json.dump` and `json.dumps` as follows.
 
     ```python
-
+    >>> import json
     >>> from sys import stdout
 
     >>> json.dump(dict(x=1, y=2, z=3), stdout, cls=JSONEncoder)
@@ -148,7 +148,7 @@ class JSONEncoder(json.JSONEncoder):
     ...     pass
 
     >>> encoder.dump(B, stdout)
-    "splatlog.json.json_encoder.B"
+    "splatlog.json.B"
 
     ```
 
@@ -199,7 +199,7 @@ class JSONEncoder(json.JSONEncoder):
     ...     ERROR = "error"
 
     >>> encoder.dump(Status.OK, stdout)
-    "splatlog.json.json_encoder.Status.OK"
+    "splatlog.json.Status.OK"
 
     ```
 
@@ -221,7 +221,7 @@ class JSONEncoder(json.JSONEncoder):
 
     ###### Exceptions ######
 
-    Yes, `splatlog.json.json_encoder.JSONEncoder` attempts to encode exceptions.
+    Yes, {py:class}`JSONEncoder` attempts to encode exceptions.
 
     At the most basic level, it tries to always give you the things you expect
     from an exception: the type of exception, and the message.

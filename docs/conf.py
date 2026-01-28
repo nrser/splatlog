@@ -39,6 +39,7 @@ autodoc2_type_aliases = True
 # Facilitate referencing submodule re-exports at the module level. Need to also
 # define `__all__` and set `__module__`
 autodoc2_module_all_regexes = [
+    r"^splatlog\.json$",
     r"^splatlog\.levels$",
     r"^splatlog\.rich$",
 ]
