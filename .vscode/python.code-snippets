@@ -28,4 +28,69 @@
         "prefix": "pynone",
         "body": "{py:data}`None`",
     },
+
+    "MyST object": {
+        "prefix": "pyobject",
+        "body": "{py:class}`object`",
+    },
+
+    "MyST list": {
+        "prefix": "pylist",
+        "body": "{py:class}`list`",
+    },
+
+    "MyST tuple": {
+        "prefix": "pytuple",
+        "body": "{py:class}`tuple`",
+    },
+
+    "MyST Iterable": {
+        "prefix": "pyiterable",
+        "body": "{py:class}`collections.abc.Iterable`",
+    },
+
+    "MyST Iterator": {
+        "prefix": "pyiterator",
+        "body": "{py:class}`collections.abc.Iterator`",
+    },
+
+    "MyST Mapping": {
+        "prefix": "pymapping",
+        "body": "{py:class}`collections.abc.Mapping`",
+    },
+
+    "MyST MutableMapping": {
+        "prefix": "pymutablemapping",
+        "body": "{py:class}`collections.abc.MutableMapping`",
+    },
+
+    "MyST Sequence": {
+        "prefix": "pysequence",
+        "body": "{py:class}`collections.abc.Sequence`",
+    },
+
+    "MyST MutableSequence": {
+        "prefix": "pymutablesequence",
+        "body": "{py:class}`collections.abc.MutableSequence`",
+    },
+
+    "MyST Callable": {
+        "prefix": "pycallable",
+        "body": "{py:class}`collections.abc.Callable`",
+    },
+
+    "MyST Collection": {
+        "prefix": "pycollection",
+        "body": "{py:class}`collections.abc.Collection`",
+    },
+
+    "MyST Set": {
+        "prefix": "pyset",
+        "body": "{py:class}`collections.abc.Set`",
+    },
+
+    "MyST MutableSet": {
+        "prefix": "pymutableset",
+        "body": "{py:class}`collections.abc.MutableSet`",
+    },
 }
