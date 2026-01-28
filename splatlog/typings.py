@@ -1,4 +1,5 @@
 from __future__ import annotations
+from inspect import isclass
 import logging
 from pathlib import Path
 import sys
@@ -13,8 +14,10 @@ from typing import (
     Protocol,
     Type,
     TypeAlias,
+    TypeVar,
     Union,
     TYPE_CHECKING,
+    runtime_checkable,
 )
 import typing
 from collections.abc import Mapping, Callable
@@ -25,11 +28,12 @@ if sys.version_info >= (3, 13):
 else:
     from typing_extensions import TypeIs
 
+from rich.console import Console, ConsoleRenderable, RenderableType, RichCast
 from typeguard import check_type, TypeCheckError
 
 from splatlog.lib import fmt_list, fmt_type_of, fmt_type_value
 from splatlog.lib.text import fmt
-from splatlog.rich import ToRichConsole
+
 
 if TYPE_CHECKING:
     from splatlog.json import JSONFormatter, JSONEncoder
@@ -75,6 +79,41 @@ def assert_never(arg: Never, typ: Any) -> Never:
 # ----------------------------------------------------------------------------
 #
 # Adapted from Pyright types in order to conform to the stdlib
+
+
+_T_contra = TypeVar("_T_contra", contravariant=True)
+
+
+class SupportsDunderLT(Protocol[_T_contra]):
+    def __lt__(self, __other: _T_contra) -> bool: ...
+
+
+class SupportsDunderGT(Protocol[_T_contra]):
+    def __gt__(self, __other: _T_contra) -> bool: ...
+
+
+# If we need them in the future...
+#
+# class SupportsDunderLE(Protocol[_T_contra]):
+#     def __le__(self, __other: _T_contra) -> bool:
+#         ...
+#
+# class SupportsDunderGE(Protocol[_T_contra]):
+#     def __ge__(self, __other: _T_contra) -> bool:
+#         ...
+
+
+#: A type that supports `<` and `>` operations (`__lt__` and `__gt__` methods).
+#:
+#: Copied from whatever VSCode is using for type definitions since I can't
+#: figure out how to import or reference it.
+#:
+SupportsRichComparison: TypeAlias = (
+    SupportsDunderLT[Any] | SupportsDunderGT[Any]
+)
+
+# If we need it in the future...
+# SupportsRichComparisonT = TypeVar("SupportsRichComparisonT", bound=SupportsRichComparison)
 
 
 class SupportsFilter(Protocol):
@@ -210,7 +249,73 @@ More sophisticated filtering is achieved by adding a
 # Rich Types
 # ----------------------------------------------------------------------------
 
-StdioName = Literal["stdout", "stderr"]
+# An object that "is Rich".
+Rich: TypeAlias = ConsoleRenderable | RichCast
+
+StdioName: TypeAlias = Literal["stdout", "stderr"]
+
+ToRichConsole: TypeAlias = Console | Mapping[str, Any] | StdioName | IO[str]
+"""
+What we can convert to a {py:class}`rich.console.Console`. See
+{py:func}`splatlog.rich.console.to_console`.
+"""
+
+
+@runtime_checkable
+class RichTyped(Protocol):
+    """
+    An extension of the "rich dunder protocol" system to allow classes to
+    control how their type is printed by Rich.
+
+    As an extension, the protocol is not used by Rich itself, but is preferred
+    by `splatlog.rich.enrich_type` to format object types.
+
+    ##### Examples #####
+
+    The method should be defined as a `classmethod` since the class is the
+    receiver that makes sense. In this case, we'll define a class `A` that
+    will print it's module and class name in a `rich.panel.Panel`.
+
+    ```python
+    >>> from rich.panel import Panel
+
+    >>> class A:
+    ...     @classmethod
+    ...     def __rich_type__(cls) -> RenderableType:
+    ...         return Panel(cls.__module__ + "." + cls.__qualname__)
+
+    ```
+
+    Note that both the `A` class _and_ instances will test as expressing the
+    protocol.
+
+    ```python
+    >>> isinstance(A, RichTyped)
+    True
+
+    >>> isinstance(A(), RichTyped)
+    True
+
+    ```
+
+    To wrap things up we'll create an instance of `A`, extract it's "Rich type"
+    with `splatlog.rich.enrich_type`, and print our panel!
+
+    ```python
+    >>> from rich.console import Console
+    >>> from splatlog.rich import enrich_type
+
+    >>> a = A()
+    >>> Console(width=40).print(enrich_type(a))
+    ╭──────────────────────────────────────╮
+    │ splatlog.typings.A                   │
+    ╰──────────────────────────────────────╯
+
+    ```
+    """
+
+    def __rich_type__(self) -> RenderableType: ...
+
 
 # Named Handler Types
 # ----------------------------------------------------------------------------
@@ -452,8 +557,58 @@ def is_name_map_spec(x: object) -> TypeIs[NameMapSpec]:
 # ----------------------------------------------------------------------------
 
 
-def is_stdout_name(value: Any) -> TypeIs[StdioName]:
-    """Is `value` a {py:type}`StdioName`?
+def is_rich(x: object) -> TypeIs[Rich]:
+    """
+    Is an object "rich"? This amounts to:
+
+    1.  Fulfilling one of the protocols:
+        -   `rich.console.ConsoleRenderable` — having a `__rich_console__`
+            method, the signature of which is:
+
+            ```python
+            def __rich_console__(
+                self,
+                console: rich.console.Console,
+                options: rich.console.ConsoleOptions
+            ) -> rich.console.RenderResult:
+                ...
+            ```
+
+        -   `rich.console.RichCast` — having a `__rich__ method, the signature
+            of which is:
+
+            ```python
+            def __rich__(self) -> rich.console.RenderableType:
+                ...
+            ```
+
+    2.  **_Not_** being a class (tested with `inspect.isclass`).
+
+        This check is applied a few places in the Rich rendering code, and is
+        there because a simple check like
+
+        ```python
+        hasattr(renderable, "__rich_console__")
+        ```
+
+        is used to test if an object fulfills the protocols from (1). Those
+        attributes are assumed to be _instance methods_, which show up as
+        attributes on the class objects as well.
+
+        The additional
+
+        ```python
+        not isclass(renderable)
+        ```
+
+        check prevents erroneously calling those instance methods on the class
+        objects.
+    """
+    return isinstance(x, (ConsoleRenderable, RichCast)) and not isclass(x)
+
+
+def is_stdio_name(value: Any) -> TypeIs[StdioName]:
+    """Is `value` a {py:type}`splatlog.rich.console.StdioName`?
 
     ```{note}
 
@@ -464,6 +619,23 @@ def is_stdout_name(value: Any) -> TypeIs[StdioName]:
     """
     try:
         check_type(value, StdioName)
+    except TypeCheckError:
+        return False
+    return True
+
+
+def is_to_rich_console(value: Any) -> TypeIs[ToRichConsole]:
+    """Is `value` a {py:type}`splatlog.rich.console.ToRichConsole`?
+
+    ```{note}
+
+    Equivalent to {py:func}`splatlog.lib.satisfies`, which (to my understanding)
+    can not be typed to support type-narrowing over a {py:type}`typing.Union`.
+
+    ```
+    """
+    try:
+        check_type(value, ToRichConsole)
     except TypeCheckError:
         return False
     return True
@@ -692,8 +864,22 @@ def to_verbosity(x: object) -> Verbosity:
     )
 
 
-# Spec Conversions
+# Rich Conversions
 # ----------------------------------------------------------------------------
+
+
+def to_stdio(name: StdioName) -> IO[str]:
+    match name:
+        case "stdout":
+            return sys.stdout
+        case "stderr":
+            return sys.stderr
+        case _:
+            raise TypeError(
+                "expected {}, given {}".format(
+                    fmt(StdioName), fmt_type_value(name)
+                )
+            )
 
 
 # Assertions

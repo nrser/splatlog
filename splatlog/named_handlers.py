@@ -10,7 +10,6 @@ from splatlog.levels import Filter
 from splatlog.lib import satisfies
 from splatlog.lib.collections import partition_mapping
 from splatlog.lib.text import fmt
-from splatlog.rich import is_to_rich_console
 from splatlog.locking import lock
 from splatlog.rich_handler import RichHandler
 from splatlog.typings import (
@@ -19,6 +18,7 @@ from splatlog.typings import (
     ToExportHandler,
     OnConflict,
     can_be_level,
+    is_to_rich_console,
 )
 
 

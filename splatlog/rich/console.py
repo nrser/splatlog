@@ -1,69 +1,14 @@
 from collections.abc import Mapping
 import sys
-from typing import IO, Any, Literal, TypeAlias, TypeGuard, cast
+from typing import IO, Any, cast
 from rich.console import Console
 from rich.theme import Theme
-from typeguard import check_type, TypeCheckError
 
-from splatlog.lib.text import fmt, fmt_type_value
+from splatlog.lib.text import fmt
 from splatlog.lib.typeguard import satisfies
-from splatlog.rich import to_theme
+from splatlog.typings import ToRichConsole, is_stdio_name, to_stdio
 
-StdioName = Literal["stdout", "stderr"]
-
-ToRichConsole: TypeAlias = Console | Mapping[str, Any] | StdioName | IO[str]
-"""
-What we can convert to a {py:class}`rich.console.Console`. See
-{py:func}`splatlog.rich.console.to_console`.
-"""
-
-
-def is_stdio_name(value: Any) -> TypeGuard[StdioName]:
-    """Is `value` a {py:type}`splatlog.rich.console.StdioName`?
-
-    ```{note}
-
-    Equivalent to {py:func}`splatlog.lib.satisfies`, which (to my understanding)
-    can not be typed to support type-narrowing over a {py:type}`typing.Literal`.
-
-    ```
-    """
-    try:
-        check_type(value, StdioName)
-    except TypeCheckError:
-        return False
-    return True
-
-
-def to_stdio(name: StdioName) -> IO[str]:
-    match name:
-        case "stdout":
-            return sys.stdout
-        case "stderr":
-            return sys.stderr
-        case _:
-            raise TypeError(
-                "expected {}, given {}".format(
-                    fmt(StdioName), fmt_type_value(name)
-                )
-            )
-
-
-def is_to_rich_console(value: Any) -> TypeGuard[ToRichConsole]:
-    """Is `value` a {py:type}`splatlog.rich.console.ToRichConsole`?
-
-    ```{note}
-
-    Equivalent to {py:func}`splatlog.lib.satisfies`, which (to my understanding)
-    can not be typed to support type-narrowing over a {py:type}`typing.Union`.
-
-    ```
-    """
-    try:
-        check_type(value, ToRichConsole)
-    except TypeCheckError:
-        return False
-    return True
+from .theme import to_theme
 
 
 def to_console(

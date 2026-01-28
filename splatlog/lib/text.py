@@ -23,7 +23,7 @@ from typing import (
 import types
 from collections import abc
 
-from splatlog.lib.collections import partition_mapping
+from .collections import partition_mapping
 
 BUILTINS_MODULE = object.__module__
 TYPING_MODULE = typing.__name__

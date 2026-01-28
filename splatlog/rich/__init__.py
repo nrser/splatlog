@@ -7,6 +7,8 @@ Helpers for working with [rich][]
 from __future__ import annotations
 from typing import Any
 
+from splatlog.typings import ToRichConsole
+
 
 # Re-exports
 from .theme import (
@@ -18,7 +20,6 @@ from .theme import (
     set_default_theme as set_default_theme,
     override_ansi_colors as override_ansi_colors,
 )
-from .typings import Rich as Rich, is_rich as is_rich
 from .enriched_type import EnrichedType as EnrichedType
 from .ntv_table import NtvTable, TableSource
 from .enrich import (
@@ -28,13 +29,7 @@ from .enrich import (
     enrich_type_of as enrich_type_of,
 )
 from .inline import Inline as Inline
-from .console import (
-    StdioName as StdioName,
-    ToRichConsole as ToRichConsole,
-    is_stdio_name as is_stdio_name,
-    is_to_rich_console as is_to_rich_console,
-    to_console as to_console,
-)
+from .console import to_console as to_console
 
 # .theme
 ToTheme.__module__ = __name__
@@ -44,7 +39,6 @@ get_default_theme.__module__ = __name__
 set_default_theme.__module__ = __name__
 override_ansi_colors.__module__ = __name__
 NtvTable.__module__ = __name__
-TableSource.__module__ = __name__
 
 
 __all__ = [

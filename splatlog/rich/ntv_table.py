@@ -1,13 +1,5 @@
 from __future__ import annotations
-from typing import (
-    Any,
-    Callable,
-    ClassVar,
-    Protocol,
-    TypeAlias,
-    TypeVar,
-    cast,
-)
+from typing import Any, Callable, ClassVar, TypeAlias, cast
 from inspect import isclass
 from collections.abc import Mapping, Iterable
 import dataclasses as dc
@@ -22,45 +14,12 @@ from rich.console import (
     RenderResult,
 )
 
-from .typings import is_rich
+from splatlog.typings import SupportsRichComparison, is_rich
+
 from .enrich import enrich, enrich_type, enrich_type_of
 
 # Typings
 # ============================================================================
-
-_T_contra = TypeVar("_T_contra", contravariant=True)
-
-
-class SupportsDunderLT(Protocol[_T_contra]):
-    def __lt__(self, __other: _T_contra) -> bool: ...
-
-
-class SupportsDunderGT(Protocol[_T_contra]):
-    def __gt__(self, __other: _T_contra) -> bool: ...
-
-
-# If we need them in the future...
-#
-# class SupportsDunderLE(Protocol[_T_contra]):
-#     def __le__(self, __other: _T_contra) -> bool:
-#         ...
-#
-# class SupportsDunderGE(Protocol[_T_contra]):
-#     def __ge__(self, __other: _T_contra) -> bool:
-#         ...
-
-
-#: A type that supports `<` and `>` operations (`__lt__` and `__gt__` methods).
-#:
-#: Copied from whatever VSCode is using for type definitions since I can't
-#: figure out how to import or reference it.
-#:
-SupportsRichComparison: TypeAlias = (
-    SupportsDunderLT[Any] | SupportsDunderGT[Any]
-)
-
-# If we need it in the future...
-# SupportsRichComparisonT = TypeVar("SupportsRichComparisonT", bound=SupportsRichComparison)
 
 
 #: A collection of name/value associations, as either:
@@ -68,7 +27,7 @@ SupportsRichComparison: TypeAlias = (
 #: 1.   `collections.abc.Mapping` of `{str: object}` pairs
 #: 2.   `collections.abc.Iterable` of `(str, object)` pairs
 #:
-TableSource = Mapping[str, object] | Iterable[tuple[str, object]]
+TableSource: TypeAlias = Mapping[str, object] | Iterable[tuple[str, object]]
 
 
 # Renderable Class
