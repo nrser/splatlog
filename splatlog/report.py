@@ -11,12 +11,14 @@ import dataclasses as dc
 import logging
 from typing import Any, Literal, TypeAlias
 
-from rich.console import Console, ConsoleRenderable, group
+from rich.console import Console, ConsoleOptions, ConsoleRenderable, group
 from rich.pretty import Pretty
+from rich.segment import Segment
 from rich.style import Style
 from rich.text import Text
 from rich.tree import Tree
 
+from splatlog.levels.filter import Filter, VerbosityFilter
 from splatlog.rich import ToTheme
 from splatlog.rich.console import to_console, ToRichConsole
 from splatlog.rich.theme import to_theme
@@ -30,19 +32,6 @@ Filter options for which loggers to include in the report.
 -   `"all"`: Include all loggers registered in the logging manager.
 -   `"configured"`: Include only loggers with handlers or non-NOTSET level.
 """
-
-
-def _is_splatlog_logger(logger: logging.Logger) -> bool:
-    """Check if a logger was created via splatlog APIs."""
-    # Import here to avoid circular imports
-    from splatlog.splat_logger import get_logger
-
-    # Check if this logger is wrapped by a cached SplatLogger
-    try:
-        splatlog_logger = get_logger(logger.name)
-        return splatlog_logger.logger is logger
-    except Exception:
-        return False
 
 
 def _iter_handlers(
@@ -170,25 +159,38 @@ def _format_handler_label(
     yield Pretty(handler)
 
 
-@group(fit=True)
+@group()
 def _format_filter_label(
-    opts: ReportOpts, filter: FilterType
+    opts: ReportOpts, filter: FilterType, parent_level: Level
 ) -> Generator[ConsoleRenderable, Any, None]:
     """Format a filter's label."""
-    label = Text()
-    label.append(" Filter ", style="report.filter")
+    yield Text(
+        " Filter ", style=opts.console.get_style("report.filter"), end=" "
+    )
 
-    yield label
+    if isinstance(filter, VerbosityFilter):
+        if filter.effective_level >= parent_level:
+            yield _format_level(opts, filter.effective_level)
+        else:
+            yield _format_effective_level(
+                opts, filter.effective_level, parent_level
+            )
 
-    yield Pretty(filter)
+    if isinstance(filter, ConsoleRenderable):
+        yield filter
+    else:
+        yield Pretty(filter)
 
 
 def _add_filters_to_tree(
-    opts: ReportOpts, tree: Tree, filters: Sequence[FilterType]
+    opts: ReportOpts,
+    tree: Tree,
+    filters: Sequence[FilterType],
+    parent_level: Level,
 ) -> None:
     """Add filter entries to a tree branch."""
     for f in filters:
-        tree.add(_format_filter_label(opts, f))
+        tree.add(_format_filter_label(opts, f, parent_level))
 
 
 def _add_handlers_to_tree(
@@ -199,8 +201,15 @@ def _add_handlers_to_tree(
     """Add handler entries (with their filters) to a tree branch."""
     for handler in _iter_handlers(opts, logger):
         handler_branch = tree.add(_format_handler_label(opts, handler, logger))
+
+        parent_level = logger.getEffectiveLevel()
+        if handler.level > parent_level:
+            parent_level = handler.level
+
         if handler.filters:
-            _add_filters_to_tree(opts, handler_branch, handler.filters)
+            _add_filters_to_tree(
+                opts, handler_branch, handler.filters, parent_level
+            )
 
 
 def _build_logger_tree(opts: ReportOpts) -> Tree:
@@ -240,7 +249,9 @@ def _build_logger_tree(opts: ReportOpts) -> Tree:
 
         # Add direct filters on the logger
         if root_logger.filters:
-            _add_filters_to_tree(opts, root_branch, root_logger.filters)
+            _add_filters_to_tree(
+                opts, root_branch, root_logger.filters, root_logger.level
+            )
 
     else:
         root_branch = tree
@@ -272,7 +283,9 @@ def _build_logger_tree(opts: ReportOpts) -> Tree:
 
         # Add direct filters on the logger
         if logger.filters:
-            _add_filters_to_tree(opts, logger_branch, logger.filters)
+            _add_filters_to_tree(
+                opts, logger_branch, logger.filters, logger.getEffectiveLevel()
+            )
 
     return tree
 

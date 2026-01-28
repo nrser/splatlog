@@ -10,6 +10,13 @@ from itertools import pairwise
 import logging
 from typing import overload
 
+from rich.console import (
+    Console,
+    ConsoleOptions,
+    ConsoleRenderable,
+    RenderResult,
+)
+from rich.segment import Segment
 from rich.text import Text
 
 from splatlog import Level
@@ -194,7 +201,7 @@ class LevelFilter(Filter):
         return self.level
 
 
-class VerbosityFilter(Filter):
+class VerbosityFilter(Filter, ConsoleRenderable):
     classifier: Classifier[int, Level]
 
     def __init__(self, spec: VerbositySpec):
@@ -220,12 +227,21 @@ class VerbosityFilter(Filter):
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {fmt_level(self.effective_level)}>"
 
-    def __rich_repr__(self):
-        for rng, level in self.classifier.iter_rules():
+    def __rich_console__(
+        self, console: Console, options: ConsoleOptions
+    ) -> RenderResult:
+        yield Text(self.__class__.__name__, style="repr.tag_name", end=" ")
+
+        for i, (rng, level) in enumerate(self.classifier.iter_rules()):
+            if i > 0:
+                yield Text(", ", end="")
+
             if isinstance(rng, range):
-                yield Text(fmt_range(rng))
+                yield Text(fmt_range(rng), end=": ")
             else:
-                yield fmt(rng)
+                yield Text(fmt(rng), end=": ")
+
+            yield Text(fmt_level(level), end="")
 
     @property
     def effective_level(self) -> Level:
