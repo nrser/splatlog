@@ -167,9 +167,10 @@ class JSONEncoder(json.JSONEncoder):
 
     ```
 
-    ###### Dataclasses ######
+    **Dataclasses**
 
-    Dataclass instances are encoded via `dataclasses.asdict`.
+    Dataclass instances are encoded via `dataclasses.asdict`, with an
+    additional `__class__` key for the type.
 
     ```python
 
@@ -186,14 +187,13 @@ class JSONEncoder(json.JSONEncoder):
 
     ```
 
-    ###### Enums ######
+    **Enums**
 
-    Instances of `enum.Enum` are encoded _nominally_ as JSON strings, composed
-    of the class of the object (per class encoding, discussed above) and the
-    object's `name`, joined (again) with a `.`.
+    Instances of {py:class}`enum.Enum` are encoded _nominally_ as JSON strings,
+    composed of the class of the object (per class encoding, discussed above)
+    and the object's `name`, joined (again) with a `.`.
 
     ```python
-
     >>> from enum import Enum
 
     >>> class Status(Enum):
@@ -209,7 +209,6 @@ class JSONEncoder(json.JSONEncoder):
     by _value_ via the standard JSON encoder.
 
     ```python
-
     >>> from enum import IntEnum
 
     >>> class IntStatus(IntEnum):
@@ -221,7 +220,7 @@ class JSONEncoder(json.JSONEncoder):
 
     ```
 
-    ###### Exceptions ######
+    **Exceptions**
 
     Yes, {py:class}`JSONEncoder` attempts to encode exceptions.
 
@@ -232,7 +231,6 @@ class JSONEncoder(json.JSONEncoder):
     no traceback or cause.
 
     ```python
-
     >>> pretty_encoder.dump(RuntimeError("Never raised"), sys.stdout)
     {
         "type": "RuntimeError",
@@ -245,7 +243,6 @@ class JSONEncoder(json.JSONEncoder):
     traceback, which the encoder trawls through and encodes as well.
 
     ```python
-
     >>> def capture_error(fn, *args, **kwds):
     ...     try:
     ...         fn(*args, **kwds)
@@ -280,7 +277,6 @@ class JSONEncoder(json.JSONEncoder):
     To go even deeper, exceptions with an explicit cause also encode that cause.
 
     ```python
-
     >>> def g(f):
     ...     try:
     ...         f()
@@ -327,12 +323,14 @@ class JSONEncoder(json.JSONEncoder):
 
     ```
 
-    ###### Tracebacks ######
+    **Tracebacks**
 
     Exhibited in the _Exceptions_ section, but basically the encoder pulls the
-    `traceback.StackSummary` and iterates through it's `traceback.FrameSummary`
-    entries, encoding the attributes as (arguably) more general names.
+    {py:class}`traceback.StackSummary` and iterates through it's
+    {py:class}`traceback.FrameSummary` entries, encoding the attributes as
+    (arguably) more general names.
 
+    ```python
     >>> pretty_encoder.dump(capture_error(f).__traceback__, sys.stdout)
     [
         {
@@ -349,16 +347,17 @@ class JSONEncoder(json.JSONEncoder):
         }
     ]
 
-    ###### Collections ######
+    ```
 
-    Objects that implement `collections.abc.Collection` are encoded as a JSON
-    object containing the class and collection items.
+    **Collections**
 
-    In the case of `collections.abc.Mapping`, items are encoded as a JSON
-    object (via `dict(collection)`).
+    Objects that implement {py:class}`collections.abc.Collection` are encoded as
+    a JSON object containing the class and collection items.
+
+    In the case of {py:class}`collections.abc.Mapping`, items are encoded as a
+    JSON object (via `dict(collection)`).
 
     ```python
-
     >>> from collections import UserDict
 
     >>> ud = UserDict(dict(a=1, b=2, c=3))
@@ -374,11 +373,10 @@ class JSONEncoder(json.JSONEncoder):
 
     ```
 
-    All other `collections.abc.Collection` have their items encoded as a JSON
-    array (via `tuple(collection)`).
+    All other {py:class}`collections.abc.Collection` have their items encoded as
+    a JSON array (via `tuple(collection)`).
 
     ```python
-
     >>> pretty_encoder.dump({1, 2, 3}, sys.stdout)
     {
         "__class__": "set",
@@ -391,7 +389,7 @@ class JSONEncoder(json.JSONEncoder):
 
     ```
 
-    ###### Everything Else #######
+    **Everything Else**
 
     Because this encoder is focused on serializing log data that may contain any
     object, and that log data will often be examined only after said object is
