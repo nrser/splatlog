@@ -109,6 +109,12 @@ class JSONReducer:
         )
 
 
+def reduce_dataclass(value: Any) -> dict[str, JSONEncodable]:
+    d = dataclasses.asdict(value)
+    d["__type__"] = CLASS_REDUCER.reduce(type(value))
+    return d
+
+
 def reduce_exception(error: BaseException) -> dict[str, JSONEncodable]:
     """Convert an exception to a JSON-encodable dictionary.
 
@@ -166,11 +172,37 @@ DATACLASS_REDUCER = JSONReducer(
     name="dataclasses.dataclass",
     priority=30,
     is_match=dataclasses.is_dataclass,
-    reduce=dataclasses.asdict,
+    reduce=reduce_dataclass,
 )
-"""Reducer for dataclass instances (priority 30).
+"""Reducer for {py:mod}`dataclasses` (priority 30).
 
-Converts dataclass instances to dictionaries via `dataclasses.asdict`.
+Converts dataclass instances to dictionaries via {py:func}`dataclasses.asdict`,
+adding a `__class__` key with the {py:data}`CLASS_REDUCER` encoding of the
+dataclass type, so you know what it is.
+
+## Examples
+
+```python
+>>> import dataclasses
+
+>>> @dataclasses.dataclass
+... class Point:
+...     x: int
+...     y: int
+
+>>> pt = Point(x=1, y=2)
+
+>>> DATACLASS_REDUCER.is_match(pt)
+True
+
+>>> DATACLASS_REDUCER.reduce(pt) == {
+...     "__class__": "splatlog.json.reducers.Point",
+...     "x": 1,
+...     "y": 2
+... }
+True
+
+```
 """
 
 ENUM_REDUCER = JSONReducer.instance(
@@ -193,7 +225,12 @@ Converts enum values to strings like `"EnumClass.MEMBER_NAME"`.
 ...     RUNNING = 1
 ...     CRASHED = 2
 
->>> ENUM_REDUCER.reduce(State.RUNNING)
+>>> state = State.RUNNING
+
+>>> ENUM_REDUCER.is_match(state)
+True
+
+>>> ENUM_REDUCER.reduce(state)
 'splatlog.json.reducers.State.RUNNING'
 
 ```
@@ -212,10 +249,39 @@ TRACEBACK_REDUCER = JSONReducer.instance(
         for frame_summary in traceback.extract_tb(tb)
     ],
 )
-"""Reducer for {py:mod}`traceback` objects (priority 40).
+"""Reducer for {py:class}`types.TracebackType` (priority 40).
 
 Converts tracebacks to a list of frame dictionaries, each containing
 `file`, `line`, `name`, and `text` keys.
+
+## Examples
+
+```python
+>>> def error_prone():
+...     raise Exception("uh-oh")
+
+>>> try:
+...     error_prone()
+... except Exception as err:
+...     tb = TRACEBACK_REDUCER.reduce(err.__traceback__)
+
+>>> tb == [
+...     {
+...         'file': '<doctest splatlog.json.reducers.__test__.TRACEBACK_REDUCER[1]>',
+...         'line': 2,
+...         'name': '<module>',
+...         'text': 'error_prone()'
+...     },
+...     {
+...         'file': '<doctest splatlog.json.reducers.__test__.TRACEBACK_REDUCER[0]>',
+...         'line': 2,
+...         'name': 'error_prone',
+...         'text': 'raise Exception("uh-oh")'
+...     }
+... ]
+True
+
+```
 """
 
 EXCEPTION_REDUCER = JSONReducer.instance(
