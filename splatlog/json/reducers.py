@@ -111,7 +111,7 @@ class JSONReducer:
 
 def reduce_dataclass(value: Any) -> dict[str, JSONEncodable]:
     d = dataclasses.asdict(value)
-    d["__type__"] = CLASS_REDUCER.reduce(type(value))
+    d["__class__"] = CLASS_REDUCER.reduce(type(value))
     return d
 
 

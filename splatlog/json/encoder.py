@@ -1,20 +1,31 @@
 import json
-from typing import Optional, Self, IO
+from typing import Self, IO
 from collections.abc import Iterable, Callable, Mapping
+from warnings import warn
 
-from splatlog.lib import each, fmt_type
+from splatlog.lib import fmt_type_value
 from splatlog.lib.text import fmt
-from splatlog.typings import JSONEncoderCastable
+from splatlog.typings import JSONEncoderCastable, OnReducerError, assert_never
 
 from .reducers import ALL_REDUCERS, JSONReducer
 
 __all__ = ["JSONEncoder"]
+
+_REDUCER_ERROR_MSG = (
+    "Encoding reducer '{}' raised failed to reduce {}, error: {}"
+)
 
 
 class JSONEncoder(json.JSONEncoder):
     """
     An extension of {py:class}`json.JSONEncoder` that attempts to deal with all
     the crap you might splat into a log.
+
+    Works by overriding the {py:meth}`JSONEncoder.default` method to consult a
+    list of {py:class}`splatlog.json.JSONReducer` to reduce objects to a
+    {py:type}`splatlog.typings.JSONEncodable` form. The list defaults to
+    {py:data}`splatlog.json.ALL_REDUCERS`, and can be customized per encoder
+    instance.
 
     ## Usage
 
@@ -98,14 +109,12 @@ class JSONEncoder(json.JSONEncoder):
 
     ```
 
-    **Extended Encoding Capabilities**
+    **Reducers — Extended Encoding Capabilities**
 
     The whole point of this class is to be able to encode (far) more than the
     standard {py:class}`json.JSONEncoder`.
 
-    Extended capabilities are presented here in resolution order — first one
-    that applies wins... or loses; if that path fails for some reason, we don't
-    keep trying down-list.
+    Extended capabilities are provided by {py:class}`splatlog.json.JSONReducer`
 
     **`to_json_encodable` Method Reducer**
 
@@ -173,7 +182,7 @@ class JSONEncoder(json.JSONEncoder):
     ...     z: int
 
     >>> encoder.dump(DC(x=1, y=2, z=3), sys.stdout)
-    {"x": 1, "y": 2, "z": 3}
+    {"x": 1, "y": 2, "z": 3, "__class__": "splatlog.json.DC"}
 
     ```
 
@@ -443,41 +452,69 @@ class JSONEncoder(json.JSONEncoder):
             )
         )
 
-    _reducers: Optional[list[JSONReducer]] = None
-    _continue_on_reducer_error: bool = True
+    reducers: list[JSONReducer]
+    """
+    {py:class}`splatlog.json.JSONReducer` used to reduce objects to
+    {py:type}`splatlog.typings.JSONEncodable` values that the superclass can
+    encode.
+
+    See `{py:meth}`JSONEncoder.default` for details.
+
+    ```{warning}
+    This list should always be sorted — {py:class}`splatlog.json.JSONReducer`
+    compare by {py:attr}`splatlog.json.JSONReducer.priority` (lower first),
+    then by {py:attr}`splatlog.json.JSONReducer.name` (alphanumeric).
+
+    The constructor, {py:meth}`JSONEncoder.add_reducers`, and
+    {py:meth}`JSONEncoder.remove_reducers` take care of sorting for you. If you
+    edit or replace the list directly you will need to sort it yourself. Calling
+    {py:meth}`list.sort` will do the trick.
+    ```
+    """
+
+    on_reducer_error: OnReducerError
 
     def __init__(
         self,
         *,
-        reducers: JSONReducer | Iterable[JSONReducer] | None = None,
+        reducers: Iterable[JSONReducer] = ALL_REDUCERS,
+        on_reducer_error: OnReducerError = "continue",
         default: None = None,
         **kwds,
     ):
+        # We prohibit the `default` keyword because we use the default behavior
+        # for the reducers
         if default is not None:
-            raise TypeError(
-                f"{fmt_type(JSONEncoder)} does not support `default` "
-                + f"argument (`default` must be `None`), given {default!r}"
-            )
+            assert_never(default, None)
 
         super().__init__(**kwds)
 
-        if reducers is not None:
-            self.add_reducers(reducers)
+        self.reducers = sorted(reducers)
+        self.on_reducer_error = on_reducer_error
 
     def default(self, obj):
-        for reducer in (
-            ALL_REDUCERS if self._reducers is None else self._reducers
-        ):
+        for reducer in self.reducers:
             try:
                 if reducer.is_match(obj):
                     return reducer.reduce(obj)
             except Exception as error:
-                if self._continue_on_reducer_error:
-                    pass
-                else:
-                    raise TypeError(
-                        f"Encoding reducer {reducer.name} raised"
-                    ) from error
+                match self.on_reducer_error:
+                    case "continue":
+                        pass
+                    case "raise":
+                        raise TypeError(
+                            _REDUCER_ERROR_MSG.format(
+                                fmt(reducer), fmt_type_value(obj), fmt(error)
+                            )
+                        ) from error
+                    case "warn":
+                        warn(
+                            _REDUCER_ERROR_MSG.format(
+                                fmt(reducer), fmt_type_value(obj), fmt(error)
+                            )
+                        )
+                    case _:
+                        assert_never(self.on_reduce_error, OnReducerError)
 
         return super().default(obj)
 
@@ -485,28 +522,21 @@ class JSONEncoder(json.JSONEncoder):
         for chunk in self.iterencode(obj):
             fp.write(chunk)
 
-    def get_reducers(self) -> tuple[JSONReducer, ...]:
-        if self._reducers is None:
-            return ALL_REDUCERS
-        return tuple(self._reducers)
+    def add_reducers(self, *reducers: JSONReducer) -> None:
+        """
+        Add {py:class}`splatlog.json.JSONReducer` instances to the encoder.
 
-    def add_reducers(self, reducers) -> None:
-        if self._reducers is None:
-            self._reducers = list(ALL_REDUCERS)
-
-        self._reducers.extend(each(reducers))
-
-        self._reducers.sort()
+        Sorts the reducers by priority after making the additions.
+        """
+        self.reducers.extend(reducers)
+        self.reducers.sort()
 
     def remove_reducers(
         self, match: Callable[[JSONReducer], bool]
     ) -> tuple[JSONReducer, ...]:
-        if self._reducers is None:
-            self._reducers = list(ALL_REDUCERS)
-
-        matches = tuple(r for r in self._reducers if match(r))
+        matches = tuple(r for r in self.reducers if match(r))
 
         for r in matches:
-            self._reducers.remove(r)
+            self.reducers.remove(r)
 
         return matches

@@ -38,46 +38,6 @@ def find(predicate, iterable, *, not_found=None):
     return not_found
 
 
-def each(*targets, descend=default_each_descend, deep=True):
-    """
-    ##### Examples #####
-
-    ```python
-    >>> list(each(None))
-    []
-
-    >>> list(each(1, 2, [3, [4]]))
-    [1, 2, 3, 4]
-
-    >>> list(each(1, [2, [3, 4]], deep=False))
-    [1, 2, [3, 4]]
-
-    >>> list(each("abc", None, "def"))
-    ['abc', 'def']
-
-    >>> def char_descend(target):
-    ...     return isinstance(target, Iterable) and (
-    ...         (not isinstance(target, str))
-    ...         or len(target) > 1
-    ...     )
-
-    >>> list(each("abc", ["def", "ghi"], descend=char_descend))
-    ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']
-
-    ```
-    """
-    for target in targets:
-        if target is not None:
-            if descend(target):
-                for entry in target:
-                    if deep:
-                        yield from each(entry, descend=descend, deep=deep)
-                    else:
-                        yield entry
-            else:
-                yield target
-
-
 def partition_mapping(
     mapping: Mapping[TKey, TValue],
     by: Container | Callable[[TKey], bool],

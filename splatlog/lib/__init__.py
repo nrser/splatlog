@@ -5,7 +5,6 @@ from inspect import ismethod, signature, Parameter
 # Re-exports
 from .collections import (
     find as find,
-    each as each,
     partition_mapping as partition_mapping,
     group_by as group_by,
 )

@@ -353,6 +353,17 @@ ToJSONFormatter = Union[None, "JSONFormatter", JSONEncoderStyle, KwdMapping]
 
 JSONEncoderCastable = Union[None, "JSONEncoder", JSONEncoderStyle, KwdMapping]
 
+OnReducerError: TypeAlias = Literal["continue", "raise", "warn"]
+"""
+Ways to handle when a {py:class}`splatlog.json.JSONReducer` raises an error
+matching or reducing an object in {py:meth}`splatlog.json.JSONEncoder.default`:
+
+-   `"continue"` (default) — ignore and continue with the next reducer.
+-   `"raise"` — raise an error.
+-   `"warn"` — issue a warning and continue with the next reducer. Uses
+    {py:func}`warnings.warn` as
+"""
+
 # Named Handler Types
 # ----------------------------------------------------------------------------
 
