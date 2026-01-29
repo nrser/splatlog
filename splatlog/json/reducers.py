@@ -4,7 +4,7 @@ from enum import Enum
 from inspect import isclass
 import traceback
 from types import TracebackType
-from typing import Any, Type
+from typing import Any, Self
 
 from splatlog.lib import fmt_type, has_method
 from splatlog.typings import JSONEncodable, JSONReduceFn
@@ -17,28 +17,28 @@ class JSONReducer:
     is_match: Callable[[Any], bool]
     reduce: JSONReduceFn
 
+    @classmethod
+    def instance_reducer(
+        cls, typ: type, priority: int, reduce: JSONReduceFn
+    ) -> Self:
+        return cls(
+            name=fmt_type(typ),
+            priority=priority,
+            is_match=lambda obj: isinstance(obj, typ),
+            reduce=reduce,
+        )
 
-def instance_reducer(
-    cls: Type, priority: int, reduce: JSONReduceFn
-) -> JSONReducer:
-    return JSONReducer(
-        name=fmt_type(cls),
-        priority=priority,
-        is_match=lambda obj: isinstance(obj, cls),
-        reduce=reduce,
-    )
+    @classmethod
+    def method_reducer(cls, method_name: str, priority: int) -> Self:
+        return cls(
+            name=f".{method_name}()",
+            priority=priority,
+            is_match=lambda obj: has_method(obj, method_name, req_arity=0),
+            reduce=lambda obj: getattr(obj, method_name)(),
+        )
 
 
-def method_reducer(method_name: str, priority: int) -> JSONReducer:
-    return JSONReducer(
-        name=f".{method_name}()",
-        priority=priority,
-        is_match=lambda obj: has_method(obj, method_name, req_arity=0),
-        reduce=lambda obj: getattr(obj, method_name)(),
-    )
-
-
-def exception_reducer(error: BaseException) -> dict[str, JSONEncodable]:
+def reduce_exception(error: BaseException) -> dict[str, JSONEncodable]:
     dct: dict[str, JSONEncodable] = dict(
         type=fmt_type(error.__class__),
         msg=str(error),
@@ -48,12 +48,12 @@ def exception_reducer(error: BaseException) -> dict[str, JSONEncodable]:
         dct["traceback"] = TRACEBACK_REDUCER.reduce(error.__traceback__)
 
     if error.__cause__ is not None:
-        dct["cause"] = exception_reducer(error.__cause__)
+        dct["cause"] = reduce_exception(error.__cause__)
 
     return dct
 
 
-TO_JSON_ENCODABLE_REDUCER = method_reducer(
+TO_JSON_ENCODABLE_REDUCER = JSONReducer.method_reducer(
     method_name="to_json_encodable",
     priority=10,
 )
@@ -72,14 +72,14 @@ DATACLASS_REDUCER = JSONReducer(
     reduce=dataclasses.asdict,
 )
 
-ENUM_REDUCER = instance_reducer(
-    cls=Enum,
+ENUM_REDUCER = JSONReducer.instance_reducer(
+    typ=Enum,
     priority=40,
     reduce=lambda obj: f"{fmt_type(obj.__class__)}.{obj.name}",
 )
 
-TRACEBACK_REDUCER = instance_reducer(
-    cls=TracebackType,
+TRACEBACK_REDUCER = JSONReducer.instance_reducer(
+    typ=TracebackType,
     priority=40,
     reduce=lambda tb: [
         dict(
@@ -92,14 +92,14 @@ TRACEBACK_REDUCER = instance_reducer(
     ],
 )
 
-EXCEPTION_REDUCER = instance_reducer(
-    cls=BaseException,
+EXCEPTION_REDUCER = JSONReducer.instance_reducer(
+    typ=BaseException,
     priority=40,
-    reduce=exception_reducer,
+    reduce=reduce_exception,
 )
 
-MAPPING_REDUCER = instance_reducer(
-    cls=Mapping,
+MAPPING_REDUCER = JSONReducer.instance_reducer(
+    typ=Mapping,
     priority=50,
     reduce=lambda obj: {
         "__class__": fmt_type(obj.__class__),
@@ -107,8 +107,8 @@ MAPPING_REDUCER = instance_reducer(
     },
 )
 
-COLLECTION_REDUCER = instance_reducer(
-    cls=Collection,
+COLLECTION_REDUCER = JSONReducer.instance_reducer(
+    typ=Collection,
     priority=60,
     reduce=lambda obj: {
         "__class__": fmt_type(obj.__class__),

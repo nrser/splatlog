@@ -393,7 +393,6 @@ class JSONEncoder(json.JSONEncoder):
     _Classes_ section) and `__repr__`.
 
     ```python
-
     >>> pretty_encoder.dump(lambda x: x, sys.stdout)
     {
         "__class__": "function",

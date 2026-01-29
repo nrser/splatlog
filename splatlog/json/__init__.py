@@ -6,9 +6,6 @@ from .formatter import (
 )
 from .reducers import (
     JSONReducer,
-    instance_reducer,
-    method_reducer,
-    exception_reducer,
     TO_JSON_ENCODABLE_REDUCER,
     CLASS_REDUCER,
     DATACLASS_REDUCER,
@@ -21,9 +18,6 @@ from .reducers import (
 JSONEncoder.__module__ = __name__
 JSONFormatter.__module__ = __name__
 JSONReducer.__module__ = __name__
-instance_reducer.__module__ = __name__
-method_reducer.__module__ = __name__
-exception_reducer.__module__ = __name__
 
 __all__ = [
     "JSONEncoder",
@@ -31,9 +25,6 @@ __all__ = [
     "LOCAL_TIMEZONE",
     "ToJSONFormatter",
     "JSONReducer",
-    "instance_reducer",
-    "method_reducer",
-    "exception_reducer",
     "TO_JSON_ENCODABLE_REDUCER",
     "CLASS_REDUCER",
     "DATACLASS_REDUCER",
