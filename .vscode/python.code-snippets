@@ -39,6 +39,11 @@
         "body": "{py:class}`list`",
     },
 
+    "MyST dict": {
+        "prefix": "pydict",
+        "body": "{py:class}`dict`",
+    },
+
     "MyST tuple": {
         "prefix": "pytuple",
         "body": "{py:class}`tuple`",

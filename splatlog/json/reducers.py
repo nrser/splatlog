@@ -14,6 +14,7 @@ import dataclasses
 from collections.abc import Callable, Mapping, Collection
 from enum import Enum
 from inspect import isclass
+import os
 import traceback
 from types import TracebackType
 from typing import Any, Self
@@ -185,6 +186,7 @@ Converts enum values to strings like `"EnumClass.MEMBER_NAME"`.
 
 ```python
 >>> from enum import Enum
+>>> from splatlog.json.reducers import ENUM_REDUCER
 
 >>> class State(Enum):
 ...     STOPPED = 0
@@ -192,7 +194,7 @@ Converts enum values to strings like `"EnumClass.MEMBER_NAME"`.
 ...     CRASHED = 2
 
 >>> ENUM_REDUCER.reduce(State.RUNNING)
-'State.RUNNING'
+'splatlog.json.reducers.State.RUNNING'
 
 ```
 """
@@ -282,3 +284,13 @@ from the module's local namespace and sorting them.
 
 Used as the default reducer set for {py:class}`splatlog.json.JSONEncoder`.
 """
+
+# Are we testing? ENV flag is set in `tox.ini`, can set manually if need when
+# running commands directly.
+if os.environ.get("TESTING"):
+    # `doctest` doesn't automatically pickup the "following docstring" format
+    # used by Sphinx/MyST to document constants, so we need to do some AST
+    # parsing and stick it in a `__test__` dict, which `doctest` looks for
+    from splatlog._testing import get_constant_docstrings
+
+    __test__ = get_constant_docstrings(__name__)
