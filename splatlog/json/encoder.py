@@ -182,7 +182,7 @@ class JSONEncoder(json.JSONEncoder):
     ...     z: int
 
     >>> encoder.dump(DC(x=1, y=2, z=3), sys.stdout)
-    {"x": 1, "y": 2, "z": 3, "__class__": "splatlog.json.DC"}
+    {"__class__": "splatlog.json.DC", "x": 1, "y": 2, "z": 3}
 
     ```
 
