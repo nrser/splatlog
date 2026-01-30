@@ -1,3 +1,24 @@
+"""
+The `lib` module is for general-purpose structures and utilities. `lib` should
+_not_ depend on _any_ other project code — you should be able to paste it into
+another project and have it _just work_[^1].
+
+You can think of `lib` as "extra batteries" on top of the Python standard
+library. Previously, I've been tempted to break this type of work out into its
+own package, but experience has taught me that's a bad idea... general-purpose
+code is very difficult to get right, and every breaking change creates a cascade
+of work. Being part of a logging library is almost just as good though, as it
+gets to piggy-back on functionality that most projects can use.
+
+[^1]:   You would want to adjust cross-references in the docstrings, which
+        currently start with `splatlog.` for symbols outside that same file, but
+        that won't break the code. Also, as of writing (2026-01-29), you'd need
+        to add the [typeguard][] dependency, but we're looking to get rid of
+        that.
+
+[typeguard]: https://pypi.org/project/typeguard/
+"""
+
 from typing import Any
 from collections.abc import Callable
 from inspect import ismethod, signature, Parameter
@@ -35,9 +56,31 @@ REQUIRABLE_PARAMETER_KINDS = frozenset(
         Parameter.KEYWORD_ONLY,
     )
 )
+"""
+{py:attr}`inspect.Parameter.kind` that can be required (i.e., lack a
+default value).
+
+Excludes {py:const}`inspect.Parameter.VAR_POSITIONAL` (`*args`) and
+{py:const}`inspect.Parameter.VAR_KEYWORD` (`**kwargs`), which are never
+required.
+"""
 
 
 def is_required_parameter(parameter: Parameter) -> bool:
+    """
+    Check if a parameter is required (has no default value).
+
+    A parameter is required if its kind is in
+    {py:const}`REQUIRABLE_PARAMETER_KINDS` and it has no default value.
+
+    ## Parameters
+
+    -   `parameter`: The {py:class}`inspect.Parameter` to check.
+
+    ## Returns
+
+    {py:data}`True` if the parameter is required, {py:data}`False` otherwise.
+    """
     return (
         parameter.kind in REQUIRABLE_PARAMETER_KINDS
         and parameter.default is Parameter.empty
@@ -46,15 +89,22 @@ def is_required_parameter(parameter: Parameter) -> bool:
 
 def required_arity(fn: Callable) -> int:
     """
-    Compute the number of required parameters for a `collections.abc.Callable`.
+    Compute the number of required parameters for a callable.
 
-    Result includes positional-only, keyword-only, and position-or-keyword
-    parameters.
+    Counts positional-only, keyword-only, and positional-or-keyword parameters
+    that have no default value.
 
-    ##### Examples #####
+    ## Parameters
+
+    -   `fn`: The callable to inspect.
+
+    ## Returns
+
+    The count of required parameters.
+
+    ## Examples
 
     ```python
-
     >>> def f_1():
     ...     pass
     >>> required_arity(f_1)
@@ -81,67 +131,6 @@ def required_arity(fn: Callable) -> int:
     0
 
     ```
-
-    Ok, one weird corner-case to note...
-
-    `inspect.Parameter.default` is set to `inspect.Parameter.empty` when the
-    parameter does not have a default, as in `f_req_x`, which behaves as
-    expected:
-
-    ```python
-
-    >>> def f_req_x(x):
-    ...     return f"x is {x}"
-
-    >>> required_arity(f_req_x)
-    1
-
-    >>> f_req_x()
-    Traceback (most recent call last):
-        ...
-    TypeError: f_req_x() missing 1 required positional argument: 'x'
-
-    ```
-
-    However the user can also _explicitly_ define the parameter default to be
-    `inspect.Parameter.empty`, as in `f_empty_x`, which causes odd behavior:
-
-    ```python
-
-    >>> def f_empty_x(x=Parameter.empty):
-    ...     return f"x is {x}"
-
-    ```
-
-    This function measures a required arity of `1` for `f_empty_x`, as it can no
-    longer tell that the default was set explicitly.
-
-    ```python
-
-    >>> required_arity(f_empty_x)
-    1
-
-    ```
-
-    However, `f_empty_x` can be called with no arguments.
-
-    ```python
-
-    >>> f_empty_x()
-    "x is <class 'inspect._empty'>"
-
-    ```
-
-    `inspect.Signature.bind` seems to get confused too.
-
-    ```python
-
-    >>> signature(f_empty_x).bind()
-    Traceback (most recent call last):
-        ...
-    TypeError: missing a required argument: 'x'
-
-    ```
     """
     return sum(
         int(is_required_parameter(parameter))
@@ -152,6 +141,23 @@ def required_arity(fn: Callable) -> int:
 def has_method(
     obj: Any, method_name: str, req_arity: int | None = None
 ) -> bool:
+    """
+    Check if an object has a method with the given name.
+
+    Optionally verify the method has a specific required arity.
+
+    ## Parameters
+
+    -   `obj`: The object to check.
+    -   `method_name`: The name of the method to look for.
+    -   `req_arity`: If provided, the method must have exactly this many required
+        parameters.
+
+    ## Returns
+
+    {py:data}`True` if the object has a bound method with the given name (and
+    matching arity if specified), {py:data}`False` otherwise.
+    """
     if not hasattr(obj, method_name):
         return False
     method = getattr(obj, method_name)
@@ -164,11 +170,25 @@ def has_method(
 
 def is_callable_with(fn: Callable, *args, **kwds) -> bool:
     """
+    Check if a callable can be invoked with the given arguments.
 
-    ##### Examples #####
+    Uses {py:meth}`inspect.Signature.bind` to verify the arguments match the
+    callable's signature without actually calling it.
+
+    ## Parameters
+
+    -   `fn`: The callable to check.
+    -   `*args`: Positional arguments to test.
+    -   `**kwds`: Keyword arguments to test.
+
+    ## Returns
+
+    {py:data}`True` if `fn` can be called with the given arguments,
+    {py:data}`False` otherwise.
+
+    ## Examples
 
     ```python
-
     >>> def f(x, y, z):
     ...     pass
 
@@ -179,7 +199,6 @@ def is_callable_with(fn: Callable, *args, **kwds) -> bool:
     False
 
     ```
-
     """
     sig = signature(fn)
     try:
@@ -189,7 +208,25 @@ def is_callable_with(fn: Callable, *args, **kwds) -> bool:
     return True
 
 
-def respond_to(obj, name, *args, **kwds) -> bool:
+def respond_to(obj: Any, name: str, *args, **kwds) -> bool:
+    """
+    Check if an object has a method that can be called with the given arguments.
+
+    Combines {py:func}`has_method` and {py:func}`is_callable_with` to verify
+    both that the method exists and accepts the specified arguments.
+
+    ## Parameters
+
+    -   `obj`: The object to check.
+    -   `name`: The name of the method to look for.
+    -   `*args`: Positional arguments the method should accept.
+    -   `**kwds`: Keyword arguments the method should accept.
+
+    ## Returns
+
+    {py:data}`True` if `obj` has a method `name` that can be called with the
+    given arguments, {py:data}`False` otherwise.
+    """
     if not hasattr(obj, name):
         return False
     fn = getattr(obj, name)
