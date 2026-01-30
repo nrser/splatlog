@@ -85,6 +85,22 @@ class FmtOpts:
     module_names: bool = True
     omit_builtins: bool = True
 
+    items: int | None = None
+    """
+    Max number of items to show in a {py:class}`collections.abc.Sequence`, with
+    any additional items being replaced with the {py:attr}`ellipsis`.
+    """
+
+    ellipsis: str = "…"
+    """
+    Sting to replace characters in long {py:class}`str`, items in long
+    {py:class}`collections.abc.Sequence`, etc.
+
+    ## See Also
+
+    1.  {py:attr}`items`
+    """
+
     ls_sep: str = ","
     """
     List separator. {py:func}`fmt_list` will stick this between items (along
