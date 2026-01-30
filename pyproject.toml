@@ -29,6 +29,8 @@ dev = [
     "doctor-testerson",
     "pytest>=7.0",
     "tox>=4.0",
+    # Plugin to let `tox` work with `uv` to get the Python runtimes it wants
+    "tox-uv>=1.29.0",
 ]
 docs = [
     "myst-parser>=4.0.1",

@@ -2,9 +2,16 @@ import logging
 import json
 import os
 import re
-from typing import Any, Literal, Optional, TypeAlias, TypeVar, assert_never
+import sys
+from typing import Any, Literal, Optional, TypeAlias, TypeVar
 from datetime import datetime, tzinfo
 from collections.abc import Mapping, Sequence
+
+# `assert_never` was added to stdlib typing in 3.11
+if sys.version_info >= (3, 11):
+    from typing import assert_never
+else:
+    from typing_extensions import assert_never
 
 from rich.console import Console
 from rich.text import Text

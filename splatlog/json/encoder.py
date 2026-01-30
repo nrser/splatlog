@@ -1,7 +1,14 @@
 import json
-from typing import Self, IO
+import sys
+from typing import IO
 from collections.abc import Iterable, Callable, Mapping
 from warnings import warn
+
+# `Self` was added to stdlib typing in 3.11
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 from splatlog.lib import fmt_type_value
 from splatlog.lib.text import fmt

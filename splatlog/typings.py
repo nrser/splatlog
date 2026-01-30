@@ -8,7 +8,6 @@ from typing import (
     IO,
     Any,
     Literal,
-    Never,
     NewType,
     Optional,
     Protocol,
@@ -22,7 +21,13 @@ from typing import (
 import typing
 from collections.abc import Mapping, Callable
 
-# TypeIs was added to stdlib typing in 3.13; simplify when requires-python >= 3.13
+# Never was added to stdlib typing in 3.11
+if sys.version_info >= (3, 11):
+    from typing import Never
+else:
+    from typing_extensions import Never
+
+# TypeIs was added to stdlib typing in 3.13
 if sys.version_info >= (3, 13):
     from typing import TypeIs
 else:
@@ -766,8 +771,7 @@ def to_level(value: ToLevel, *, case_sensitive: bool = False) -> Level:
     >>> to_level("debug", case_sensitive=True)
     Traceback (most recent call last):
         ...
-    TypeError: 'debug' is not a valid level name (case-sensitive), valid names:
-    'CRITICAL', 'FATAL', 'ERROR', ...
+    TypeError: 'debug' is not a valid level name (case-sensitive)...
 
     >>> to_level("DEBUG", case_sensitive=True)
     10
@@ -845,7 +849,7 @@ def to_level(value: ToLevel, *, case_sensitive: bool = False) -> Level:
         if case_sensitive:
             raise TypeError(
                 "{} is not a valid level name (case-sensitive)".format(
-                    fmt_type_value(value)
+                    fmt(value)
                 )
             )
 
