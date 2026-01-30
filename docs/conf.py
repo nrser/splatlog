@@ -51,6 +51,7 @@ autodoc2_module_all_regexes = [
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "rich": ("https://rich.readthedocs.io/en/latest/", None),
+    "typeguard": ("https://typeguard.readthedocs.io/en/latest/", None),
 }
 
 # Python domain/signature formatting
