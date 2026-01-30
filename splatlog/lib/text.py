@@ -6,9 +6,7 @@ import sys
 import typing
 from typing import (
     Any,
-    Callable,
     ForwardRef,
-    Generic,
     Literal,
     Optional,
     Protocol,
@@ -16,10 +14,8 @@ from typing import (
     Type,
     TypeVar,
     Union,
-    cast,
     get_args,
     get_origin,
-    overload,
 )
 import types
 from collections import abc
@@ -91,7 +87,7 @@ class FmtOpts:
     any additional items being replaced with the {py:attr}`ellipsis`.
     """
 
-    ellipsis: str = "…"
+    ellipsis: str = "..."
     """
     Sting to replace characters in long {py:class}`str`, items in long
     {py:class}`collections.abc.Sequence`, etc.
@@ -413,3 +409,50 @@ def fmt_list(items: abc.Iterable, opts: FmtOpts) -> str:
         s += fmt(item, opts)
 
     return s
+
+
+@FmtOpts.provide
+def fmt_seq(seq: abc.Sequence, opts: FmtOpts) -> str:
+    """
+    Format a sequence, respecting the {py:attr}`FmtOpts.items` limit and
+    {py:attr}`FmtOpts.ellipsis` for truncation.
+
+    ##### Examples #####
+
+    ```python
+    >>> fmt_seq([1, 2, 3])
+    '[1, 2, 3]'
+
+    >>> fmt_seq((1, 2, 3))
+    '(1, 2, 3)'
+
+    >>> fmt_seq([1, 2, 3, 4, 5], items=3)
+    '[1, 2, 3, ...]'
+
+    >>> fmt_seq((1, 2, 3, 4, 5), items=2)
+    '(1, 2, ...)'
+
+    >>> fmt_seq([1, 2, 3, 4, 5], items=3, ellipsis='…')
+    '[1, 2, 3, …]'
+
+    >>> fmt_seq([])
+    '[]'
+
+    >>> fmt_seq(())
+    '()'
+
+    >>> fmt_seq([1, 2], items=5)
+    '[1, 2]'
+
+    ```
+    """
+    is_tuple = isinstance(seq, tuple)
+    open_bracket, close_bracket = ("(", ")") if is_tuple else ("[", "]")
+
+    if opts.items is not None and len(seq) > opts.items:
+        items = [fmt(item, opts) for item in seq[: opts.items]]
+        items.append(opts.ellipsis)
+    else:
+        items = [fmt(item, opts) for item in seq]
+
+    return open_bracket + ", ".join(items) + close_bracket
