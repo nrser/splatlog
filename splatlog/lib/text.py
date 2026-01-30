@@ -12,6 +12,7 @@ from typing import (
     Literal,
     Optional,
     Protocol,
+    Self,
     Type,
     TypeVar,
     Union,
@@ -31,8 +32,6 @@ LAMBDA_NAME = (lambda x: x).__name__
 
 
 FmtOptsSelf = TypeVar("FmtOptsSelf", bound="FmtOpts")
-TFallback = TypeVar("TFallback")
-TFallbackCon = TypeVar("TFallbackCon", covariant=True)
 
 
 def is_typing(x: Any) -> bool:
@@ -49,19 +48,13 @@ def str_find_all(s: str, char: str) -> abc.Iterable[int]:
 
 
 class Formatter(Protocol):
-    @overload
-    def __call__(
-        self, *args, fallback: Callable[[Any], TFallback], **kwds
-    ) -> Union[str, TFallback]: ...
-
-    @overload
     def __call__(self, *args, **kwds) -> str: ...
 
 
 @dataclasses.dataclass(frozen=True)
-class FmtOpts(Generic[TFallback]):
+class FmtOpts:
     @classmethod
-    def of(cls: type[FmtOptsSelf], x) -> FmtOptsSelf:
+    def of(cls: type[Self], x) -> Self:
         if x is None:
             return cls()
         if isinstance(x, cls):
@@ -88,9 +81,7 @@ class FmtOpts(Generic[TFallback]):
 
         return wrapped
 
-    fallback: abc.Callable[[object], TFallback] = cast(
-        abc.Callable[[object], TFallback], repr
-    )
+    fallback: abc.Callable[[object], str] = repr
     module_names: bool = True
     omit_builtins: bool = True
 
@@ -164,7 +155,7 @@ def get_name(x: Any, opts: FmtOpts) -> Optional[str]:
 
 
 @FmtOpts.provide
-def fmt(x: Any, opts: FmtOpts[TFallback]) -> Union[str, TFallback]:
+def fmt(x: Any, opts: FmtOpts) -> str:
     """
     ##### Examples #####
 
@@ -192,9 +183,7 @@ def p(x: Any, opts: FmtOpts, **kwds) -> None:
 
 
 @FmtOpts.provide
-def fmt_routine(
-    fn: types.FunctionType, opts: FmtOpts[TFallback]
-) -> Union[str, TFallback]:
+def fmt_routine(fn: types.FunctionType, opts: FmtOpts) -> str:
     """
     ##### Examples #####
 
@@ -231,7 +220,7 @@ def fmt_routine(
 
 
 @FmtOpts.provide
-def fmt_type(t: Type, opts: FmtOpts[TFallback]) -> Union[str, TFallback]:
+def fmt_type(t: Type, opts: FmtOpts) -> str:
     """
     ##### Examples #####
 
@@ -259,12 +248,12 @@ def fmt_type(t: Type, opts: FmtOpts[TFallback]) -> Union[str, TFallback]:
 
 
 @FmtOpts.provide
-def fmt_type_of(x: object, opts: FmtOpts[TFallback]) -> str | TFallback:
+def fmt_type_of(x: object, opts: FmtOpts) -> str:
     return fmt_type(type(x), opts)
 
 
 @FmtOpts.provide
-def fmt_type_value(x: object, opts: FmtOpts[TFallback]) -> str | TFallback:
+def fmt_type_value(x: object, opts: FmtOpts) -> str:
     """Helper to produce the `TYPE: VALUE` format we often use in error
     messages.
 
@@ -287,18 +276,14 @@ def _nest(formatted: str, nested: bool) -> str:
 
 
 @FmtOpts.provide
-def _fmt_optional(
-    t: Any, opts: FmtOpts[TFallback], *, nested: bool = False
-) -> Union[str, TFallback]:
+def _fmt_optional(t: Any, opts: FmtOpts, *, nested: bool = False) -> str:
     if get_origin(t) is Literal:
         return _nest("None | " + fmt_type_hint(t, opts), nested)
     return fmt_type_hint(t, opts, nested=True) + "?"
 
 
 @FmtOpts.provide
-def fmt_type_hint(
-    t: Any, opts: FmtOpts[TFallback], *, nested: bool = False
-) -> Union[str, TFallback]:
+def fmt_type_hint(t: Any, opts: FmtOpts, *, nested: bool = False) -> str:
     """
     ##### Examples #####
 
@@ -389,7 +374,7 @@ def fmt_range(rng: range) -> str:
 
 
 @FmtOpts.provide
-def fmt_list(items: abc.Iterable, opts: FmtOpts[TFallback]) -> str:
+def fmt_list(items: abc.Iterable, opts: FmtOpts) -> str:
     """
     Format a list of `items`. By default this is comma-separated, like
     `A, B, C`.
