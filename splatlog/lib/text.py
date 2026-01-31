@@ -1,3 +1,11 @@
+"""
+Text formatting utilities for human-readable output.
+
+Provides functions for formatting types, type hints, routines, and values in
+a concise, readable style. The {py:class}`FmtOpts` dataclass controls
+formatting behavior like module name inclusion and list formatting.
+"""
+
 from __future__ import annotations
 import dataclasses
 from functools import wraps
@@ -10,8 +18,6 @@ from typing import (
     Literal,
     Optional,
     Protocol,
-    Self,
-    Type,
     TypeVar,
     Union,
     get_args,
@@ -20,23 +26,68 @@ from typing import (
 import types
 from collections import abc
 
+# `Self` was added to stdlib typing in 3.11
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
+
+import rich.repr
+
 from .collections import partition_mapping
 
 BUILTINS_MODULE = object.__module__
+"""
+The module name for built-in types (e.g., `str`, `int`).
+
+The name is `'builtins'` but we read it from `object.__module__`.
+"""
+
 TYPING_MODULE = typing.__name__
+"""
+The module name of the {py:mod}`typing` module.
+
+The name is `'typing'` but we read it from `typing.__name__`.
+"""
+
 LAMBDA_NAME = (lambda x: x).__name__
+"""
+The `__name__` attribute value for lambda functions (`"<lambda>"`).
 
-
-FmtOptsSelf = TypeVar("FmtOptsSelf", bound="FmtOpts")
+The name is `'<lambda>'`, we get it from `(lambda x: x).__name__`.
+"""
 
 
 def is_typing(x: Any) -> bool:
+    """
+    Check if a value is a typing construct (generic, type alias, etc.).
+
+    ## Parameters
+
+    -   `x`: The value to check.
+
+    ## Returns
+
+    {py:data}`True` if `x` appears to be from the `typing` module.
+    """
     return bool(
         get_origin(x) or get_args(x) or type(x).__module__ == TYPING_MODULE
     )
 
 
 def str_find_all(s: str, char: str) -> abc.Iterable[int]:
+    """
+    Find all occurrences of a character in a string.
+
+    ## Parameters
+
+    -   `s`: The string to search.
+    -   `char`: The character to find.
+
+    ## Returns
+
+    An iterable of indices where `char` occurs in `s`.
+    """
     i = s.find(char)
     while i != -1:
         yield i
@@ -44,13 +95,36 @@ def str_find_all(s: str, char: str) -> abc.Iterable[int]:
 
 
 class Formatter(Protocol):
+    """Protocol for formatter functions that return strings."""
+
     def __call__(self, *args, **kwds) -> str: ...
 
 
 @dataclasses.dataclass(frozen=True)
 class FmtOpts:
+    """
+    Options controlling text formatting behavior.
+
+    This is a frozen dataclass; use {py:func}`dataclasses.replace` to create
+    modified copies. The {py:meth}`provide` decorator allows functions to
+    accept these options either as a final positional argument or as keyword
+    arguments.
+    """
+
     @classmethod
     def of(cls: type[Self], x) -> Self:
+        """
+        Coerce a value to a {py:class}`FmtOpts` instance.
+
+        ## Parameters
+
+        -   `x`: {py:data}`None` (returns default), an existing instance
+            (returned as-is), or a dict of field values.
+
+        ## Returns
+
+        A {py:class}`FmtOpts` instance.
+        """
         if x is None:
             return cls()
         if isinstance(x, cls):
@@ -59,6 +133,26 @@ class FmtOpts:
 
     @classmethod
     def provide(cls, fn) -> Formatter:
+        """
+        Decorator that adds {py:class}`FmtOpts` support to a function.
+
+        The decorated function can receive options as:
+
+        -   A final positional argument of type {py:class}`FmtOpts`
+        -   Keyword arguments matching {py:class}`FmtOpts` field names
+        -   Both of the above, with keyword arguments replacing values in the
+            instance.
+        -   Neither, using a {py:class}`FmtOpts` with all default values.
+
+        ## Parameters
+
+        -   `fn`: The function to decorate. Should accept a {py:class}`FmtOpts`
+            instance as its last positional parameter.
+
+        ## Returns
+
+        A wrapped function with flexible options handling.
+        """
         field_names = {field.name for field in dataclasses.fields(cls)}
 
         @wraps(fn)
@@ -77,9 +171,20 @@ class FmtOpts:
 
         return wrapped
 
+    def __rich_repr__(self) -> rich.repr.Result:
+        for field in dataclasses.fields(self):
+            value = getattr(self, field.name)
+            if value != field.default:
+                yield field.name, value
+
     fallback: abc.Callable[[object], str] = repr
+    """Fallback formatter when no specific formatter applies."""
+
     module_names: bool = True
+    """Whether to include module names in formatted output."""
+
     omit_builtins: bool = True
+    """Whether to omit the `builtins` module prefix for built-in types."""
 
     items: int | None = None
     """
@@ -117,12 +222,24 @@ class FmtOpts:
 
 
 DEFAULT_FMT_OPTS = FmtOpts()
+"""A {py:class}`FmtOpts` instance with all defaults attributes."""
 
 
 @FmtOpts.provide
 def get_name(x: Any, opts: FmtOpts) -> Optional[str]:
     """
-    ##### Examples #####
+    Get the qualified name of an object, optionally with module prefix.
+
+    ## Parameters
+
+    -   `x`: The object to get the name of.
+    -   `opts`: Formatting options.
+
+    ## Returns
+
+    The name as a string, or {py:data}`None` if the object has no name.
+
+    ## Examples
 
     ```python
     >>> get_name(str)
@@ -169,7 +286,21 @@ def get_name(x: Any, opts: FmtOpts) -> Optional[str]:
 @FmtOpts.provide
 def fmt(x: Any, opts: FmtOpts) -> str:
     """
-    ##### Examples #####
+    Format a value for human-readable output.
+
+    Dispatches to specialized formatters based on the value's type:
+    typing constructs, types, and routines each have dedicated formatters.
+
+    ## Parameters
+
+    -   `x`: The value to format.
+    -   `opts`: Formatting options.
+
+    ## Returns
+
+    A formatted string representation.
+
+    ## Examples
 
     ```python
     >>> fmt(int.__add__)
@@ -191,13 +322,38 @@ def fmt(x: Any, opts: FmtOpts) -> str:
 
 @FmtOpts.provide
 def p(x: Any, opts: FmtOpts, **kwds) -> None:
+    """
+    Print a formatted value.
+
+    Shorthand for `print(fmt(x, opts), **kwds)`.
+
+    ## Parameters
+
+    -   `x`: The value to format and print.
+    -   `opts`: Formatting options.
+    -   `**kwds`: Additional arguments passed to {py:func}`print`.
+    """
     print(fmt(x, opts), **kwds)
 
 
 @FmtOpts.provide
 def fmt_routine(fn: types.FunctionType, opts: FmtOpts) -> str:
     """
-    ##### Examples #####
+    Format a function or method for display.
+
+    Lambdas are shown as `λ()`. Named functions include their qualified name
+    followed by `()`.
+
+    ## Parameters
+
+    -   `fn`: The function to format.
+    -   `opts`: Formatting options.
+
+    ## Returns
+
+    A formatted string like `module.func()` or `λ()`.
+
+    ## Examples
 
     ```python
     >>> fmt_routine(fmt_routine)
@@ -232,9 +388,20 @@ def fmt_routine(fn: types.FunctionType, opts: FmtOpts) -> str:
 
 
 @FmtOpts.provide
-def fmt_type(t: Type, opts: FmtOpts) -> str:
+def fmt_type(t: type, opts: FmtOpts) -> str:
     """
-    ##### Examples #####
+    Format a type for display.
+
+    ## Parameters
+
+    -   `t`: The type to format.
+    -   `opts`: Formatting options.
+
+    ## Returns
+
+    The type's qualified name, with or without module prefix per options.
+
+    ## Examples
 
     ```python
     >>> fmt_type(abc.Collection)
@@ -261,6 +428,20 @@ def fmt_type(t: Type, opts: FmtOpts) -> str:
 
 @FmtOpts.provide
 def fmt_type_of(x: object, opts: FmtOpts) -> str:
+    """
+    Format the type of a value.
+
+    Shorthand for `fmt_type(type(x), opts)`.
+
+    ## Parameters
+
+    -   `x`: The value whose type to format.
+    -   `opts`: Formatting options.
+
+    ## Returns
+
+    The formatted type name.
+    """
     return fmt_type(type(x), opts)
 
 
@@ -297,10 +478,21 @@ def _fmt_optional(t: Any, opts: FmtOpts, *, nested: bool = False) -> str:
 @FmtOpts.provide
 def fmt_type_hint(t: Any, opts: FmtOpts, *, nested: bool = False) -> str:
     """
-    ##### Examples #####
+    Format a type hint for human-readable display.
 
-    Examples can be found in <doc/splatlog/lib/text/fmt_type_hint.md>.
+    Produces concise representations like `str?` for `Optional[str]`,
+    `int[]` for `list[int]`, and `{str: int}` for `dict[str, int]`.
 
+    ## Parameters
+
+    -   `t`: The type hint to format.
+    -   `opts`: Formatting options.
+    -   `nested`: Whether this is a nested type (used internally for
+        parenthesization).
+
+    ## Returns
+
+    A formatted string representation of the type hint.
     """
 
     if t is Ellipsis:
@@ -375,6 +567,20 @@ def fmt_type_hint(t: Any, opts: FmtOpts, *, nested: bool = False) -> str:
 
 
 def fmt_range(rng: range) -> str:
+    """
+    Format a range for concise display.
+
+    Short ranges (≤3 elements) are shown in full. Longer ranges show the
+    first elements and an ellipsis.
+
+    ## Parameters
+
+    -   `rng`: The range to format.
+
+    ## Returns
+
+    A string like `[0, 1, 2]` or `[0, 1, ..., 100]`.
+    """
     length = len(rng)
     if length <= 3:
         return str(list(rng))
@@ -417,7 +623,16 @@ def fmt_seq(seq: abc.Sequence, opts: FmtOpts) -> str:
     Format a sequence, respecting the {py:attr}`FmtOpts.items` limit and
     {py:attr}`FmtOpts.ellipsis` for truncation.
 
-    ##### Examples #####
+    ## Parameters
+
+    -   `seq`: The sequence to format (list or tuple).
+    -   `opts`: Formatting options.
+
+    ## Returns
+
+    A formatted string like `[1, 2, 3]` or `(1, 2, ...)`.
+
+    ## Examples
 
     ```python
     >>> fmt_seq([1, 2, 3])
