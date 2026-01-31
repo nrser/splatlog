@@ -152,6 +152,41 @@ class FmtOpts:
         ## Returns
 
         A wrapped function with flexible options handling.
+
+        ## Examples
+
+        Using default options (no arguments):
+
+        ```python
+        >>> fmt_type(str)
+        'str'
+
+        ```
+
+        Using keyword arguments for options:
+
+        ```python
+        >>> fmt_type(str, omit_builtins=False)
+        'builtins.str'
+
+        ```
+
+        Using a FmtOpts instance as final positional argument:
+
+        ```python
+        >>> fmt_type(str, FmtOpts(omit_builtins=False))
+        'builtins.str'
+
+        ```
+
+        Combining instance with keyword overrides:
+
+        ```python
+        >>> opts = FmtOpts(module_names=False)
+        >>> fmt_type(str, opts, module_names=True, omit_builtins=False)
+        'builtins.str'
+
+        ```
         """
         field_names = {field.name for field in dataclasses.fields(cls)}
 
