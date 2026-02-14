@@ -3,7 +3,10 @@ AUTOBUILD
 dists
 Dunder
 furo
+mixedcase
+posargs
 Sigstore
 splatlog
 testpypi
 toctree
+typehints
