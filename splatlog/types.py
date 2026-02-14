@@ -343,7 +343,7 @@ class RichTyped(Protocol):
     >>> a = A()
     >>> Console(width=40).print(enrich_type(a))
     ╭──────────────────────────────────────╮
-    │ splatlog.typings.A                   │
+    │ splatlog.types.A                   │
     ╰──────────────────────────────────────╯
 
     ```
@@ -444,8 +444,8 @@ A function that casts an argument to a {py:class}`logging.Handler` or returns
 {py:data}`None`.
 
 Once registered by name with
-{py:func}`splatlog.named_handlers.register_named_handler` or the
-{py:func}`splatlog.named_handlers.named_handler` decorator, the name can be
+{py:func}`splatlog.named_handlers.put_factory` or the
+{py:func}`splatlog.named_handlers.register` decorator, the name can be
 used as a keyword argument to {py:func}`splatlog.setup`.
 """
 

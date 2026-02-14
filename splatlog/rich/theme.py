@@ -11,7 +11,7 @@ from rich.theme import Theme
 from rich.style import Style, StyleType
 
 from splatlog.lib.typeguard import satisfies
-from splatlog.typings import ToTheme, assert_never
+from splatlog.types import ToTheme, assert_never
 
 # Constants
 # ============================================================================

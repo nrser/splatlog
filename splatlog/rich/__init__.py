@@ -8,7 +8,7 @@ terminal.
 from __future__ import annotations
 from typing import Any
 
-from splatlog.typings import ToRichConsole
+from splatlog.types import ToRichConsole
 
 
 # Re-exports
@@ -31,6 +31,7 @@ from .enrich import (
 )
 from .inline import Inline as Inline
 from .console import to_console as to_console
+from .handler import RichHandler as RichHandler
 
 __all__ = [
     # .theme
@@ -55,6 +56,8 @@ __all__ = [
     "Inline",
     # .console
     "to_console",
+    # .handler
+    "RichHandler",
     # local
     "capture_riches",
 ]

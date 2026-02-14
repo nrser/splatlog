@@ -19,7 +19,7 @@ files and move things around inside.
 import logging
 
 from splatlog.locking import lock
-from splatlog.typings import (
+from splatlog.types import (
     LevelName,
     LevelSpec,
     Level,

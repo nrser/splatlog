@@ -26,7 +26,7 @@ from rich.console import Console
 from rich.text import Text
 
 from splatlog.rich import capture_riches, to_console
-from splatlog.typings import ToJSONEncoder, ToJSONFormatter, assert_never
+from splatlog.types import ToJSONEncoder, ToJSONFormatter, assert_never
 
 from .encoder import JSONEncoder
 
@@ -64,7 +64,7 @@ class JSONFormatter(logging.Formatter):
         ## Raises
 
         {py:class}`AssertionError` if `value` is not a
-        {py:type}`splatlog.typings.ToJSONFormatter` over the bound class.
+        {py:type}`splatlog.types.ToJSONFormatter` over the bound class.
         """
         if isinstance(value, cls):
             return value

@@ -12,7 +12,7 @@ from rich.highlighter import ReprHighlighter
 from rich.text import Text
 
 from splatlog.lib.text import fmt_routine
-from splatlog.typings import is_rich
+from splatlog.types import is_rich
 
 from .enriched_type import EnrichedType
 

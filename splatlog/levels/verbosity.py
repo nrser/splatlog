@@ -6,7 +6,7 @@ hence global to the process.
 from __future__ import annotations
 
 from splatlog.locking import lock
-from splatlog.typings import ToVerbosity, Verbosity, to_verbosity
+from splatlog.types import ToVerbosity, Verbosity, to_verbosity
 
 
 _verbosity: Verbosity = Verbosity(0)

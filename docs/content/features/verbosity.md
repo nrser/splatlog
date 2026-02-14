@@ -13,8 +13,8 @@ Verbosity Values (`splatlog.typing.Verbosity`)
 -   In practice it usually ranges from `0` to `4`-or-so.
 -   The higher the verbosity, the more logging you see.
 
-You can test if a value is a verbosity with `splatlog.typings.isVerbosity` and
-cast to a verbosity with `splatlog.typings.asVerbosity`. See documentation for
+You can test if a value is a verbosity with `splatlog.types.isVerbosity` and
+cast to a verbosity with `splatlog.types.asVerbosity`. See documentation for
 those function for examples.
 
 Verbosity is directly inspired by the `-v`, `-vv`, `-vvv`, ... pattern of option

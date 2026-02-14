@@ -18,7 +18,7 @@ from rich.console import (
     RenderResult,
 )
 
-from splatlog.typings import SupportsRichComparison, is_rich
+from splatlog.types import SupportsRichComparison, is_rich
 
 from .enrich import enrich, enrich_type, enrich_type_of
 

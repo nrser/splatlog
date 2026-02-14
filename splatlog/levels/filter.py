@@ -19,11 +19,10 @@ from rich.console import (
 )
 from rich.text import Text
 
-from splatlog import Level
 from splatlog.lib import fmt, fmt_range, has_method
 from splatlog.lib.collections.classifier import Classifier
-from splatlog.names import is_in_hierarchy
-from splatlog.typings import (
+from splatlog.types import (
+    Level,
     ToLevel,
     LevelSpec,
     Verbosity,
@@ -37,6 +36,51 @@ from splatlog.typings import (
 )
 
 from .verbosity import get_verbosity
+
+
+def is_in_hierarchy(hierarchy_name: str, logger_name: str) -> bool:
+    """
+    Test whether a logger name belongs to a given hierarchy.
+
+    A name is in the hierarchy if it is exactly the hierarchy name or is a
+    dotted child of it. This prevents false positives where one name is a
+    prefix of another without a dot boundary (e.g. `"splat"` is *not* a
+    parent of `"splatlog"`).
+
+    ## Parameters
+
+    -   `hierarchy_name`: The root name of the hierarchy to test against.
+    -   `logger_name`: The logger name to check.
+
+    ## Returns
+
+    {py:data}`True` if `logger_name` is equal to or a child of
+    `hierarchy_name`.
+
+    ## Examples
+
+    ```python
+    >>> is_in_hierarchy("splatlog", "splatlog")
+    True
+
+    >>> is_in_hierarchy("splatlog", "splatlog.names")
+    True
+
+    >>> is_in_hierarchy("blah", "splatlog")
+    False
+
+    >>> is_in_hierarchy("splat", "splatlog")
+    False
+
+    ```
+    """
+    if not logger_name.startswith(hierarchy_name):
+        return False
+    hierarchy_name_length = len(hierarchy_name)
+    return (
+        hierarchy_name_length == len(logger_name)  # same as == at this point
+        or logger_name[hierarchy_name_length] == "."
+    )
 
 
 def sync_verbosity_logger_levels() -> None:
@@ -195,7 +239,7 @@ class Filter(logging.Filter, metaclass=ABCMeta):
     def get_effective_level(self, record: logging.LogRecord) -> Level:
         """
         Responsible for returning the effective
-        {py:type}`splatlog.typings.Level` so that {py:meth}`filter` can do its
+        {py:type}`splatlog.types.Level` so that {py:meth}`filter` can do its
         job.
 
         This is the only method concrete realizations need to override.
@@ -302,7 +346,8 @@ class VerbosityFilter(Filter, ConsoleRenderable):
         ## Examples
 
         ```python
-        >>> from splatlog import Verbosity, set_verbosity
+        >>> from splatlog.types import Verbosity
+        >>> from splatlog.levels import set_verbosity
 
         >>> set_verbosity(0)
         >>> print(VerbosityFilter({Verbosity(0): "WARNING", Verbosity(2): "DEBUG"}))
@@ -320,7 +365,7 @@ class VerbosityFilter(Filter, ConsoleRenderable):
 
         ```python
         >>> import rich
-        >>> from splatlog import Verbosity
+        >>> from splatlog.types import Verbosity
 
         >>> rich.print(
         ...     VerbosityFilter({
@@ -352,8 +397,8 @@ class VerbosityFilter(Filter, ConsoleRenderable):
     def effective_level(self) -> Level:
         """
         Get the effective logging level. Returns the
-        {py:type}`splatlog.typings.LevelValue` that this instances associates
-        with the current global {py:type}`splatlog.typings.Verbosity` (see
+        {py:type}`splatlog.types.LevelValue` that this instances associates
+        with the current global {py:type}`splatlog.types.Verbosity` (see
         {py:func}`splatlog.levels.get_verbosity`). `record` is unused.
         """
         return self.classifier.get(
@@ -397,7 +442,7 @@ class NameMapFilter(Filter):
 
     ```python
     >>> from splatlog._testing import make_log_record
-    >>> from splatlog import Verbosity
+    >>> from splatlog.types import Verbosity
 
     >>> filter = NameMapFilter(
     ...     {

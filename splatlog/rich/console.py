@@ -8,7 +8,7 @@ from typing import IO, Any, cast
 from rich.console import Console
 
 from splatlog.lib.typeguard import satisfies
-from splatlog.typings import (
+from splatlog.types import (
     ToRichConsole,
     ToTheme,
     assert_never,
@@ -33,7 +33,7 @@ def to_console(
         -   {py:class}`~collections.abc.Mapping`: used as keyword arguments to
             {py:class}`rich.console.Console`.
 
-        -   {py:type}`splatlog.typings.StdioName`: write to the named standard
+        -   {py:type}`splatlog.types.StdioName`: write to the named standard
             output stream (`"stdout"` or `"stderr"`).
 
         -   {py:class}`typing.IO`: write to the given string I/O stream.

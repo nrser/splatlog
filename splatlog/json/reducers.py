@@ -27,13 +27,13 @@ else:
     from typing_extensions import Self
 
 from splatlog.lib import fmt_type, has_method
-from splatlog.typings import JSONEncodable, JSONReduceFn
+from splatlog.types import JSONEncodable, JSONReduceFn
 
 
 @dataclasses.dataclass(frozen=True, order=True)
 class JSONReducer:
     """
-    A reducer converts objects to {py:type}`splatlog.typings.JSONEncodable` that
+    A reducer converts objects to {py:type}`splatlog.types.JSONEncodable` that
     can then be JSON encoded by {py:class}`json.JSONEncoder`.
 
     {py:class}`splatlog.json.JSONEncoder` uses a priority-ordered

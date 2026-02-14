@@ -11,7 +11,7 @@ import inspect
 from datetime import datetime
 from types import ModuleType
 
-from splatlog.typings import ExcInfo, ToLevel, to_level
+from splatlog.types import ExcInfo, ToLevel, to_level
 
 __all__ = ["get_constant_docstrings", "make_log_record"]
 

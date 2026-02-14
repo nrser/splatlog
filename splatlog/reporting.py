@@ -21,7 +21,7 @@ from splatlog.levels.filter import VerbosityFilter
 from splatlog.rich import ToTheme
 from splatlog.rich.console import to_console, ToRichConsole
 from splatlog.rich.theme import to_theme
-from splatlog.typings import FilterType, Level
+from splatlog.types import FilterType, Level
 
 
 ReportInclude: TypeAlias = Literal["all", "configured"]

@@ -3,33 +3,19 @@ Root of the `splatlog` package, defining the general-use API. That is to say
 that `import splatlog` should give you everything you need in nearly all cases.
 """
 
-import logging
+from __future__ import annotations
 
-from splatlog.typings import (
-    Level as Level,
-    LevelName as LevelName,
-    ToLevel as ToLevel,
-    Verbosity as Verbosity,
-    is_verbosity as is_verbosity,
-    to_verbosity as to_verbosity,
-    StdioName as StdioName,
-    ToRichConsole as ToRichConsole,
-    NamedHandlerFactory as NamedHandlerFactory,
-    KwdMapping as KwdMapping,
-    ToConsoleHandler as ToConsoleHandler,
-    JSONEncoderPreset as JSONEncoderPreset,
-    ToExportHandler as ToExportHandler,
-    ToJSONFormatter as ToJSONFormatter,
-    ToJSONEncoder as ToJSONEncoder,
-    FileHandlerMode as FileHandlerMode,
-    ExcInfo as ExcInfo,
-    is_level_name as is_level_name,
-    is_level as is_level,
-    to_level as to_level,
-    can_be_level as can_be_level,
-)
+import logging
+from typing import Literal
+
+# Subpackages and modules re-exported wholesale
+from splatlog import types as types
 from splatlog import rich as rich
 from splatlog import lib as lib
+from splatlog import logger as logger
+from splatlog import named_handlers as named_handlers
+
+# Levels
 from splatlog.levels import (
     to_level_name as to_level_name,
     get_level as get_level,
@@ -38,46 +24,34 @@ from splatlog.levels import (
     get_verbosity as get_verbosity,
     set_verbosity as set_verbosity,
 )
-from splatlog.names import (
-    root_name as root_name,
-    is_in_hierarchy as is_in_hierarchy,
-)
-from splatlog.locking import (
-    lock as lock,
-)
-from splatlog.splat_logger import (
-    get_logger as get_logger,
-    getLogger as getLogger,
-    get_logger_for as get_logger_for,
-    LoggerProperty as LoggerProperty,
-    SplatLogger as SplatLogger,
-    ClassLogger as ClassLogger,
-    SelfLogger as SelfLogger,
-)
-from splatlog.rich_handler import (
-    RichHandler as RichHandler,
-)
+
+# JSON
 from splatlog.json import (
     JSONEncoder as JSONEncoder,
     LOCAL_TIMEZONE as LOCAL_TIMEZONE,
     JSONFormatter as JSONFormatter,
 )
-from splatlog.named_handlers import (
-    register_named_handler as register_named_handler,
-    get_named_handler_factory as get_named_handler_factory,
-    named_handler as named_handler,
-    get_named_handler as get_named_handler,
-    set_named_handler as set_named_handler,
-    to_console_handler as to_console_handler,
-    to_export_handler as to_export_handler,
+
+# Convenience re-exports from submodules
+from splatlog.rich.handler import RichHandler as RichHandler
+from splatlog.logger import (
+    SplatLogger as SplatLogger,
+    ClassLogger as ClassLogger,
+    SelfLogger as SelfLogger,
+    LoggerProperty as LoggerProperty,
 )
-from splatlog.setup import (
-    setup as setup,
-)
-from splatlog.report import (
-    ReportInclude as ReportInclude,
-    report as report,
-)
+from splatlog.reporting import report as report
+
+
+# Aliases
+# ============================================================================
+
+getLogger = logger.get
+"""
+Camel-case alias of {py:func}`splatlog.logger.get` for
+{py:mod}`logging`-style code. The ``splatlog.logger.get`` form is preferred.
+"""
+
 
 # Constants
 # ============================================================================
@@ -106,32 +80,157 @@ DEBUG = logging.DEBUG
 NOTSET = logging.NOTSET
 """Not set (0). Alias of {py:data}`logging.NOTSET`."""
 
+
+# Setup
+# ============================================================================
+
+
+def setup(
+    *,
+    console: types.ToConsoleHandler | Literal[False] | None = None,
+    export: types.ToExportHandler | Literal[False] | None = None,
+    level: types.LevelSpec | None = None,
+    theme: rich.ToTheme | None = None,
+    verbosity: types.ToVerbosity | None = None,
+    **custom_named_handlers: object,
+) -> None:
+    """Setup splatlog, enabling log output. Contemporary to
+    {py:func}`logging.basicConfig` from the standard library.
+
+    Typically you'll call this function once at the start of your program — in a
+    `main` function or block, inside a start-up function or hook, or simply near
+    the top of a script or notebook.
+
+    You can however call this function multiple times, and later configurations
+    will seamlessly replace earlier ones. There are situations where this makes
+    sense, such as setting up a default configuration immediately at program
+    start then calling again when you've parsed options or loaded configuration.
+
+    ## Parameters
+
+    ```{note}
+
+    All parameters default to {py:data}`None`, which in all cases is ignored.
+
+    As such, calling `setup()` with no argument is a no-op.
+
+    ```
+
+    -   `console`: create a {py:class}`logging.Handler` writing to the console
+        (terminal, command line) standard output ({py:data}`sys.stdout` or
+        {py:data}`sys.stderr` streams).
+
+        Focused on providing feedback during development. Defaults to using
+        {py:class}`splatlog.RichHandler` for colored, tabular
+        output.
+
+        Accepts the following:
+
+        1.  {py:data}`None` (default) is ignored; no action is taking regarding
+            the console handler. This behavior is consistent across the `export`
+            and `custom_named_handler` arguments as well.
+
+        2.  {py:data}`False` removes the console handler, if any. This behavior
+            is consistent across the `export` and `custom_named_handler`
+            arguments as well.
+
+        3.  Any {py:class}`logging.Handler` instance is added as-is, allowing
+            users to substitute their own extension or alternative
+            implementation.
+
+        4.  Everything else is used to construct a
+            {py:class}`splatlog.RichHandler`. Full details in
+            {py:func}`splatlog.named_handlers.to_console_handler`, but in brief:
+
+            -   {py:data}`True` — all defaults, logs to {py:data}`sys.stderr`.
+            -   {py:class}`collections.abc.Mapping` — keyword arguments for the
+                {py:class}`splatlog.RichHandler` constructor.
+            -   {py:type}`splatlog.types.Level` — specify log level.
+            -   {py:type}`splatlog.types.StdioName`, {py:class}`typing.IO`, or
+                {py:class}`rich.console.Console` — where to write output.
+
+        ## Examples
+
+        Log {py:data}`logging.INFO` and above to {py:data}`sys.stderr`.
+
+        ```python
+
+        splatlog.setup(level="info", console="stderr") # or simply
+        splatlog.setup(level="info", console=True) # as STDERR is the default
+
+        ```
+
+    -   `level`: Set root logging level. Accepts integer levels from
+        {py:mod}`logging`, like {py:data}`logging.INFO` and alias
+        {py:data}`splatlog.INFO`, as well as string representations such as
+        `"info"` and `"INFO"`.
+
+        Defaults to {py:data}`None`, which is ignored.
+
+    -   `theme`: Set the default {py:class}`rich.theme.Theme`.
+
+        The default theme is used anywhere a theme is not explicitly provided,
+        such as constructing {py:class}`rich.console.Console` in
+        {py:func}`splatlog.rich.console.to_console`.
+
+        Accepts the same values as {py:func}`splatlog.rich.theme.to_theme`,
+        which is used to construct a theme if needed.
+
+        Defaults to {py:data}`None`, which is ignored.
+
+        ## Examples
+
+        Log everything ({py:data}`logging.DEBUG` and up) to the console with
+        logger names in pure magenta.
+
+        ```python
+
+        splatlog.setup(level="debug", console=True, theme={
+            "log.name": "#FF00FF",
+        })
+
+        ```
+
+    -   `verbosity`: Optional integer input dictating how much logging should be
+        output.
+
+        Represents the common `-v`, `-vv`, `-vvv` flag pattern, where
+        `verbosity_levels` dictates how `verbosity` maps to logging levels.
+        Higher `verbosity` should mean more logging output.
+
+        Defaults to {py:data}`None`, which is ignored.
+
+    """
+
+    if theme is not None:
+        rich.set_default_theme(theme)
+
+    if level is not None:
+        set_level(level)
+
+    if verbosity is not None:
+        set_verbosity(verbosity)
+
+    if console is not None:
+        named_handlers.put("console", console)
+
+    if export is not None:
+        named_handlers.put("export", export)
+
+    for name, value in custom_named_handlers.items():
+        if value is not None:
+            named_handlers.put(name, value)
+
+
+# ============================================================================
+
 __all__ = [
-    # Types and type guards
-    "Level",
-    "LevelName",
-    "ToLevel",
-    "Verbosity",
-    "is_verbosity",
-    "to_verbosity",
-    "StdioName",
-    "ToRichConsole",
-    "NamedHandlerFactory",
-    "KwdMapping",
-    "ToConsoleHandler",
-    "JSONEncoderPreset",
-    "ToExportHandler",
-    "ToJSONFormatter",
-    "ToJSONEncoder",
-    "FileHandlerMode",
-    "ExcInfo",
-    "is_level_name",
-    "is_level",
-    "to_level",
-    "can_be_level",
-    # Subpackages
+    # Subpackages and modules
+    "types",
     "rich",
     "lib",
+    "logger",
+    "named_handlers",
     # Levels
     "to_level_name",
     "get_level",
@@ -147,33 +246,19 @@ __all__ = [
     "INFO",
     "DEBUG",
     "NOTSET",
-    # Names
-    "root_name",
-    "is_in_hierarchy",
-    # Locking
-    "lock",
-    # Loggers
-    "get_logger",
-    "getLogger",
-    "get_logger_for",
-    "LoggerProperty",
-    "SplatLogger",
-    "ClassLogger",
-    "SelfLogger",
-    # Handlers
-    "RichHandler",
+    # JSON
     "JSONEncoder",
     "LOCAL_TIMEZONE",
     "JSONFormatter",
-    "register_named_handler",
-    "get_named_handler_factory",
-    "named_handler",
-    "get_named_handler",
-    "set_named_handler",
-    "to_console_handler",
-    "to_export_handler",
-    # Setup and reporting
-    "setup",
-    "ReportInclude",
+    # Convenience re-exports
+    "RichHandler",
+    "SplatLogger",
+    "ClassLogger",
+    "SelfLogger",
+    "LoggerProperty",
     "report",
+    # Aliases
+    "getLogger",
+    # Setup
+    "setup",
 ]

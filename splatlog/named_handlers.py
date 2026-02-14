@@ -21,8 +21,8 @@ from splatlog.lib import satisfies
 from splatlog.lib.collections import partition_mapping
 from splatlog.lib.text import fmt
 from splatlog.locking import lock
-from splatlog.rich_handler import RichHandler
-from splatlog.typings import (
+from splatlog.rich.handler import RichHandler
+from splatlog.types import (
     ToConsoleHandler,
     NamedHandlerFactory,
     ToExportHandler,
@@ -110,7 +110,7 @@ def check_name(name: object) -> None:
         )
 
 
-def register_named_handler(
+def put_factory(
     name: str,
     factory: NamedHandlerFactory,
     *,
@@ -122,7 +122,7 @@ def register_named_handler(
     :::{tip}
 
     If you're defining a factory function you probably want the
-    {py:deco}`named_handler` decorator, which calls this function for you.
+    {py:deco}`register` decorator, which calls this function for you.
 
     :::
 
@@ -158,7 +158,7 @@ def register_named_handler(
         _registry[name] = factory
 
 
-def get_named_handler_factory(name: str) -> NamedHandlerFactory:
+def get_factory(name: str) -> NamedHandlerFactory:
     """
     Get the registered factory function for a named handler.
 
@@ -168,7 +168,7 @@ def get_named_handler_factory(name: str) -> NamedHandlerFactory:
 
     ## Returns
 
-    The {py:class}`~splatlog.typings.NamedHandlerFactory` registered for `name`.
+    The {py:class}`~splatlog.types.NamedHandlerFactory` registered for `name`.
 
     ## Raises
 
@@ -178,7 +178,7 @@ def get_named_handler_factory(name: str) -> NamedHandlerFactory:
     return _registry[name]
 
 
-def named_handler(
+def register(
     name: str, *, on_conflict: OnConflict = "raise"
 ) -> Callable[[NamedHandlerFactory], NamedHandlerFactory]:
     """
@@ -204,7 +204,7 @@ def named_handler(
     import logging
     import splatlog
 
-    @splatlog.named_handler("custom")
+    @splatlog.named_handlers.register("custom")
     def custom_handler_factory(value: Any) -> logging.Handler:
         ...
     ```
@@ -214,7 +214,7 @@ def named_handler(
     check_name(name)
 
     def decorator(factory: NamedHandlerFactory) -> NamedHandlerFactory:
-        register_named_handler(name, factory, on_conflict=on_conflict)
+        put_factory(name, factory, on_conflict=on_conflict)
         return factory
 
     return decorator
@@ -224,7 +224,7 @@ def named_handler(
 # ============================================================================
 
 
-def get_named_handler(name: str) -> logging.Handler | None:
+def get(name: str) -> logging.Handler | None:
     """
     Get the currently active handler for `name`, or {py:data}`None` if no
     handler is set.
@@ -241,35 +241,34 @@ def get_named_handler(name: str) -> logging.Handler | None:
 
 
 @overload
-def set_named_handler(
+def put(
     name: Literal["console"], value: ToConsoleHandler
 ) -> None: ...
 
 
 @overload
-def set_named_handler(
+def put(
     name: Literal["export"], value: ToExportHandler
 ) -> None: ...
 
 
 @overload
-def set_named_handler(name: str, value: Any) -> None: ...
+def put(name: str, value: Any) -> None: ...
 
 
-def set_named_handler(name: str, value: Any) -> None:
+def put(name: str, value: Any) -> None:
     """
     Construct a {py:class}`logging.Handler` from `value` and add it to the root
     {py:class}`logging.Logger`.
 
     Uses the factory function registered by `name` with
-    {py:func}`register_named_handler` or the {py:deco}`named_handler` decorator
-    to convert `value` to a handler. A factory function _must_ be registered for
-    `name`, or a {py:class}`KeyError` will be raised (this is primarily to catch
-    typos).
+    {py:func}`put_factory` or the {py:deco}`register` decorator to convert
+    `value` to a handler. A factory function _must_ be registered for `name`,
+    or a {py:class}`KeyError` will be raised (this is primarily to catch typos).
 
-    After setting a named handler you may access it with
-    {py:func}`get_named_handler`. In practice, named handlers are set mostly
-    through {py:func}`splatlog.setup`, which calls this function.
+    After putting a named handler you may access it with {py:func}`get`. In
+    practice, named handlers are put mostly through {py:func}`splatlog.setup`,
+    which calls this function.
 
     Acquires the {py:func}`splatlog.locking.lock` to do the root logger access
     and mutations. Construction of the handler is done before acquiring the
@@ -289,7 +288,7 @@ def set_named_handler(name: str, value: Any) -> None:
     # Standardizes deleting named handlers, relieves converters from having to
     # handle them.
     if value is None or value is False:
-        return del_named_handler(name)
+        return delete(name)
 
     check_name(name)
 
@@ -326,7 +325,7 @@ def set_named_handler(name: str, value: Any) -> None:
             _handlers[name] = new_handler
 
 
-def del_named_handler(name: str) -> None:
+def delete(name: str) -> None:
     """
     Remove a named handler from the root {py:class}`logging.Logger`.
 
@@ -356,11 +355,11 @@ def del_named_handler(name: str) -> None:
 # Serve as examples for adding custom ones.
 
 
-@named_handler("console")
+@register("console")
 def to_console_handler(value: ToConsoleHandler) -> logging.Handler:
     """
     Factory function for the `console` named handler. Converts a
-    {py:class}`~splatlog.typings.ToConsoleHandler` value into a
+    {py:class}`~splatlog.types.ToConsoleHandler` value into a
     {py:class}`logging.Handler`.
 
     ## Parameters
@@ -370,7 +369,7 @@ def to_console_handler(value: ToConsoleHandler) -> logging.Handler:
     ## Returns
 
     A {py:class}`logging.Handler` (typically a
-    {py:class}`~splatlog.rich_handler.RichHandler`).
+    {py:class}`~splatlog.rich.RichHandler`).
 
     ## Raises
 
@@ -379,7 +378,7 @@ def to_console_handler(value: ToConsoleHandler) -> logging.Handler:
     ## Examples
 
     1.  {py:data}`True` is converted to a new
-        {py:class}`~splatlog.rich_handler.RichHandler` with all default
+        {py:class}`~splatlog.rich.RichHandler` with all default
         attributes.
 
         ```python
@@ -389,11 +388,11 @@ def to_console_handler(value: ToConsoleHandler) -> logging.Handler:
         ```
 
     2.  Any {py:class}`collections.abc.Mapping` is used as the keyword arguments
-        to construct a new {py:class}`~splatlog.rich_handler.RichHandler`.
+        to construct a new {py:class}`~splatlog.rich.RichHandler`.
 
         ```python
         >>> import sys
-        >>> from splatlog import Verbosity
+        >>> from splatlog.types import Verbosity
 
         >>> handler = to_console_handler(
         ...     dict(
@@ -420,7 +419,7 @@ def to_console_handler(value: ToConsoleHandler) -> logging.Handler:
 
     3.  Anything that can be converted to a {py:class}`rich.console.Console`
         (see {py:func}`splatlog.rich.to_console`) is assigned as the console in
-        a new {py:class}`~splatlog.rich_handler.RichHandler`.
+        a new {py:class}`~splatlog.rich.RichHandler`.
 
         ```python
         >>> from io import StringIO
@@ -441,7 +440,7 @@ def to_console_handler(value: ToConsoleHandler) -> logging.Handler:
         ```
 
     4.  Any log level name or value is assigned as the level to a new
-        {py:class}`~splatlog.rich_handler.RichHandler`.
+        {py:class}`~splatlog.rich.RichHandler`.
 
         ```python
         >>> to_console_handler(logging.DEBUG).level == logging.DEBUG
@@ -455,7 +454,7 @@ def to_console_handler(value: ToConsoleHandler) -> logging.Handler:
         Note that in the extremely bizarre case where you name a log level
         `"stdout"` (or `"STDOUT"`) you cannot use `"stdout"` to create a
         handler with that level because `"stdout"` will be converted to a
-        {py:class}`~splatlog.rich_handler.RichHandler` writing to
+        {py:class}`~splatlog.rich.RichHandler` writing to
         {py:data}`sys.stdout`.
 
         ```python
@@ -510,10 +509,10 @@ def to_console_handler(value: ToConsoleHandler) -> logging.Handler:
     assert_never(value, ToConsoleHandler)
 
 
-@named_handler("export")
+@register("export")
 def to_export_handler(value: ToExportHandler) -> logging.Handler:
     """
-    Convert a {py:class}`~splatlog.typings.ToExportHandler` value into a
+    Convert a {py:class}`~splatlog.types.ToExportHandler` value into a
     {py:class}`logging.Handler` for file/stream export (JSON Lines).
 
     ## Parameters

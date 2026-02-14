@@ -65,8 +65,8 @@ class Classifier(Generic[T, C], Mapping[T, C]):
 
     A {py:class}`Classifier` is used in
     {py:class}`splatlog.levels.VerbosityFilter` to map
-    {py:type}`splatlog.typings.Verbosity` to log
-    {py:type}`splatlog.typings.Level` based on {py:class}`range` collections.
+    {py:type}`splatlog.types.Verbosity` to log
+    {py:type}`splatlog.types.Level` based on {py:class}`range` collections.
 
     ## Examples
 

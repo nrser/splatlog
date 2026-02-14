@@ -1,7 +1,7 @@
 """
 Defines {py:class}`SplatLogger` and associated classes ({py:class}`ClassLogger`,
 {py:class}`SelfLogger`, {py:class}`LoggerProperty`), as well as the global
-factory functions {py:func}`get_logger` and {py:func}`get_logger_for`.
+factory functions {py:func}`get` and {py:func}`get_for`.
 
 These are co-located in a single module because of circular dependencies between
 the logger classes and the factory functions.
@@ -19,7 +19,7 @@ import rich.repr
 from splatlog.levels import fmt_level
 from splatlog.lib.collections import partition_mapping
 from splatlog.lib.text import fmt
-from splatlog.typings import ToLevel, Level, to_level
+from splatlog.types import ToLevel, Level, to_level
 
 _NOT_FOUND = object()
 """
@@ -29,7 +29,7 @@ logger has not ye been set.
 
 
 @cache
-def get_logger(name: str) -> SplatLogger:
+def get(name: str) -> SplatLogger:
     """
     Get a {py:class}`SplatLogger` by name.
 
@@ -48,14 +48,7 @@ def get_logger(name: str) -> SplatLogger:
     return SplatLogger(logging.getLogger(name))
 
 
-getLogger = get_logger
-"""
-Camel-case alias of {py:func}`get_logger` for {py:mod}`logging`-style code.
-The snake-case form is preferred.
-"""
-
-
-def get_logger_for(obj: object) -> SplatLogger:
+def get_for(obj: object) -> SplatLogger:
     """
     Get a {py:class}`SplatLogger` that is associated with an object.
 
@@ -65,7 +58,7 @@ def get_logger_for(obj: object) -> SplatLogger:
         kind:
 
         1.  {py:class}`str`: a regular _named logger_ is returned, same as
-            calling {py:func}`get_logger`. These are cached globally.
+            calling {py:func}`get`. These are cached globally.
 
         2.  {py:class}`type`: a {py:class}`ClassLogger` is returned, named
             `{__module__}.{__qualname__}`.
@@ -85,7 +78,7 @@ def get_logger_for(obj: object) -> SplatLogger:
     First, we'll create a "module logger" in the usual way.
 
     ```python
-    >>> module_logger = get_logger_for(__name__)
+    >>> module_logger = get_for(__name__)
 
     >>> isinstance(module_logger, SplatLogger)
     True
@@ -94,7 +87,7 @@ def get_logger_for(obj: object) -> SplatLogger:
     False
 
     >>> module_logger.name
-    'splatlog.splat_logger'
+    'splatlog.logger'
 
     ```
 
@@ -117,7 +110,7 @@ def get_logger_for(obj: object) -> SplatLogger:
     Now we can check out class and instance loggers for it.
 
     ```python
-    >>> class_logger = get_logger_for(MyClass)
+    >>> class_logger = get_for(MyClass)
     >>> isinstance(class_logger, SplatLogger)
     True
     >>> isinstance(class_logger, ClassLogger)
@@ -125,16 +118,16 @@ def get_logger_for(obj: object) -> SplatLogger:
     >>> isinstance(class_logger, SelfLogger)
     False
     >>> class_logger.name
-    'splatlog.splat_logger.MyClass'
+    'splatlog.logger.MyClass'
     >>> class_logger.class_name
     'MyClass'
 
     >>> instance = MyClass(name="xyz")
-    >>> instance_logger = get_logger_for(instance)
+    >>> instance_logger = get_for(instance)
     >>> isinstance(instance_logger, SelfLogger)
     True
     >>> instance_logger.name
-    'splatlog.splat_logger.MyClass'
+    'splatlog.logger.MyClass'
     >>> instance_logger.class_name
     'MyClass'
     >>> instance_logger.get_identity()
@@ -144,7 +137,7 @@ def get_logger_for(obj: object) -> SplatLogger:
     """
 
     if isinstance(obj, str):
-        return get_logger(obj)
+        return get(obj)
 
     if isclass(obj):
         return ClassLogger(obj)
@@ -276,7 +269,7 @@ class LoggerProperty:
             # attribute if it exists
             logger = obj.__dict__.get(attr_name, _NOT_FOUND)
             if logger is _NOT_FOUND:
-                logger = get_logger_for(obj)
+                logger = get_for(obj)
 
                 if isinstance(obj.__dict__, MappingProxyType):
                     # Can't assign to `__dict__` of a class because it's a
@@ -387,7 +380,7 @@ class SplatLogger(logging.LoggerAdapter):
         """
         if self.logger.root is not self.logger:
             suffix = ".".join((self.logger.name, suffix))
-        return get_logger(suffix)
+        return get(suffix)
 
     def inject(self, fn: Callable) -> Callable:
         """
@@ -485,7 +478,7 @@ class SelfLogger(ClassLogger):
     ## The `self` Identifier
 
     A `self` attribute is added to each log record emitted by `SelfLogger`,
-    which will be displayed by {py:class}`splatlog.rich_handler.RichHandler`. At
+    which will be displayed by {py:class}`splatlog.rich.RichHandler`. At
     construction, `SelfLogger` checks the target `obj` for an attribute named
     `_splatlog_self_`.
 

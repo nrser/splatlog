@@ -17,7 +17,7 @@ else:
     from typing_extensions import Never, Self
 
 from splatlog.lib import fmt, fmt_type_value
-from splatlog.typings import (
+from splatlog.types import (
     JSONEncoderPreset,
     ToJSONEncoder,
     OnReducerError,
@@ -39,7 +39,7 @@ class JSONEncoder(json.JSONEncoder):
 
     Works by overriding the {py:meth}`JSONEncoder.default` method to consult a
     list of {py:class}`splatlog.json.JSONReducer` to reduce objects to a
-    {py:type}`splatlog.typings.JSONEncodable` form. The list defaults to
+    {py:type}`splatlog.types.JSONEncodable` form. The list defaults to
     {py:data}`splatlog.json.ALL_REDUCERS`, and can be customized per encoder
     instance.
 
@@ -463,7 +463,7 @@ class JSONEncoder(json.JSONEncoder):
         ## Raises
 
         {py:class}`AssertionError` if `value` is not a
-        {py:type}`splatlog.typings.ToJSONEncoder` over the bound class.
+        {py:type}`splatlog.types.ToJSONEncoder` over the bound class.
         """
         if isinstance(value, cls):
             return value
@@ -488,7 +488,7 @@ class JSONEncoder(json.JSONEncoder):
     reducers: Sequence[JSONReducer]
     """
     {py:class}`splatlog.json.JSONReducer` used to reduce objects to
-    {py:type}`splatlog.typings.JSONEncodable` values that the base class
+    {py:type}`splatlog.types.JSONEncodable` values that the base class
     {py:class}`json.JSONEncoder` knowns how to encode.
 
     See {py:meth}`JSONEncoder.default` for details.

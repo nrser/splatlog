@@ -13,10 +13,12 @@ from rich.traceback import Traceback
 
 from splatlog.levels import Filter
 from splatlog.lib import str_find_all
-from splatlog.rich import NtvTable, to_theme, enrich
-from splatlog.rich import ToRichConsole, ToTheme, to_console
+from splatlog.rich.ntv_table import NtvTable
+from splatlog.rich.theme import to_theme, ToTheme
+from splatlog.rich.enrich import enrich
+from splatlog.rich.console import to_console
 from splatlog.rich.link import RichLinker, ToRichLinker, file_linker, to_rich_linker
-from splatlog.typings import LevelSpec, Rich
+from splatlog.types import LevelSpec, Rich, ToRichConsole
 
 LABEL_LOC: Text = Text("loc", style="log.label")
 LABEL_SELF: Text = Text("self", style="log.label")

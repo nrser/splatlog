@@ -25,7 +25,7 @@ if sys.version_info >= (3, 11):
 else:
     from typing_extensions import Never
 
-from splatlog.typings import assert_never
+from splatlog.types import assert_never
 
 
 @runtime_checkable
