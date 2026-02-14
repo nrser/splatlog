@@ -1,6 +1,6 @@
 [project]
 name = "splatlog"
-version = "0.3.5"
+version = "0.4.0-dev"
 description = "Python logger that accepts ** values and prints 'em out."
 authors = [{ name = "nrser", email = "neil@neilsouza.com" }]
 requires-python = ">=3.10"
@@ -13,6 +13,9 @@ classifiers = [
 dependencies = [
     "rich>=9",
     "typeguard==3.0.0b2",
+    # TypeIs was added to stdlib typing in 3.13; remove when
+    # requires-python >= 3.13
+    "typing_extensions>=4.0; python_version < '3.13'",
 ]
 
 [project.urls]
@@ -22,8 +25,17 @@ Documentation = "http://nrser.com/splatlog"
 
 [dependency-groups]
 dev = [
-    "black>=22.3.0",
     "doctor-testerson",
+    # Linter and formatter
+    "ruff>=0.15.0",
+    # Task runner
+    "poethepoet>=0.40.0",
+    # Type checker used in VSCode Python extension
+    "pyright>=1.1.408",
+    "pytest>=7.0",
+    "tox>=4.0",
+    # Plugin to let `tox` work with `uv` to get the Python runtimes it wants
+    "tox-uv>=1.29.0",
 ]
 docs = [
     "myst-parser>=4.0.1",
@@ -33,6 +45,12 @@ docs = [
     "furo>=2025.9.25",
 ]
 notes = ["jupyter>=1.0.0,<2"]
+
+# Tools
+# ============================================================================
+
+# UV
+# ----------------------------------------------------------------------------
 
 [tool.uv]
 default-groups = [
@@ -44,6 +62,63 @@ no-build-isolation-package = ["pyyaml"]
 
 [tool.uv.sources]
 doctor-testerson = { git = "https://github.com/nrser/doctor-testerson.git" }
+
+# PyTest
+# ----------------------------------------------------------------------------
+
+[tool.pytest.ini_options]
+doctest_optionflags = ["NORMALIZE_WHITESPACE", "ELLIPSIS"]
+
+# Poe the Poet
+# ----------------------------------------------------------------------------
+# 
+# Task runner, https://poethepoet.natn.io/
+
+### Test ###
+
+[tool.poe.tasks.test]
+cmd = "tox -e py3$py -- $path -vv"
+help = "Run tests in a file or directory"
+
+[[tool.poe.tasks.test.args]]
+name = "py"
+default = "13"
+help = "Python version 3.X to use"
+
+[[tool.poe.tasks.test.args]]
+name = "path"
+positional = true
+help = "File path to test (source/doctest or pytest)"
+
+### Type Check ###
+
+[tool.poe.tasks.check]
+cmd = "pyright"
+help = "Run type checking on all files"
+
+# Pyright
+# ----------------------------------------------------------------------------
+# 
+# Type checker used in VSCode Python extension.
+# 
+# https://microsoft.github.io/pyright/
+
+[tool.pyright]
+# Mirror config in `.vscode/settings.json`
+typeCheckingMode = "basic"
+
+# Ruff
+# ----------------------------------------------------------------------------
+# 
+# Linter and formatter. https://docs.astral.sh/ruff/
+
+[tool.ruff]
+line-length = 80
+
+# Hatch(ling)
+# ----------------------------------------------------------------------------
+# 
+# Build tool.
 
 [tool.hatch.build.targets.sdist]
 include = [
@@ -64,6 +139,9 @@ exclude = [
     "splatlog/_docs.py",
     "splatlog/_testing.py",
 ]
+
+# Build System
+# ============================================================================
 
 [build-system]
 requires = ["hatchling"]
