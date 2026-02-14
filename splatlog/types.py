@@ -454,7 +454,7 @@ ToConsoleHandler = (
 )
 """
 What can be converted to a `console` named handler, mainly via constructing a
-{py:class}`splatlog.RichHandler`.
+{py:class}`splatlog.rich.RichHandler`.
 
 See {py:func}`splatlog.named_handlers.to_console_handler` for details.
 """
@@ -1091,6 +1091,15 @@ def assert_level(level: ToLevel, *, var_name: str = "level") -> None:
             )
     else:
         assert_never(level, ToLevel)
+
+
+ReportInclude: TypeAlias = Literal["all", "configured"]
+"""
+Filter options for which loggers to include in the report.
+
+-   `"all"`: Include all loggers registered in the logging manager.
+-   `"configured"`: Include only loggers with handlers or non-NOTSET level.
+"""
 
 
 # Doctests

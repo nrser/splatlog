@@ -32,17 +32,6 @@ from splatlog.json import (
     JSONFormatter as JSONFormatter,
 )
 
-# Convenience re-exports from submodules
-from splatlog.rich.handler import RichHandler as RichHandler
-from splatlog.logger import (
-    SplatLogger as SplatLogger,
-    ClassLogger as ClassLogger,
-    SelfLogger as SelfLogger,
-    LoggerProperty as LoggerProperty,
-)
-from splatlog.reporting import report as report
-
-
 # Aliases
 # ============================================================================
 
@@ -121,7 +110,7 @@ def setup(
         {py:data}`sys.stderr` streams).
 
         Focused on providing feedback during development. Defaults to using
-        {py:class}`splatlog.RichHandler` for colored, tabular
+        {py:class}`splatlog.rich.RichHandler` for colored, tabular
         output.
 
         Accepts the following:
@@ -139,12 +128,12 @@ def setup(
             implementation.
 
         4.  Everything else is used to construct a
-            {py:class}`splatlog.RichHandler`. Full details in
+            {py:class}`splatlog.rich.RichHandler`. Full details in
             {py:func}`splatlog.named_handlers.to_console_handler`, but in brief:
 
             -   {py:data}`True` — all defaults, logs to {py:data}`sys.stderr`.
             -   {py:class}`collections.abc.Mapping` — keyword arguments for the
-                {py:class}`splatlog.RichHandler` constructor.
+                {py:class}`splatlog.rich.RichHandler` constructor.
             -   {py:type}`splatlog.types.Level` — specify log level.
             -   {py:type}`splatlog.types.StdioName`, {py:class}`typing.IO`, or
                 {py:class}`rich.console.Console` — where to write output.
@@ -222,6 +211,65 @@ def setup(
             named_handlers.put(name, value)
 
 
+# Report
+# ============================================================================
+
+
+def report(
+    include: types.ReportInclude = "all",
+    *,
+    console: types.ToRichConsole | None = None,
+    theme: rich.ToTheme | None = None,
+    show_placeholder_loggers: bool = False,
+    show_null_handlers: bool = False,
+) -> None:
+    """
+    Print a logging system report to the console.
+
+    Displays all loggers, handlers, and filters in a
+    {py:class}`rich.tree.Tree` structure.
+
+    ## Parameters
+
+    -   `include`: Which loggers to include — `"all"` (default) or
+        `"configured"` (only loggers with handlers or a non-NOTSET level).
+
+    -   `console`: Where to print the report. Accepts anything
+        {py:func}`splatlog.rich.to_console` understands. Defaults to
+        {py:data}`sys.stderr` with the splatlog theme.
+
+    -   `theme`: Fallback {py:class}`rich.theme.Theme` used when `console` does
+        not already provide one.
+
+    -   `show_placeholder_loggers`: Whether to show
+        {py:class}`logging.PlaceHolder` entries.
+
+    -   `show_null_handlers`: Whether to show {py:class}`logging.NullHandler`
+        entries.
+
+    ## Examples
+
+    ```python
+    import splatlog
+
+    # Print full report
+    splatlog.report()
+
+    # Only configured loggers
+    splatlog.report(include="configured")
+    ```
+    """
+    from splatlog.reporting import report as _report
+
+    _report(
+        include,
+        console=console,
+        theme=theme,
+        show_placeholder_loggers=show_placeholder_loggers,
+        show_null_handlers=show_null_handlers,
+    )
+
+
 # ============================================================================
 
 __all__ = [
@@ -250,12 +298,7 @@ __all__ = [
     "JSONEncoder",
     "LOCAL_TIMEZONE",
     "JSONFormatter",
-    # Convenience re-exports
-    "RichHandler",
-    "SplatLogger",
-    "ClassLogger",
-    "SelfLogger",
-    "LoggerProperty",
+    # Report
     "report",
     # Aliases
     "getLogger",

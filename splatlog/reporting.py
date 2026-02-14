@@ -9,7 +9,7 @@ from __future__ import annotations
 from collections.abc import Generator, Iterable, Sequence
 import dataclasses as dc
 import logging
-from typing import Any, Literal, TypeAlias
+from typing import Any
 
 from rich.console import Console, ConsoleRenderable, group
 from rich.pretty import Pretty
@@ -21,16 +21,7 @@ from splatlog.levels.filter import VerbosityFilter
 from splatlog.rich import ToTheme
 from splatlog.rich.console import to_console, ToRichConsole
 from splatlog.rich.theme import to_theme
-from splatlog.types import FilterType, Level
-
-
-ReportInclude: TypeAlias = Literal["all", "configured"]
-"""
-Filter options for which loggers to include in the report.
-
--   `"all"`: Include all loggers registered in the logging manager.
--   `"configured"`: Include only loggers with handlers or non-NOTSET level.
-"""
+from splatlog.types import FilterType, Level, ReportInclude
 
 
 def _iter_handlers(

@@ -19,7 +19,7 @@ Splatlog has an idea of _named handlers_ which:
 There are two built-in _named handlers_:
 
 1.  _console_ — For logging to STDIO. Defaults to using
-    `splatlog.RichHandler` to produce nice, tabular output.
+    `splatlog.rich.RichHandler` to produce nice, tabular output.
     Intended for people to read.
     
 2.  _export_ — For exporting logs in machine readable format for another system
@@ -50,7 +50,7 @@ Say you simply want to log to the console. You can do this:
 
 ```
 
-That creates a `splatlog.RichHandler` logging to
+That creates a `splatlog.rich.RichHandler` logging to
 `sys.stderr` and adds it to the root logger. Check it out:
 
 ```python
