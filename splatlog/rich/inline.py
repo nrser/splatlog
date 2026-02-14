@@ -25,8 +25,8 @@ class Inline(tuple[object, ...]):
     ## Examples
 
     ```python
-    >>> import rich
-    >>> rich.print(Inline("User", {"name": "Alice"}, "logged in"))
+    >>> from rich.console import Console
+    >>> Console(no_color=True, force_terminal=False).print(Inline("User", {"name": "Alice"}, "logged in"))
     User {'name': 'Alice'} logged in
 
     ```

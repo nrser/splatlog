@@ -284,9 +284,10 @@ class LevelFilter(Filter):
         ## Examples
 
         ```python
-        >>> import rich
+        >>> from rich.console import Console
+        >>> _print = Console(no_color=True, force_terminal=False).print
 
-        >>> rich.print(LevelFilter("WARNING"))
+        >>> _print(LevelFilter("WARNING"))
         LevelFilter(level=30)
 
         ```
@@ -364,10 +365,11 @@ class VerbosityFilter(Filter, ConsoleRenderable):
         ## Examples
 
         ```python
-        >>> import rich
+        >>> from rich.console import Console
         >>> from splatlog.types import Verbosity
+        >>> _print = Console(no_color=True, force_terminal=False).print
 
-        >>> rich.print(
+        >>> _print(
         ...     VerbosityFilter({
         ...         Verbosity(0): "WARNING",
         ...         Verbosity(2): "DEBUG"
@@ -523,9 +525,10 @@ class NameMapFilter(Filter):
         ## Examples
 
         ```python
-        >>> import rich
+        >>> from rich.console import Console
+        >>> _print = Console(no_color=True, force_terminal=False).print
 
-        >>> rich.print(NameMapFilter({"my_module": "WARNING"}))
+        >>> _print(NameMapFilter({"my_module": "WARNING"}))
         NameMapFilter(filters={'my_module': LevelFilter(level=30)})
 
         ```

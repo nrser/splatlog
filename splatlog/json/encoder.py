@@ -692,12 +692,13 @@ class JSONEncoder(json.JSONEncoder):
         ## Examples
 
         ```python
-        >>> import rich
+        >>> from rich.console import Console
+        >>> _print = Console(no_color=True, force_terminal=False).print
 
-        >>> rich.print(JSONEncoder())
+        >>> _print(JSONEncoder())
         JSONEncoder()
 
-        >>> rich.print(JSONEncoder(reducers=[], sort_keys=True))
+        >>> _print(JSONEncoder(reducers=[], sort_keys=True))
         JSONEncoder(reducers=[], sort_keys=True)
 
         ```

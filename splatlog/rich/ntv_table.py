@@ -56,9 +56,10 @@ class NtvTable(ConsoleRenderable):
     1.  Basic usage
 
         ```py
-        >>> import rich
+        >>> from rich.console import Console
+        >>> _print = Console(no_color=True, force_terminal=False).print
 
-        >>> rich.print(NtvTable({"a": 1, "b": "bee!"}))
+        >>> _print(NtvTable({"a": 1, "b": "bee!"}))
         a           int          1
         b           str          bee!
 
@@ -67,7 +68,7 @@ class NtvTable(ConsoleRenderable):
     2.  Show column names
 
         ```py
-        >>> rich.print(NtvTable({"a": 1, "b": "bee!"}, show_header=True))
+        >>> _print(NtvTable({"a": 1, "b": "bee!"}, show_header=True))
         Name        Type        Value
         a           int          1
         b           str          bee!
@@ -77,7 +78,7 @@ class NtvTable(ConsoleRenderable):
     3.  Sort rows by name
 
         ```py
-        >>> rich.print(
+        >>> _print(
         ...     NtvTable({"bob": 123, "carol": 456, "alice": 789}, sort=True)
         ... )
         alice       int          789
@@ -89,7 +90,7 @@ class NtvTable(ConsoleRenderable):
     4.  Custom sort (descending by value)
 
         ```py
-        >>> rich.print(
+        >>> _print(
         ...     NtvTable(
         ...         {"bob": 123, "carol": 456, "alice": 789},
         ...         sort=lambda kv: -kv[1]

@@ -208,14 +208,15 @@ class Classifier(Generic[T, C], Mapping[T, C]):
         ## Examples
 
         ```python
-        >>> import rich
+        >>> from rich.console import Console
+        >>> _print = Console(no_color=True, force_terminal=False).print
 
         >>> c = Classifier({
         ...     range(0, 5): "a",
         ...     range(5, 10): "b",
         ... })
 
-        >>> rich.print(c)
+        >>> _print(c)
         <Classifier range(0, 5): 'a', range(5, 10): 'b'>
 
         ```

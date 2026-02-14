@@ -32,8 +32,8 @@ class EnrichedType:
     ```python
     >>> import sys
 
-    >>> wide = Console(file=sys.stdout, width=80, no_color=True)
-    >>> narrow = Console(file=sys.stdout, width=30, no_color=True)
+    >>> wide = Console(file=sys.stdout, width=80, no_color=True, force_terminal=False)
+    >>> narrow = Console(file=sys.stdout, width=30, no_color=True, force_terminal=False)
 
     >>> class MyType:
     ...     pass
@@ -126,7 +126,7 @@ class EnrichedType:
         >>> import sys
         >>> from collections.abc import Mapping
 
-        >>> wide = Console(file=sys.stdout, width=80, no_color=True)
+        >>> wide = Console(file=sys.stdout, width=80, no_color=True, force_terminal=False)
         >>> wide.print(EnrichedType(Mapping))
         collections.abc.Mapping
 
@@ -135,7 +135,7 @@ class EnrichedType:
         Narrow console prints as a tree:
 
         ```python
-        >>> narrow = Console(file=sys.stdout, width=20, no_color=True)
+        >>> narrow = Console(file=sys.stdout, width=20, no_color=True, force_terminal=False)
         >>> narrow.print(EnrichedType(Mapping))
         collections
           .abc

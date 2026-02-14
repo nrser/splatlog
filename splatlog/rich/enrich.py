@@ -117,14 +117,15 @@ def enrich(value, inline=False):
     Classes get special enriched formatting (module path . class name):
 
     ```python
-    >>> import rich
+    >>> from rich.console import Console
+    >>> _print = Console(no_color=True, force_terminal=False).print
 
-    >>> rich.print(enrich(dict))
+    >>> _print(enrich(dict))
     dict
 
     >>> from collections.abc import Mapping
 
-    >>> rich.print(enrich(Mapping))
+    >>> _print(enrich(Mapping))
     collections.abc.Mapping
 
     ```
@@ -137,7 +138,7 @@ def enrich(value, inline=False):
     ```python
     >>> import sys
     >>> from rich.console import Console
-    >>> narrow = Console(file=sys.stdout, width=15, no_color=True)
+    >>> narrow = Console(file=sys.stdout, width=15, no_color=True, force_terminal=False)
     >>> data = {"a": 1, "b": 2}
 
     >>> narrow.print(enrich(data))

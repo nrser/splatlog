@@ -498,17 +498,19 @@ class JSONFormatter(logging.Formatter):
 
         ```python
         >>> from datetime import timezone
-        >>> from rich import print
+        >>> from rich.console import Console
         >>> from splatlog.json import JSONEncoder
 
-        >>> print(
+        >>> Console(no_color=True, force_terminal=False, width=80).print(
         ...     JSONFormatter(
         ...         encoder=JSONEncoder.compact(reducers=[]),
         ...         tz=timezone.utc
         ...     )
         ... )
-        JSONFormatter(encoder=JSONEncoder(reducers=[], separators=(',', ':')),
-            tz=datetime.timezone.utc)
+        JSONFormatter(
+            encoder=JSONEncoder(reducers=[], separators=(',', ':')),
+            tz=datetime.timezone.utc
+        )
 
         ```
         """
