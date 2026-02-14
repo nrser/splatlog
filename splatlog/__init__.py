@@ -259,15 +259,20 @@ def report(
     splatlog.report(include="configured")
     ```
     """
-    from splatlog.reporting import report as _report
+    from splatlog import reporting
 
-    _report(
-        include,
+    # Create console with splatlog theme
+    console = rich.to_console(console, theme=rich.to_theme(theme))
+
+    report = reporting.Report(
         console=console,
-        theme=theme,
+        include=include,
         show_placeholder_loggers=show_placeholder_loggers,
         show_null_handlers=show_null_handlers,
     )
+
+    tree = report.render()
+    console.print(tree)
 
 
 # ============================================================================
