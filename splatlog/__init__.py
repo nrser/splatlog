@@ -1,107 +1,179 @@
-"""Root of the `splatlog` package.
-
-Imports pretty much everything else, so you should only really need to import
-this.
+"""
+Root of the `splatlog` package, defining the general-use API. That is to say
+that `import splatlog` should give you everything you need in nearly all cases.
 """
 
-# NOTE  Package-level re-exports. In addition to being terrible pedantic and
-#       annoying, this serves two purposes:
-#
-#       1.  Makes indirect references in the documentation generator work. This
-#           _might_ be avoidable with enough effort put into the resolver, but
-#           for the moment it is what it is.
-#
-#       2.  Makes PyLance happy (VSCode Python type checker). It doesn't like
-#           import splats
-#
-#               Wildcard import from a library not allowed
-#               Pylance(reportWildcardImportFromLibrary)
-#
+import logging
+
 from splatlog.typings import (
-    LevelValue,
-    LevelName,
-    Level,
-    Verbosity,
-    is_verbosity,
-    as_verbosity,
-    VerbosityLevel,
-    VerbosityRange,
-    VerbosityLevels,
-    VerbosityLevelsCastable,
-    StdioName,
-    RichConsoleCastable,
-    RichThemeCastable,
-    NamedHandlerCast,
-    KwdMapping,
-    HandlerCastable,
-    ConsoleHandlerCastable,
-    JSONEncoderStyle,
-    ExportHandlerCastable,
-    JSONFormatterCastable,
-    JSONEncoderCastable,
-    FileHandlerMode,
-    ExcInfo,
+    Level as Level,
+    LevelName as LevelName,
+    ToLevel as ToLevel,
+    Verbosity as Verbosity,
+    is_verbosity as is_verbosity,
+    to_verbosity as to_verbosity,
+    StdioName as StdioName,
+    ToRichConsole as ToRichConsole,
+    NamedHandlerFactory as NamedHandlerFactory,
+    KwdMapping as KwdMapping,
+    ToConsoleHandler as ToConsoleHandler,
+    JSONEncoderPreset as JSONEncoderPreset,
+    ToExportHandler as ToExportHandler,
+    ToJSONFormatter as ToJSONFormatter,
+    ToJSONEncoder as ToJSONEncoder,
+    FileHandlerMode as FileHandlerMode,
+    ExcInfo as ExcInfo,
+    is_level_name as is_level_name,
+    is_level as is_level,
+    to_level as to_level,
+    can_be_level as can_be_level,
 )
-from splatlog import lib
+from splatlog import rich as rich
+from splatlog import lib as lib
 from splatlog.levels import (
-    CRITICAL,
-    FATAL,
-    ERROR,
-    WARNING,
-    WARN,
-    INFO,
-    DEBUG,
-    NOTSET,
-    get_level_value,
-    is_level_name,
-    is_level_value,
-    is_level,
+    to_level_name as to_level_name,
+    get_level as get_level,
+    get_level_name as get_level_name,
+    set_level as set_level,
+    get_verbosity as get_verbosity,
+    set_verbosity as set_verbosity,
 )
 from splatlog.names import (
-    root_name,
-    is_in_hierarchy,
-)
-from splatlog.verbosity import (
-    VerbosityLevelResolver,
-    VerbosityLevelsFilter,
-    cast_verbosity_levels,
-    get_verbosity_levels,
-    set_verbosity_levels,
-    del_verbosity_levels,
-    get_verbosity,
-    set_verbosity,
-    del_verbosity,
+    root_name as root_name,
+    is_in_hierarchy as is_in_hierarchy,
 )
 from splatlog.locking import (
-    lock,
+    lock as lock,
 )
 from splatlog.splat_logger import (
-    get_logger,
-    getLogger,
-    get_logger_for,
-    LoggerProperty,
-    SplatLogger,
-    ClassLogger,
-    SelfLogger,
+    get_logger as get_logger,
+    getLogger as getLogger,
+    get_logger_for as get_logger_for,
+    LoggerProperty as LoggerProperty,
+    SplatLogger as SplatLogger,
+    ClassLogger as ClassLogger,
+    SelfLogger as SelfLogger,
 )
 from splatlog.rich_handler import (
-    RichHandler,
+    RichHandler as RichHandler,
 )
 from splatlog.json import (
-    JSONEncoder,
-    LOCAL_TIMEZONE,
-    JSONFormatterCastable,
-    JSONFormatter,
+    JSONEncoder as JSONEncoder,
+    LOCAL_TIMEZONE as LOCAL_TIMEZONE,
+    JSONFormatter as JSONFormatter,
 )
 from splatlog.named_handlers import (
-    register_named_handler,
-    get_named_handler_cast,
-    named_handler,
-    get_named_handler,
-    set_named_handler,
-    cast_console_handler,
-    cast_export_handler,
+    register_named_handler as register_named_handler,
+    get_named_handler_factory as get_named_handler_factory,
+    named_handler as named_handler,
+    get_named_handler as get_named_handler,
+    set_named_handler as set_named_handler,
+    to_console_handler as to_console_handler,
+    to_export_handler as to_export_handler,
 )
 from splatlog.setup import (
-    setup,
+    setup as setup,
 )
+from splatlog.report import (
+    ReportInclude as ReportInclude,
+    report as report,
+)
+
+# Constants
+# ============================================================================
+
+CRITICAL = logging.CRITICAL
+"""Critical level (50). Alias of {py:data}`logging.CRITICAL`."""
+
+FATAL = logging.FATAL
+"""Fatal level (50). Alias of {py:data}`logging.FATAL`."""
+
+ERROR = logging.ERROR
+"""Error level (40). Alias of {py:data}`logging.ERROR`."""
+
+WARNING = logging.WARNING
+"""Warning level (30). Alias of {py:data}`logging.WARNING`."""
+
+WARN = logging.WARN
+"""Warning level (30). Alias of {py:data}`logging.WARNING`."""
+
+INFO = logging.INFO
+"""Info level (20). Alias of {py:data}`logging.INFO`."""
+
+DEBUG = logging.DEBUG
+"""Debug level (10). Alias of {py:data}`logging.DEBUG`."""
+
+NOTSET = logging.NOTSET
+"""Not set (0). Alias of {py:data}`logging.NOTSET`."""
+
+__all__ = [
+    # Types and type guards
+    "Level",
+    "LevelName",
+    "ToLevel",
+    "Verbosity",
+    "is_verbosity",
+    "to_verbosity",
+    "StdioName",
+    "ToRichConsole",
+    "NamedHandlerFactory",
+    "KwdMapping",
+    "ToConsoleHandler",
+    "JSONEncoderPreset",
+    "ToExportHandler",
+    "ToJSONFormatter",
+    "ToJSONEncoder",
+    "FileHandlerMode",
+    "ExcInfo",
+    "is_level_name",
+    "is_level",
+    "to_level",
+    "can_be_level",
+    # Subpackages
+    "rich",
+    "lib",
+    # Levels
+    "to_level_name",
+    "get_level",
+    "get_level_name",
+    "set_level",
+    "get_verbosity",
+    "set_verbosity",
+    "CRITICAL",
+    "FATAL",
+    "ERROR",
+    "WARNING",
+    "WARN",
+    "INFO",
+    "DEBUG",
+    "NOTSET",
+    # Names
+    "root_name",
+    "is_in_hierarchy",
+    # Locking
+    "lock",
+    # Loggers
+    "get_logger",
+    "getLogger",
+    "get_logger_for",
+    "LoggerProperty",
+    "SplatLogger",
+    "ClassLogger",
+    "SelfLogger",
+    # Handlers
+    "RichHandler",
+    "JSONEncoder",
+    "LOCAL_TIMEZONE",
+    "JSONFormatter",
+    "register_named_handler",
+    "get_named_handler_factory",
+    "named_handler",
+    "get_named_handler",
+    "set_named_handler",
+    "to_console_handler",
+    "to_export_handler",
+    # Setup and reporting
+    "setup",
+    "ReportInclude",
+    "report",
+]

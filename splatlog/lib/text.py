@@ -1,3 +1,11 @@
+"""
+Text formatting utilities for human-readable output.
+
+Provides functions for formatting types, type hints, routines, and values in
+a concise, readable style. The {py:class}`FmtOpts` dataclass controls
+formatting behavior like module name inclusion and list formatting.
+"""
+
 from __future__ import annotations
 import dataclasses
 from functools import wraps
@@ -6,57 +14,117 @@ import sys
 import typing
 from typing import (
     Any,
-    Callable,
     ForwardRef,
-    Generic,
     Literal,
     Optional,
     Protocol,
-    Type,
     TypeVar,
     Union,
-    cast,
     get_args,
     get_origin,
-    overload,
 )
 import types
 from collections import abc
 
-from splatlog.lib.collections import partition_mapping
+# `Self` was added to stdlib typing in 3.11
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
+
+import rich.repr
+
+from .collections import partition_mapping
 
 BUILTINS_MODULE = object.__module__
+"""
+The module name for built-in types (e.g., `str`, `int`).
+
+The name is `'builtins'` but we read it from `object.__module__`.
+"""
+
 TYPING_MODULE = typing.__name__
+"""
+The module name of the {py:mod}`typing` module.
+
+The name is `'typing'` but we read it from `typing.__name__`.
+"""
+
 LAMBDA_NAME = (lambda x: x).__name__
+"""
+The `__name__` attribute value for lambda functions (`"<lambda>"`).
+
+The name is `'<lambda>'`, we get it from `(lambda x: x).__name__`.
+"""
 
 
 def is_typing(x: Any) -> bool:
+    """
+    Check if a value is a typing construct (generic, type alias, etc.).
+
+    ## Parameters
+
+    -   `x`: The value to check.
+
+    ## Returns
+
+    {py:data}`True` if `x` appears to be from the `typing` module.
+    """
     return bool(
         get_origin(x) or get_args(x) or type(x).__module__ == TYPING_MODULE
     )
 
 
-FmtOptsSelf = TypeVar("FmtOptsSelf", bound="FmtOpts")
-TFallback = TypeVar("TFallback")
-TFallbackCon = TypeVar("TFallbackCon", covariant=True)
+def str_find_all(s: str, char: str) -> abc.Iterable[int]:
+    """
+    Find all occurrences of a character in a string.
+
+    ## Parameters
+
+    -   `s`: The string to search.
+    -   `char`: The character to find.
+
+    ## Returns
+
+    An iterable of indices where `char` occurs in `s`.
+    """
+    i = s.find(char)
+    while i != -1:
+        yield i
+        i = s.find(char, i + 1)
 
 
 class Formatter(Protocol):
-    @overload
-    def __call__(
-        self, *args, fallback: Callable[[Any], TFallback], **kwds
-    ) -> Union[str, TFallback]:
-        ...
+    """Protocol for formatter functions that return strings."""
 
-    @overload
-    def __call__(self, *args, **kwds) -> str:
-        ...
+    def __call__(self, *args, **kwds) -> str: ...
 
 
 @dataclasses.dataclass(frozen=True)
-class FmtOpts(Generic[TFallback]):
+class FmtOpts:
+    """
+    Options controlling text formatting behavior.
+
+    This is a frozen dataclass; use {py:func}`dataclasses.replace` to create
+    modified copies. The {py:meth}`provide` decorator allows functions to
+    accept these options either as a final positional argument or as keyword
+    arguments.
+    """
+
     @classmethod
-    def of(cls: type[FmtOptsSelf], x) -> FmtOptsSelf:
+    def of(cls: type[Self], x) -> Self:
+        """
+        Coerce a value to a {py:class}`FmtOpts` instance.
+
+        ## Parameters
+
+        -   `x`: {py:data}`None` (returns default), an existing instance
+            (returned as-is), or a dict of field values.
+
+        ## Returns
+
+        A {py:class}`FmtOpts` instance.
+        """
         if x is None:
             return cls()
         if isinstance(x, cls):
@@ -65,6 +133,61 @@ class FmtOpts(Generic[TFallback]):
 
     @classmethod
     def provide(cls, fn) -> Formatter:
+        """
+        Decorator that adds {py:class}`FmtOpts` support to a function.
+
+        The decorated function can receive options as:
+
+        -   A final positional argument of type {py:class}`FmtOpts`
+        -   Keyword arguments matching {py:class}`FmtOpts` field names
+        -   Both of the above, with keyword arguments replacing values in the
+            instance.
+        -   Neither, using a {py:class}`FmtOpts` with all default values.
+
+        ## Parameters
+
+        -   `fn`: The function to decorate. Should accept a {py:class}`FmtOpts`
+            instance as its last positional parameter.
+
+        ## Returns
+
+        A wrapped function with flexible options handling.
+
+        ## Examples
+
+        Using default options (no arguments):
+
+        ```python
+        >>> fmt_type(str)
+        'str'
+
+        ```
+
+        Using keyword arguments for options:
+
+        ```python
+        >>> fmt_type(str, omit_builtins=False)
+        'builtins.str'
+
+        ```
+
+        Using a FmtOpts instance as final positional argument:
+
+        ```python
+        >>> fmt_type(str, FmtOpts(omit_builtins=False))
+        'builtins.str'
+
+        ```
+
+        Combining instance with keyword overrides:
+
+        ```python
+        >>> opts = FmtOpts(module_names=False)
+        >>> fmt_type(str, opts, module_names=True, omit_builtins=False)
+        'builtins.str'
+
+        ```
+        """
         field_names = {field.name for field in dataclasses.fields(cls)}
 
         @wraps(fn)
@@ -83,20 +206,80 @@ class FmtOpts(Generic[TFallback]):
 
         return wrapped
 
-    fallback: abc.Callable[[object], TFallback] = cast(
-        abc.Callable[[object], TFallback], repr
-    )
+    def __rich_repr__(self) -> rich.repr.Result:
+        for field in dataclasses.fields(self):
+            value = getattr(self, field.name)
+            if value != field.default:
+                yield field.name, value
+
+    fallback: abc.Callable[[object], str] = repr
+    """Fallback formatter when no specific formatter applies."""
+
     module_names: bool = True
+    """Whether to include module names in formatted output."""
+
     omit_builtins: bool = True
+    """Whether to omit the `builtins` module prefix for built-in types."""
+
+    items: int | None = None
+    """
+    Max number of items to show in a {py:class}`collections.abc.Sequence`, with
+    any additional items being replaced with the {py:attr}`ellipsis`.
+    """
+
+    ellipsis: str = "..."
+    """
+    Sting to replace characters in long {py:class}`str`, items in long
+    {py:class}`collections.abc.Sequence`, etc.
+
+    ## See Also
+
+    1.  {py:attr}`items`
+    """
+
+    ls_sep: str = ","
+    """
+    List separator. {py:func}`fmt_list` will stick this between items (along
+    with a space).
+    """
+
+    ls_conj: str | None = None
+    """
+    List conjunction. When {py:data}`None` {py:func}`fmt_list` will use the
+    {py:attr}`FmtOpts.ls_sep` throughout, like `A, B, C`. Configuring a
+    conjunction `"and"` would get you `A, B, and C`.
+    """
+
+    ls_ox: bool = True
+    """
+    Should {py:func}`fmt_list` use the [Oxford comma][] style?
+    """
+
+    typing: bool = False
+    """
+    Add formatted type.
+    """
 
 
 DEFAULT_FMT_OPTS = FmtOpts()
+"""A {py:class}`FmtOpts` instance with all defaults attributes."""
 
 
 @FmtOpts.provide
 def get_name(x: Any, opts: FmtOpts) -> Optional[str]:
     """
-    ##### Examples #####
+    Get the qualified name of an object, optionally with module prefix.
+
+    ## Parameters
+
+    -   `x`: The object to get the name of.
+    -   `opts`: Formatting options.
+
+    ## Returns
+
+    The name as a string, or {py:data}`None` if the object has no name.
+
+    ## Examples
 
     ```python
     >>> get_name(str)
@@ -141,9 +324,23 @@ def get_name(x: Any, opts: FmtOpts) -> Optional[str]:
 
 
 @FmtOpts.provide
-def fmt(x: Any, opts: FmtOpts[TFallback]) -> Union[str, TFallback]:
+def fmt(x: Any, opts: FmtOpts) -> str:
     """
-    ##### Examples #####
+    Format a value for human-readable output.
+
+    Dispatches to specialized formatters based on the value's type:
+    typing constructs, types, and routines each have dedicated formatters.
+
+    ## Parameters
+
+    -   `x`: The value to format.
+    -   `opts`: Formatting options.
+
+    ## Returns
+
+    A formatted string representation.
+
+    ## Examples
 
     ```python
     >>> fmt(int.__add__)
@@ -151,6 +348,10 @@ def fmt(x: Any, opts: FmtOpts[TFallback]) -> Union[str, TFallback]:
 
     ```
     """
+    if opts.typing:
+        opts = dataclasses.replace(opts, typing=False)
+        return fmt_type_value(x, opts)
+
     if is_typing(x):
         return fmt_type_hint(x, opts)
 
@@ -165,15 +366,38 @@ def fmt(x: Any, opts: FmtOpts[TFallback]) -> Union[str, TFallback]:
 
 @FmtOpts.provide
 def p(x: Any, opts: FmtOpts, **kwds) -> None:
+    """
+    Print a formatted value.
+
+    Shorthand for `print(fmt(x, opts), **kwds)`.
+
+    ## Parameters
+
+    -   `x`: The value to format and print.
+    -   `opts`: Formatting options.
+    -   `**kwds`: Additional arguments passed to {py:func}`print`.
+    """
     print(fmt(x, opts), **kwds)
 
 
 @FmtOpts.provide
-def fmt_routine(
-    fn: types.FunctionType, opts: FmtOpts[TFallback]
-) -> Union[str, TFallback]:
+def fmt_routine(fn: types.FunctionType, opts: FmtOpts) -> str:
     """
-    ##### Examples #####
+    Format a function or method for display.
+
+    Lambdas are shown as `λ()`. Named functions include their qualified name
+    followed by `()`.
+
+    ## Parameters
+
+    -   `fn`: The function to format.
+    -   `opts`: Formatting options.
+
+    ## Returns
+
+    A formatted string like `module.func()` or `λ()`.
+
+    ## Examples
 
     ```python
     >>> fmt_routine(fmt_routine)
@@ -208,9 +432,20 @@ def fmt_routine(
 
 
 @FmtOpts.provide
-def fmt_type(t: Type, opts: FmtOpts[TFallback]) -> Union[str, TFallback]:
+def fmt_type(t: type, opts: FmtOpts) -> str:
     """
-    ##### Examples #####
+    Format a type for display.
+
+    ## Parameters
+
+    -   `t`: The type to format.
+    -   `opts`: Formatting options.
+
+    ## Returns
+
+    The type's qualified name, with or without module prefix per options.
+
+    ## Examples
 
     ```python
     >>> fmt_type(abc.Collection)
@@ -236,8 +471,41 @@ def fmt_type(t: Type, opts: FmtOpts[TFallback]) -> Union[str, TFallback]:
 
 
 @FmtOpts.provide
-def fmt_type_of(x: object, opts: FmtOpts[TFallback]) -> str | TFallback:
+def fmt_type_of(x: object, opts: FmtOpts) -> str:
+    """
+    Format the type of a value.
+
+    Shorthand for `fmt_type(type(x), opts)`.
+
+    ## Parameters
+
+    -   `x`: The value whose type to format.
+    -   `opts`: Formatting options.
+
+    ## Returns
+
+    The formatted type name.
+    """
     return fmt_type(type(x), opts)
+
+
+@FmtOpts.provide
+def fmt_type_value(x: object, opts: FmtOpts) -> str:
+    """Helper to produce the `TYPE: VALUE` format we often use in error
+    messages.
+
+    Nothing fancy, just calls {py:func}`fmt_type_of` and {py:func}`fmt`.
+
+    ## Examples
+
+    ```python
+
+    fmt_type_value(123)
+    "int: 123"
+
+    ```
+    """
+    return f"{fmt_type_of(x, opts)}: {fmt(x, opts)}"
 
 
 def _nest(formatted: str, nested: bool) -> str:
@@ -245,23 +513,30 @@ def _nest(formatted: str, nested: bool) -> str:
 
 
 @FmtOpts.provide
-def _fmt_optional(
-    t: Any, opts: FmtOpts[TFallback], *, nested: bool = False
-) -> Union[str, TFallback]:
+def _fmt_optional(t: Any, opts: FmtOpts, *, nested: bool = False) -> str:
     if get_origin(t) is Literal:
         return _nest("None | " + fmt_type_hint(t, opts), nested)
     return fmt_type_hint(t, opts, nested=True) + "?"
 
 
 @FmtOpts.provide
-def fmt_type_hint(
-    t: Any, opts: FmtOpts[TFallback], *, nested: bool = False
-) -> Union[str, TFallback]:
+def fmt_type_hint(t: Any, opts: FmtOpts, *, nested: bool = False) -> str:
     """
-    ##### Examples #####
+    Format a type hint for human-readable display.
 
-    Examples can be found in <doc/splatlog/lib/text/fmt_type_hint.md>.
+    Produces concise representations like `str?` for `Optional[str]`,
+    `int[]` for `list[int]`, and `{str: int}` for `dict[str, int]`.
 
+    ## Parameters
+
+    -   `t`: The type hint to format.
+    -   `opts`: Formatting options.
+    -   `nested`: Whether this is a nested type (used internally for
+        parenthesization).
+
+    ## Returns
+
+    A formatted string representation of the type hint.
     """
 
     if t is Ellipsis:
@@ -336,6 +611,20 @@ def fmt_type_hint(
 
 
 def fmt_range(rng: range) -> str:
+    """
+    Format a range for concise display.
+
+    Short ranges (≤3 elements) are shown in full. Longer ranges show the
+    first elements and an ellipsis.
+
+    ## Parameters
+
+    -   `rng`: The range to format.
+
+    ## Returns
+
+    A string like `[0, 1, 2]` or `[0, 1, ..., 100]`.
+    """
     length = len(rng)
     if length <= 3:
         return str(list(rng))
@@ -344,3 +633,85 @@ def fmt_range(rng: range) -> str:
             return f"[{rng[0]}, ...]"
         return f"[{rng[0]}, {rng[1]}, ...]"
     return f"[{rng[0]}, {rng[1]}, ..., {rng.stop}]"
+
+
+@FmtOpts.provide
+def fmt_list(items: abc.Iterable, opts: FmtOpts) -> str:
+    """
+    Format a list of `items`. By default this is comma-separated, like
+    `A, B, C`.
+    """
+    if opts.ls_conj is None:
+        return f"{opts.ls_sep} ".join(fmt(item, opts) for item in items)
+
+    s = ""
+    sep_sp = f"{opts.ls_sep} "
+    ls = list(items)
+    i_end = len(ls) - 1
+    for i, item in enumerate(ls):
+        if i == i_end:
+            if opts.ls_ox:
+                s += opts.ls_sep
+            s += f" {opts.ls_conj} "
+        elif i > 0:
+            s += sep_sp
+
+        s += fmt(item, opts)
+
+    return s
+
+
+@FmtOpts.provide
+def fmt_seq(seq: abc.Sequence, opts: FmtOpts) -> str:
+    """
+    Format a sequence, respecting the {py:attr}`FmtOpts.items` limit and
+    {py:attr}`FmtOpts.ellipsis` for truncation.
+
+    ## Parameters
+
+    -   `seq`: The sequence to format (list or tuple).
+    -   `opts`: Formatting options.
+
+    ## Returns
+
+    A formatted string like `[1, 2, 3]` or `(1, 2, ...)`.
+
+    ## Examples
+
+    ```python
+    >>> fmt_seq([1, 2, 3])
+    '[1, 2, 3]'
+
+    >>> fmt_seq((1, 2, 3))
+    '(1, 2, 3)'
+
+    >>> fmt_seq([1, 2, 3, 4, 5], items=3)
+    '[1, 2, 3, ...]'
+
+    >>> fmt_seq((1, 2, 3, 4, 5), items=2)
+    '(1, 2, ...)'
+
+    >>> fmt_seq([1, 2, 3, 4, 5], items=3, ellipsis='…')
+    '[1, 2, 3, …]'
+
+    >>> fmt_seq([])
+    '[]'
+
+    >>> fmt_seq(())
+    '()'
+
+    >>> fmt_seq([1, 2], items=5)
+    '[1, 2]'
+
+    ```
+    """
+    is_tuple = isinstance(seq, tuple)
+    open_bracket, close_bracket = ("(", ")") if is_tuple else ("[", "]")
+
+    if opts.items is not None and len(seq) > opts.items:
+        items = [fmt(item, opts) for item in seq[: opts.items]]
+        items.append(opts.ellipsis)
+    else:
+        items = [fmt(item, opts) for item in seq]
+
+    return open_bracket + ", ".join(items) + close_bracket

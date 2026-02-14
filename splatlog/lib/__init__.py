@@ -1,16 +1,42 @@
-from typing import Any, Optional
-from collections.abc import Callable
-from inspect import ismethod, signature, Parameter
+"""
+The `lib` module is for general-purpose structures and utilities. `lib` should
+_not_ depend on _any_ other project code — you should be able to paste it into
+another project and have it _just work_[^1].
+
+You can think of `lib` as "extra batteries" on top of the Python standard
+library. Previously, I've been tempted to break this type of work out into its
+own package, but experience has taught me that's a bad idea... general-purpose
+code is very difficult to get right, and every breaking change creates a cascade
+of work. Being part of a logging library is almost just as good though, as it
+gets to piggy-back on functionality that most projects can use.
+
+[^1]:   You would want to adjust cross-references in the docstrings, which
+        currently start with `splatlog.` for symbols outside that same file, but
+        that won't break the code. Also, as of writing (2026-01-29), you'd need
+        to add the [typeguard][] dependency, but we're looking to get rid of
+        that.
+
+[typeguard]: https://pypi.org/project/typeguard/
+"""
+
+from typing import Any
+from inspect import ismethod
 
 # Re-exports
 from .collections import (
     find as find,
-    each as each,
     partition_mapping as partition_mapping,
     group_by as group_by,
 )
+from .functions import (
+    REQUIRABLE_PARAMETER_KINDS as REQUIRABLE_PARAMETER_KINDS,
+    is_required_parameter as is_required_parameter,
+    required_arity as required_arity,
+    is_callable_with as is_callable_with,
+)
 from .text import (
     is_typing as is_typing,
+    str_find_all as str_find_all,
     Formatter as Formatter,
     FmtOpts as FmtOpts,
     DEFAULT_FMT_OPTS as DEFAULT_FMT_OPTS,
@@ -19,138 +45,35 @@ from .text import (
     fmt_routine as fmt_routine,
     fmt_type as fmt_type,
     fmt_type_of as fmt_type_of,
+    fmt_type_value as fmt_type_value,
     fmt_range as fmt_range,
     fmt_type_hint as fmt_type_hint,
+    fmt_list as fmt_list,
 )
 
-from . import rich as rich
 from .typeguard import satisfies as satisfies
 
 
-REQUIRABLE_PARAMETER_KINDS = frozenset(
-    (
-        Parameter.POSITIONAL_ONLY,
-        Parameter.POSITIONAL_OR_KEYWORD,
-        Parameter.KEYWORD_ONLY,
-    )
-)
-
-
-def is_required_parameter(parameter: Parameter) -> bool:
-    return (
-        parameter.kind in REQUIRABLE_PARAMETER_KINDS
-        and parameter.default is Parameter.empty
-    )
-
-
-def required_arity(fn: Callable) -> int:
-    """
-    Compute the number of required parameters for a `collections.abc.Callable`.
-
-    Result includes positional-only, keyword-only, and position-or-keyword
-    parameters.
-
-    ##### Examples #####
-
-    ```python
-
-    >>> def f_1():
-    ...     pass
-    >>> required_arity(f_1)
-    0
-
-    >>> def f_2(x):
-    ...     pass
-    >>> required_arity(f_2)
-    1
-
-    >>> def f_3(x=1):
-    ...     pass
-    >>> required_arity(f_3)
-    0
-
-    >>> def f_4(x, y, *, w, z=3):
-    ...     pass
-    >>> required_arity(f_4)
-    3
-
-    >>> def f_5(*args, **kwds):
-    ...     pass
-    >>> required_arity(f_5)
-    0
-
-    ```
-
-    Ok, one weird corner-case to note...
-
-    `inspect.Parameter.default` is set to `inspect.Parameter.empty` when the
-    parameter does not have a default, as in `f_req_x`, which behaves as
-    expected:
-
-    ```python
-
-    >>> def f_req_x(x):
-    ...     return f"x is {x}"
-
-    >>> required_arity(f_req_x)
-    1
-
-    >>> f_req_x()
-    Traceback (most recent call last):
-        ...
-    TypeError: f_req_x() missing 1 required positional argument: 'x'
-
-    ```
-
-    However the user can also _explicitly_ define the parameter default to be
-    `inspect.Parameter.empty`, as in `f_empty_x`, which causes odd behavior:
-
-    ```python
-
-    >>> def f_empty_x(x=Parameter.empty):
-    ...     return f"x is {x}"
-
-    ```
-
-    This function measures a required arity of `1` for `f_empty_x`, as it can no
-    longer tell that the default was set explicitly.
-
-    ```python
-
-    >>> required_arity(f_empty_x)
-    1
-
-    ```
-
-    However, `f_empty_x` can be called with no arguments.
-
-    ```python
-
-    >>> f_empty_x()
-    "x is <class 'inspect._empty'>"
-
-    ```
-
-    `inspect.Signature.bind` seems to get confused too.
-
-    ```python
-
-    >>> signature(f_empty_x).bind()
-    Traceback (most recent call last):
-        ...
-    TypeError: missing a required argument: 'x'
-
-    ```
-    """
-    return sum(
-        int(is_required_parameter(parameter))
-        for parameter in signature(fn).parameters.values()
-    )
-
-
 def has_method(
-    obj: Any, method_name: str, req_arity: Optional[int] = None
+    obj: Any, method_name: str, req_arity: int | None = None
 ) -> bool:
+    """
+    Check if an object has a method with the given name.
+
+    Optionally verify the method has a specific required arity.
+
+    ## Parameters
+
+    -   `obj`: The object to check.
+    -   `method_name`: The name of the method to look for.
+    -   `req_arity`: If provided, the method must have exactly this many required
+        parameters.
+
+    ## Returns
+
+    {py:data}`True` if the object has a bound method with the given name (and
+    matching arity if specified), {py:data}`False` otherwise.
+    """
     if not hasattr(obj, method_name):
         return False
     method = getattr(obj, method_name)
@@ -161,34 +84,25 @@ def has_method(
     return True
 
 
-def is_callable_with(fn: Callable, *args, **kwds) -> bool:
+def respond_to(obj: Any, name: str, *args, **kwds) -> bool:
     """
+    Check if an object has a method that can be called with the given arguments.
 
-    ##### Examples #####
+    Combines {py:func}`has_method` and {py:func}`is_callable_with` to verify
+    both that the method exists and accepts the specified arguments.
 
-    ```python
+    ## Parameters
 
-    >>> def f(x, y, z):
-    ...     pass
+    -   `obj`: The object to check.
+    -   `name`: The name of the method to look for.
+    -   `*args`: Positional arguments the method should accept.
+    -   `**kwds`: Keyword arguments the method should accept.
 
-    >>> is_callable_with(f, 1, 2, z=3)
-    True
+    ## Returns
 
-    >>> is_callable_with(f, 1, 2)
-    False
-
-    ```
-
+    {py:data}`True` if `obj` has a method `name` that can be called with the
+    given arguments, {py:data}`False` otherwise.
     """
-    sig = signature(fn)
-    try:
-        sig.bind(*args, **kwds)
-    except TypeError:
-        return False
-    return True
-
-
-def respond_to(obj, name, *args, **kwds) -> bool:
     if not hasattr(obj, name):
         return False
     fn = getattr(obj, name)

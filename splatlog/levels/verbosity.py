@@ -1,0 +1,57 @@
+"""
+Manage _verbosity_, which is stored as a module-level private variable, and is
+hence global to the process.
+"""
+
+from __future__ import annotations
+
+from splatlog.locking import lock
+from splatlog.typings import ToVerbosity, Verbosity, to_verbosity
+
+
+_verbosity: Verbosity = Verbosity(0)
+"""
+Current {py:type}`splatlog.typing.Verbosity`, defaults to `0`.
+"""
+
+
+def get_verbosity() -> Verbosity:
+    """
+    Get the current {py:type}`splatlog.typing.Verbosity`.
+
+    > 📝 NOTE — Thread Safety
+    >
+    > There is no locking around the read, it simply returns whatever value is
+    > visible to the thread at the time. This is because
+    > {py:class}`splatlog.levels.VerbosityFilter` reads on every filter, so we
+    > want it to be fast.
+    >
+    > This does mean that the various logger levels are not guaranteed to be in
+    > a state consistent near calls to {py:func}`set_verbosity`.
+    """
+    return _verbosity
+
+
+def set_verbosity(verbosity: ToVerbosity) -> None:
+    """
+    Set the _verbosity_, which is used by {py:class}`splatlog.levels.Filter`.
+
+    ## Parameters
+
+    -   `verbosity`: The new verbosity value (int or {py:class}`Verbosity`).
+    """
+    global _verbosity
+
+    verbosity = to_verbosity(verbosity)
+
+    # Lock around this so that two coincident calls from different threads don't
+    # execute this block at the same time, which could result in logger levels
+    # that are inconsistent with the final _verbosity_ value.
+    with lock():
+        _verbosity = verbosity
+
+        # Update all loggers that have a VerbosityFilter to use the new
+        # effective level. Import here to avoid circular dependency.
+        from splatlog.levels.filter import sync_verbosity_logger_levels
+
+        sync_verbosity_logger_levels()

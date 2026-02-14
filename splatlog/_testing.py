@@ -1,19 +1,70 @@
-"""Shit just used in tests (doctest at the moment), , excluded from the
-distributed package."""
+"""
+Shit just used in tests (doctest at the moment), excluded from the distributed
+package.
+"""
 
 import logging
+import sys
 from typing import Any, Optional, Union
-from splatlog.levels import get_level_value
-
-from splatlog.typings import ExcInfo, Level
+import ast
+import inspect
 from datetime import datetime
+from types import ModuleType
 
-__all__ = ["make_log_record"]
+from splatlog.typings import ExcInfo, ToLevel, to_level
+
+__all__ = ["get_constant_docstrings", "make_log_record"]
+
+
+def get_constant_docstrings(module: str | ModuleType):
+    """
+    {py:mod}`doctest` doesn't automatically pickup the "following docstring"
+    format used by Sphinx/MyST to document constants, so we need to parse the
+    AST to collect them.
+
+    ## Parameters
+
+    -   `module`: name of or reference to the module.
+
+    ## Returns
+
+    A {py:class}`dict` mapping constant names to their Sphinx-style docstring,
+    suitable to assign to `__test__` for {py:mod}`doctest` to pickup.
+
+    ## Examples
+
+    ```python
+    import os
+
+    if os.environ.get("TESTING"):
+        from splatlog._testing import get_constant_docstrings
+
+        __test__ = get_constant_docstrings(sys.modules[__name__])
+    ```
+    """
+    if isinstance(module, str):
+        module = sys.modules[module]
+
+    source = inspect.getsource(module)
+    tree = ast.parse(source)
+
+    docstrings = {}
+    for i, node in enumerate(tree.body[:-1]):
+        if isinstance(node, ast.Assign):
+            next_node = tree.body[i + 1]
+            if isinstance(next_node, ast.Expr) and isinstance(
+                next_node.value, ast.Constant
+            ):
+                for target in node.targets:
+                    if isinstance(target, ast.Name):
+                        docstrings[target.id] = next_node.value.value
+
+    return docstrings
 
 
 def make_log_record(
     name: str = __name__,
-    level: Level = logging.INFO,
+    level: ToLevel = logging.INFO,
     pathname: str = __file__,
     lineno: int = 123,
     msg: str = "Test message",
@@ -41,7 +92,7 @@ def make_log_record(
     """
     record = logging.LogRecord(
         name=name,
-        level=get_level_value(level),
+        level=to_level(level),
         pathname=pathname,
         lineno=lineno,
         msg=msg,
