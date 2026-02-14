@@ -11,23 +11,69 @@ copyright = "2025, nrser"
 author = "nrser"
 release = "0.3.5"
 
-# -- General configuration ---------------------------------------------------
+# General configuration
+# ============================================================================
+#
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
+
+templates_path = ["_templates"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 extensions = [
     "myst_parser",
     "autodoc2",
+    "sphinx.ext.intersphinx",
 ]
+
+# Extension Options
+# ----------------------------------------------------------------------------
+
+### `autodoc2` Options ###
 
 autodoc2_packages = [
     "../splatlog",
 ]
 autodoc2_render_plugin = "myst"
+autodoc2_type_aliases = True
 
-templates_path = ["_templates"]
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+# Facilitate referencing submodule re-exports at the module level. Need to also
+# define `__all__` and set `__module__`
+autodoc2_module_all_regexes = [
+    r"^splatlog\.json$",
+    r"^splatlog\.levels$",
+    r"^splatlog\.rich$",
+    r"^splatlog\.lib\.functions$",
+]
 
-# -- Options for HTML output -------------------------------------------------
+### `sphinx.ext.intersphinx` Options ###
+#
+# https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html#configuration
+
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "rich": ("https://rich.readthedocs.io/en/latest/", None),
+    "typeguard": ("https://typeguard.readthedocs.io/en/latest/", None),
+}
+
+### MyST Options ###
+
+myst_enable_extensions = [
+    "colon_fence",
+]
+
+# Python domain/signature formatting
+# ----------------------------------------------------------------------------
+
+# Wrap long signatures across multiple lines (per-parameter) for readability.
+# Applies to Python objects rendered by the domain (including autodoc2 output).
+python_maximum_signature_line_length = 80
+
+# Prefer unqualified type names in rendered annotations when links are available.
+python_use_unqualified_type_names = True
+
+# Options for HTML output
+# ----------------------------------------------------------------------------
+#
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = "furo"

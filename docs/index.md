@@ -11,5 +11,6 @@
 content/basic-usage
 content/features/named-handlers
 content/features/verbosity
-apidocs/splatlog/splatlog
+content/features/formatting-type-hints
+apidocs/index
 ```

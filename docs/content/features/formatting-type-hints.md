@@ -1,4 +1,4 @@
-`splatlog.lib.text.fmt_type_hint` Examples
+Formatting Type Hints
 ==============================================================================
 
 > 📝 NOTE
