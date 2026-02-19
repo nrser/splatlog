@@ -69,7 +69,7 @@ doctor-testerson = { git = "https://github.com/nrser/doctor-testerson.git" }
 [tool.pytest.ini_options]
 doctest_optionflags = ["NORMALIZE_WHITESPACE", "ELLIPSIS"]
 
-# Poe the Poet
+# Poe (the Poet) Tool
 # ----------------------------------------------------------------------------
 # 
 # Task runner, https://poethepoet.natn.io/
@@ -96,7 +96,42 @@ help = "File path to test (source/doctest or pytest)"
 cmd = "pyright"
 help = "Run type checking on all files"
 
-# Pyright
+### Report ###
+# 
+# Mainly an exercise in `poe` task configuration.
+
+[tool.poe.tasks.report]
+script = "splatlog:report"
+help = "Print a logging system report. Won't be much there, but you can do it."
+
+[[tool.poe.tasks.report.args]]
+name = "include"
+help = "Include all loggers or just those that have been configured?"
+options = ["-i", "--include"]
+choices = ["all", "configured"]
+default = "all"
+
+[[tool.poe.tasks.report.args]]
+name = "console"
+help = "Where to print, via a `rich.console.Console`."
+options = ["-c", "--console"]
+choices = ["stdout", "stderr"]
+
+[[tool.poe.tasks.report.args]]
+name = "show_placeholder_loggers"
+help = "Show `logging.PlaceHolder` entries."
+type = "boolean"
+options = ["-p", "--placeholders"]
+default = false
+
+[[tool.poe.tasks.report.args]]
+name = "show_null_handlers"
+help = "Show `logging.NullHandler` entries."
+type = "boolean"
+options = ["-n", "--nulls"]
+default = false
+
+# Pyright Tool
 # ----------------------------------------------------------------------------
 # 
 # Type checker used in VSCode Python extension.
@@ -107,7 +142,7 @@ help = "Run type checking on all files"
 # Mirror config in `.vscode/settings.json`
 typeCheckingMode = "basic"
 
-# Ruff
+# Ruff Tool
 # ----------------------------------------------------------------------------
 # 
 # Linter and formatter. https://docs.astral.sh/ruff/
@@ -115,10 +150,10 @@ typeCheckingMode = "basic"
 [tool.ruff]
 line-length = 80
 
-# Hatch(ling)
+# Hatch(ling) Tool
 # ----------------------------------------------------------------------------
 # 
-# Build tool.
+# Build (packaging) tool.
 
 [tool.hatch.build.targets.sdist]
 include = [
