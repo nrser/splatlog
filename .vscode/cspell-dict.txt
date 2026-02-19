@@ -1,6 +1,7 @@
 apidocs
 AUTOBUILD
 dists
+Doody
 Dunder
 furo
 mixedcase

@@ -44,6 +44,8 @@ from .filter import (
 from .verbosity import get_verbosity, set_verbosity
 
 # IMPORTANT - necessary for doc generation in "opaque" module
+to_name = to_level_name
+
 __all__ = [
     "fmt_level",
     "Filter",
@@ -53,27 +55,28 @@ __all__ = [
     "sync_verbosity_logger_levels",
     "get_verbosity",
     "set_verbosity",
-    "get_level",
-    "get_level_name",
-    "set_level",
+    "to_name",
+    "get",
+    "get_name",
+    "set",
 ]
 
 
-def get_level() -> Level:
+def get() -> Level:
     """
     Get the root log level.
     """
     return logging.getLogger().level
 
 
-def get_level_name() -> LevelName:
+def get_name() -> LevelName:
     """
     Get the root log level as a name string.
     """
-    return to_level_name(get_level())
+    return to_level_name(get())
 
 
-def set_level(spec: LevelSpec) -> None:
+def set(spec: LevelSpec) -> None:
     """
     Set the log level for one or more loggers.
 
@@ -82,19 +85,14 @@ def set_level(spec: LevelSpec) -> None:
     -   `spec`: A level specification. Can be a simple level (int or name),
         a verbosity mapping, or a dict mapping logger names to level specs.
     """
-    # Lock around state mutations to prevent weirdness in odd situations
     with lock():
-        # In the case `level` is simply a `Level` just apply it to the root
         if isinstance(spec, (int, str)):
             assert_level(spec)
             Filter.apply(logging.getLogger(), spec)
 
-        # Given a level or verbosity/level mapping, apply it to the root logger
         elif is_verbosity_spec(spec):
             Filter.apply(logging.getLogger(), spec)
 
-        # With a logger name mapping get each logger and apply the mapped
-        # spec
         elif is_name_map_spec(spec):
             for name, sub_spec in spec.items():
                 Filter.apply(logging.getLogger(name), sub_spec)

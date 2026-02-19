@@ -12,18 +12,9 @@ from typing import Literal
 from splatlog import types as types
 from splatlog import rich as rich
 from splatlog import lib as lib
+from splatlog import levels as levels
 from splatlog import loggers as loggers
 from splatlog import named_handlers as named_handlers
-
-# Levels
-from splatlog.levels import (
-    to_level_name as to_level_name,
-    get_level as get_level,
-    get_level_name as get_level_name,
-    set_level as set_level,
-    get_verbosity as get_verbosity,
-    set_verbosity as set_verbosity,
-)
 
 # JSON
 from splatlog.json import (
@@ -195,10 +186,10 @@ def setup(
         rich.set_default_theme(theme)
 
     if level is not None:
-        set_level(level)
+        levels.set(level)
 
     if verbosity is not None:
-        set_verbosity(verbosity)
+        levels.set_verbosity(verbosity)
 
     if console is not None:
         named_handlers.put("console", console)
@@ -282,15 +273,10 @@ __all__ = [
     "types",
     "rich",
     "lib",
+    "levels",
     "loggers",
     "named_handlers",
-    # Levels
-    "to_level_name",
-    "get_level",
-    "get_level_name",
-    "set_level",
-    "get_verbosity",
-    "set_verbosity",
+    # Level constants
     "CRITICAL",
     "FATAL",
     "ERROR",

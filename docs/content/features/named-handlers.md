@@ -57,7 +57,7 @@ That creates a `splatlog.rich.RichHandler` logging to
 >>> import logging
 >>> import sys
 
->>> console_handler = splatlog.get_named_handler("console")
+>>> console_handler = splatlog.named_handlers.get("console")
 
 >>> console_handler in logging.getLogger().handlers
 True
@@ -86,7 +86,7 @@ STDOUT one is. _Named handlers_ takes care of all this for ya.
 >>> console_handler in logging.getLogger().handlers
 False
 
->>> new_console_handler = splatlog.get_named_handler("console")
+>>> new_console_handler = splatlog.named_handlers.get("console")
 
 >>> new_console_handler in logging.getLogger().handlers
 True
@@ -110,7 +110,7 @@ an external system. In this example we use a temporary directory for testing
 purposes, and a "pretty" JSON formatting to make the output easier for us humans
 to read, but the approach is applicable in general.
 
-First, just some imports and file preperation.
+First, just some imports and file preparation.
 
 ```python
 >>> from tempfile import TemporaryDirectory
@@ -201,7 +201,7 @@ Then we override {@pylink logging.Formatter.FormatMessage} to switch styles when
 the `data` attribute is present (and not empty).
 
 Since this is simply to serve as an example, the "style type" is fixed to `"%"`,
-which coresponds to `logging.PercentStyle`.
+which corresponds to `logging.PercentStyle`.
 
 ```python
 >>> class SplatFormatter(logging.Formatter):

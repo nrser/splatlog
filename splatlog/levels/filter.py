@@ -348,9 +348,9 @@ class VerbosityFilter(Filter, ConsoleRenderable):
 
         ```python
         >>> from splatlog.types import Verbosity
-        >>> from splatlog.levels import set_verbosity
+        >>> from splatlog import levels
 
-        >>> set_verbosity(0)
+        >>> levels.set_verbosity(0)
         >>> print(VerbosityFilter({Verbosity(0): "WARNING", Verbosity(2): "DEBUG"}))
         <VerbosityFilter 30 (WARNING)>
 

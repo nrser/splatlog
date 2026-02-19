@@ -61,28 +61,28 @@ Here we apply verbosity levels to an example logger named `verbosity-feature`.
 We can verify this behavior by getting the logger and changing the _verbosity_.
 
 ```python
->>> log = splatlog.get_logger(name="verbosity-feature")
+>>> log = splatlog.loggers.get(name="verbosity-feature")
 
 >>> log.level is splatlog.NOTSET
 True
 
->>> splatlog.set_verbosity(0)
+>>> splatlog.levels.set_verbosity(0)
 >>> log.level is splatlog.WARNING
 True
 
->>> splatlog.set_verbosity(1)
+>>> splatlog.levels.set_verbosity(1)
 >>> log.level is splatlog.WARNING
 True
 
->>> splatlog.set_verbosity(2)
+>>> splatlog.levels.set_verbosity(2)
 >>> log.level is splatlog.INFO
 True
 
->>> splatlog.set_verbosity(3)
+>>> splatlog.levels.set_verbosity(3)
 >>> log.level is splatlog.DEBUG
 True
 
->>> splatlog.set_verbosity(4)
+>>> splatlog.levels.set_verbosity(4)
 >>> log.level is splatlog.DEBUG
 True
 
@@ -160,14 +160,14 @@ Here is the setup:
 Let's quickly confirm the setup did what we expect:
 
 ```python
->>> splatlog.get_verbosity() == 0
+>>> splatlog.levels.get_verbosity() == 0
 True
 
 >>> log.getEffectiveLevel() is splatlog.DEBUG
 True
 
->>> splatlog.get_named_handler("console").verbosity_levels[log.name].get_level(
-...     splatlog.get_verbosity(),
+>>> splatlog.named_handlers.get("console").verbosity_levels[log.name].get_level(
+...     splatlog.levels.get_verbosity(),
 ... ) == splatlog.WARNING
 True
 
@@ -220,11 +220,11 @@ However, when logging a `DEBUG` message, it will only appear in the JSON stream.
 Now we turn up the verbosity to see a `DEBUG` message appear in both.
 
 ```python
->>> splatlog.set_verbosity(3)
+>>> splatlog.levels.set_verbosity(3)
 
 >>> log.debug(
 ...     "Ok, now we should see it in stdout",
-...     verbosity=splatlog.get_verbosity(),
+...     verbosity=splatlog.levels.get_verbosity(),
 ... )
 DEBUG       verbosity-feature
 msg         Ok, now we should see it in stdout
