@@ -12,7 +12,7 @@ from typing import Literal
 from splatlog import types as types
 from splatlog import rich as rich
 from splatlog import lib as lib
-from splatlog import logger as logger
+from splatlog import loggers as loggers
 from splatlog import named_handlers as named_handlers
 
 # Levels
@@ -35,10 +35,10 @@ from splatlog.json import (
 # Aliases
 # ============================================================================
 
-getLogger = logger.get
+getLogger = loggers.get
 """
-Camel-case alias of {py:func}`splatlog.logger.get` for
-{py:mod}`logging`-style code. The ``splatlog.logger.get`` form is preferred.
+Camel-case alias of {py:func}`splatlog.loggers.get` for
+{py:mod}`logging`-style code. The `splatlog.loggers.get` form is preferred.
 """
 
 
@@ -282,7 +282,7 @@ __all__ = [
     "types",
     "rich",
     "lib",
-    "logger",
+    "loggers",
     "named_handlers",
     # Levels
     "to_level_name",

@@ -87,7 +87,7 @@ def get_for(obj: object) -> SplatLogger:
     False
 
     >>> module_logger.name
-    'splatlog.logger'
+    'splatlog.loggers'
 
     ```
 
@@ -118,7 +118,7 @@ def get_for(obj: object) -> SplatLogger:
     >>> isinstance(class_logger, SelfLogger)
     False
     >>> class_logger.name
-    'splatlog.logger.MyClass'
+    'splatlog.loggers.MyClass'
     >>> class_logger.class_name
     'MyClass'
 
@@ -127,7 +127,7 @@ def get_for(obj: object) -> SplatLogger:
     >>> isinstance(instance_logger, SelfLogger)
     True
     >>> instance_logger.name
-    'splatlog.logger.MyClass'
+    'splatlog.loggers.MyClass'
     >>> instance_logger.class_name
     'MyClass'
     >>> instance_logger.get_identity()
