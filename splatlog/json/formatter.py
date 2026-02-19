@@ -47,10 +47,8 @@ How to encode rich formatting in log message text:
 class JSONFormatter(logging.Formatter):
     """
     Our {py:class}`logging.Formatter` for producing JSON logs. Specifically,
-    formats [JSON Lines][] — each {py:class}`logging.LogRecord` becomes a single
-    line encoding a JSON object.
-
-    [JSON Lines]: https://jsonlines.org/
+    formats [JSON Lines](https://jsonlines.org/) — each
+    {py:class}`logging.LogRecord` becomes a single line encoding a JSON object.
 
     Used as the default formatter for the `export` named handler, see
     {py:func}`splatlog.named_handlers.to_export_handler`.

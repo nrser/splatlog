@@ -20,8 +20,9 @@ def lock() -> ContextManager:
     Acquire the {py:mod}`logging` module's internal lock as a context manager.
 
     Attempts to get the `_lock` attribute from {py:mod}`logging`, which is
-    expected to be a reentrant lock that satisfies
-    {py:class}`typing.ContextManager`[^1]. If it's not available for some
+    expected to be a {py:class}`threading.RLock` (technically a factory
+    function, despite appearing as a class) that satisfies
+    {py:class}`typing.ContextManager`. If it's not available for some
     reason, emits a {py:func}`warnings.warn` and returns a
     {py:class}`contextlib.nullcontext`.
 
@@ -39,10 +40,6 @@ def lock() -> ContextManager:
     ...     pass  # Do race-sensitive mutations here
 
     ```
-
-    [^1]:   It's expected to "be" a {py:class}`threading.RLock`, which says it's
-            a class but actually isn't, it's a factory function for the
-            system-specific implementation.
     """
     logging_lock = getattr(logging, "_lock", None)
     if isinstance(logging_lock, ContextManager):

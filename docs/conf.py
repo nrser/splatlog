@@ -3,13 +3,27 @@
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+from pathlib import Path
+
+try:
+    import tomllib
+except ModuleNotFoundError:
+    import tomli as tomllib  # type: ignore[import-not-found]
+
+_pyproject_path = Path(__file__).resolve().parent.parent / "pyproject.toml"
+with _pyproject_path.open("rb") as f:
+    _pyproject = tomllib.load(f)
+
+_project_meta = _pyproject["project"]
+
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = "splatlog"
-copyright = "2025, nrser"
-author = "nrser"
-release = "0.3.5"
+project = _project_meta["name"]
+author = _project_meta["authors"][0]["name"]
+copyright = f"2025, {author}"
+release = _project_meta["version"]
+version = ".".join(release.split(".")[:2])
 
 # General configuration
 # ============================================================================
@@ -17,7 +31,24 @@ release = "0.3.5"
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 templates_path = ["_templates"]
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+exclude_patterns = [
+    "_build",
+    "Thumbs.db",
+    ".DS_Store",
+    # autodoc2 generates separate submodule pages even when their content is
+    # inlined into the parent package page via autodoc2_module_all_regexes.
+    # Exclude the orphaned pages to silence toc.not_included warnings.
+    "apidocs/splatlog/splatlog.json.*.md",
+    "apidocs/splatlog/splatlog.levels.*.md",
+    "apidocs/splatlog/splatlog.rich.*.md",
+    "apidocs/splatlog/splatlog.lib.functions.*.md",
+]
+
+suppress_warnings = [
+    # splatlog.rich re-exports an `enrich` function from a module also named
+    # `enrich`, making the bare name inherently ambiguous for autodoc2.
+    "autodoc2.all_resolve",
+]
 
 extensions = [
     "myst_parser",
