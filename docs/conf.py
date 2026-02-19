@@ -16,7 +16,9 @@ with _pyproject_path.open("rb") as f:
 
 _project_meta = _pyproject["project"]
 
-# -- Project information -----------------------------------------------------
+# Project information
+# ============================================================================
+#
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = _project_meta["name"]
