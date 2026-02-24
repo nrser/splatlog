@@ -23,42 +23,96 @@ from splatlog.json import (
     JSONFormatter as JSONFormatter,
 )
 
+__all__ = [
+    # Subpackages and modules
+    "types",
+    "rich",
+    "lib",
+    "levels",
+    "loggers",
+    "named_handlers",
+    # JSON
+    "JSONEncoder",
+    "LOCAL_TIMEZONE",
+    "JSONFormatter",
+    # Report
+    "report",
+    # Setup
+    "setup",
+    # Aliases
+    "getLogger",
+    "Logger",
+    "CRITICAL",
+    "FATAL",
+    "ERROR",
+    "WARNING",
+    "WARN",
+    "INFO",
+    "DEBUG",
+    "NOTSET",
+]
+"""
+API surface.
+"""
+
+
 # Aliases
 # ============================================================================
 
+Logger = loggers.SplatLogger
+"""
+Alias of {py:class}`splatlog.loggers.SplatLogger`
+
+## Examples
+
+```python
+import splatlog
+
+_LOG = splatlog.getLogger(__name__)
+
+@_LOG.inject
+def my_func(*args, log: splatlog.Logger) -> None:
+    log.info("Entering my function", args=args)
+```
+"""
+
 getLogger = loggers.get
 """
-Camel-case alias of {py:func}`splatlog.loggers.get` for
-{py:mod}`logging`-style code. The `splatlog.loggers.get` form is preferred.
+Camel-case alias of {py:func}`splatlog.loggers.get` to mimic
+{py:func}`logging.getLogger`, making it easy to switch between the two.
+
+## Examples
+
+```python
+import splatlog
+
+_LOG = splatlog.getLogger(__name__)
+```
 """
 
-
-# Constants
-# ============================================================================
-
 CRITICAL = logging.CRITICAL
-"""Critical level (50). Alias of {py:data}`logging.CRITICAL`."""
+"""Critical level (`50`). Alias of {py:data}`logging.CRITICAL`."""
 
 FATAL = logging.FATAL
-"""Fatal level (50). Alias of {py:data}`logging.FATAL`."""
+"""Fatal level (`50`). Alias of {py:data}`logging.FATAL`."""
 
 ERROR = logging.ERROR
-"""Error level (40). Alias of {py:data}`logging.ERROR`."""
+"""Error level (`40`). Alias of {py:data}`logging.ERROR`."""
 
 WARNING = logging.WARNING
-"""Warning level (30). Alias of {py:data}`logging.WARNING`."""
+"""Warning level (`30`). Alias of {py:data}`logging.WARNING`."""
 
 WARN = logging.WARN
-"""Warning level (30). Alias of {py:data}`logging.WARNING`."""
+"""Warning level (`30`). Alias of {py:data}`logging.WARNING`."""
 
 INFO = logging.INFO
-"""Info level (20). Alias of {py:data}`logging.INFO`."""
+"""Info level (`20`). Alias of {py:data}`logging.INFO`."""
 
 DEBUG = logging.DEBUG
-"""Debug level (10). Alias of {py:data}`logging.DEBUG`."""
+"""Debug level (`10`). Alias of {py:data}`logging.DEBUG`."""
 
 NOTSET = logging.NOTSET
-"""Not set (0). Alias of {py:data}`logging.NOTSET`."""
+"""Not set (`0`). Alias of {py:data}`logging.NOTSET`."""
 
 
 # Setup
@@ -264,35 +318,3 @@ def report(
 
     tree = report.render()
     console.print(tree)
-
-
-# ============================================================================
-
-__all__ = [
-    # Subpackages and modules
-    "types",
-    "rich",
-    "lib",
-    "levels",
-    "loggers",
-    "named_handlers",
-    # Level constants
-    "CRITICAL",
-    "FATAL",
-    "ERROR",
-    "WARNING",
-    "WARN",
-    "INFO",
-    "DEBUG",
-    "NOTSET",
-    # JSON
-    "JSONEncoder",
-    "LOCAL_TIMEZONE",
-    "JSONFormatter",
-    # Report
-    "report",
-    # Aliases
-    "getLogger",
-    # Setup
-    "setup",
-]
