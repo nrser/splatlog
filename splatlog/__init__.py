@@ -1,6 +1,6 @@
 """
 Root of the `splatlog` package, defining the general-use API. That is to say
-that `import splatlog` should give you everything you need in nearly all cases.
+that `import splatlog` should give you everything you need for common use cases.
 """
 
 from __future__ import annotations
@@ -14,14 +14,8 @@ from splatlog import rich as rich
 from splatlog import lib as lib
 from splatlog import levels as levels
 from splatlog import loggers as loggers
+from splatlog import json as json
 from splatlog import named_handlers as named_handlers
-
-# JSON
-from splatlog.json import (
-    JSONEncoder as JSONEncoder,
-    LOCAL_TIMEZONE as LOCAL_TIMEZONE,
-    JSONFormatter as JSONFormatter,
-)
 
 __all__ = [
     # Subpackages and modules
@@ -30,11 +24,8 @@ __all__ = [
     "lib",
     "levels",
     "loggers",
+    "json",
     "named_handlers",
-    # JSON
-    "JSONEncoder",
-    "LOCAL_TIMEZONE",
-    "JSONFormatter",
     # Report
     "report",
     # Setup
