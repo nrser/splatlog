@@ -24,34 +24,63 @@ from inspect import ismethod
 
 # Re-exports
 from .collections import (
-    find as find,
-    partition_mapping as partition_mapping,
-    group_by as group_by,
+    find,
+    partition_mapping,
+    group_by,
+    unary,
 )
 from .functions import (
-    REQUIRABLE_PARAMETER_KINDS as REQUIRABLE_PARAMETER_KINDS,
-    is_required_parameter as is_required_parameter,
-    required_arity as required_arity,
-    is_callable_with as is_callable_with,
+    REQUIRABLE_PARAMETER_KINDS,
+    is_required_parameter,
+    required_arity,
+    is_callable_with,
 )
 from .text import (
-    is_typing as is_typing,
-    str_find_all as str_find_all,
-    Formatter as Formatter,
-    FmtOpts as FmtOpts,
-    DEFAULT_FMT_OPTS as DEFAULT_FMT_OPTS,
-    fmt as fmt,
-    p as p,
-    fmt_routine as fmt_routine,
-    fmt_type as fmt_type,
-    fmt_type_of as fmt_type_of,
-    fmt_type_value as fmt_type_value,
-    fmt_range as fmt_range,
-    fmt_type_hint as fmt_type_hint,
-    fmt_list as fmt_list,
+    is_typing,
+    str_find_all,
+    Formatter,
+    FmtOpts,
+    DEFAULT_FMT_OPTS,
+    fmt,
+    p,
+    fmt_routine,
+    fmt_type,
+    fmt_type_of,
+    fmt_type_value,
+    fmt_range,
+    fmt_type_hint,
+    fmt_list,
 )
 
-from .typeguard import satisfies as satisfies
+from .typeguard import satisfies
+
+__all__ = [
+    "find",
+    "partition_mapping",
+    "group_by",
+    "unary",
+    "REQUIRABLE_PARAMETER_KINDS",
+    "is_required_parameter",
+    "required_arity",
+    "is_callable_with",
+    "is_typing",
+    "str_find_all",
+    "Formatter",
+    "FmtOpts",
+    "DEFAULT_FMT_OPTS",
+    "fmt",
+    "p",
+    "fmt_routine",
+    "fmt_type",
+    "fmt_type_of",
+    "fmt_type_value",
+    "fmt_range",
+    "fmt_type_hint",
+    "fmt_list",
+    "satisfies",
+    "has_method",
+    "respond_to",
+]
 
 
 def has_method(
