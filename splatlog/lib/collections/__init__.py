@@ -19,11 +19,28 @@ from collections import defaultdict
 from typing import Any, Optional, TypeVar, Union, overload
 from collections.abc import Callable, Iterable, Mapping, Container
 
+from splatlog.lib.text import fmt, fmt_list, fmt_type_of
+
 T = TypeVar("T")
 TEntry = TypeVar("TEntry")
 TNotFound = TypeVar("TNotFound")
 TKey = TypeVar("TKey")
 TValue = TypeVar("TValue")
+
+# Constants
+# ============================================================================
+
+_ERR_MSG_UNARY_EMPTY = (
+    "expected exactly one item, given empty `iterable` of type {}"
+)
+
+_ERR_MSG_UNARY_MANY = (
+    "expected exactly one item, given `iterable` of type {} with at least two "
+    "items: {}"
+)
+
+# Functions
+# ============================================================================
 
 
 def default_each_descend(target: Any) -> bool:
@@ -202,3 +219,91 @@ def group_by(
     for entry in iterable:
         groups[get_key(entry)].append(entry)
     return dict(groups.items())
+
+
+def unary(iterable: Iterable[T]) -> T:
+    """
+    Return the only item from an {py:class}`~collections.abc.Iterable`, raising
+    a {py:exc}`ValueError` if there are no items or more than one.
+
+    Effectively the same as
+
+        [item] = iterable
+
+    but with a more useful error message than
+
+        ValueError: too many values to unpack (expected 1)
+
+    {py:func}`unary` produces error message like
+
+        ValueError: expected exactly one item, given `iterable` of type `list`
+        with at least two items: `'first'`, `'second'`
+
+    {py:func}`unary` is considerably more useful if you'd like to know _what_
+    item has shown up unexpectedly.
+
+    ## Parameters
+
+    -   `iterable`: An {py:class}`~collections.abc.Iterable` expected to contain
+        exactly one item.
+
+    ## Returns
+
+    The sole item of `iterable`.
+
+    ## Examples
+
+    ```python
+    >>> unary([42])
+    42
+
+    >>> unary("x")
+    'x'
+
+    >>> unary([])
+    Traceback (most recent call last):
+        ...
+    ValueError: expected exactly one item, given empty `iterable` of type
+        `list`: `[]`
+
+    >>> unary([1, 2, 3])
+    Traceback (most recent call last):
+        ...
+    ValueError: expected exactly one item, given `iterable` of type `list` with
+        at least two items: `1`, `2`
+
+    ```
+
+    Safe with infinite iterables — raises as soon as a second item is produced.
+
+    ```python
+    >>> from itertools import count
+
+    >>> unary(count())
+    Traceback (most recent call last):
+        ...
+    ValueError: expected exactly one item, given `iterable` of type
+        `itertools.count` with at least two items: `0`, `1`
+
+    ```
+    """
+    it = iter(iterable)
+
+    try:
+        first = next(it)
+    except StopIteration:
+        raise ValueError(
+            _ERR_MSG_UNARY_EMPTY.format(fmt(iterable, typing=True, quote=True))
+        )
+
+    try:
+        second = next(it)
+    except StopIteration:
+        return first
+
+    raise ValueError(
+        _ERR_MSG_UNARY_MANY.format(
+            fmt_type_of(iterable, quote=True),
+            fmt_list((first, second), quote=True),
+        )
+    )
