@@ -1,0 +1,6 @@
+{
+    "Splatlog Referene": {
+        "prefix": "ref-splatlog",
+        "body": "{py:${1:obj}}`splatlog${2}`"
+    },
+}
