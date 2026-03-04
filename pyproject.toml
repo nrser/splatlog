@@ -73,6 +73,9 @@ doctest_optionflags = ["NORMALIZE_WHITESPACE", "ELLIPSIS"]
 # ----------------------------------------------------------------------------
 # 
 # Task runner, https://poethepoet.natn.io/
+# 
+# Tasks: https://poethepoet.natn.io/tasks/options.html
+# Args: https://poethepoet.natn.io/guides/args_guide.html#task-argument-options
 
 ### Test ###
 
@@ -95,6 +98,19 @@ help = "File path to test (source/doctest or pytest)"
 [tool.poe.tasks.check]
 cmd = "pyright"
 help = "Run type checking on all files"
+
+### Docs ###
+
+[tool.poe.tasks.docs]
+cmd = "make $target"
+cwd = "docs"
+
+[[tool.poe.tasks.docs.args]]
+name = "target"
+help = "Target in `docs/Makefile` to run. Use `html` target to build."
+positional = true
+multiple = true
+choices = ["help", "html", "clean", "watch"]
 
 ### Report ###
 # 
