@@ -4,6 +4,18 @@ Text formatting utilities for human-readable output.
 Provides functions for formatting types, type hints, routines, and values in
 a concise, readable style. The {py:class}`FmtOpts` dataclass controls
 formatting behavior like module name inclusion and list formatting.
+
+:::{warning}
+### No cross-package `import` at top-level
+
+This module is considered _foundational_ due to its primary use in formatting
+error messages. To avoid circular imports it is prohibited from importing other
+{py:mod}`splatlog` modules at the top-level.
+
+Imports of other {py:mod}`splatlog` modules should be avoided, and placed inside
+function or method bodies if they can't be.
+
+:::
 """
 
 from __future__ import annotations
@@ -34,7 +46,12 @@ else:
 
 import rich.repr
 
-from .collections import partition_mapping
+# WARNING   No cross-package `import` at top-level.
+#
+#           Don't import other `splatlog` modules here, see module doc at top.
+
+# Constants
+# ============================================================================
 
 BUILTINS_MODULE = object.__module__
 """
@@ -192,6 +209,8 @@ class FmtOpts:
 
         @wraps(fn)
         def wrapped(*args, **kwds):
+            from .collections import partition_mapping
+
             field_kwds, fn_kwds = partition_mapping(kwds, field_names)
             if isinstance(args[-1], cls):
                 *args, instance = args
@@ -205,12 +224,6 @@ class FmtOpts:
             return fn(*args, instance, **fn_kwds)
 
         return wrapped
-
-    def __rich_repr__(self) -> rich.repr.Result:
-        for field in dataclasses.fields(self):
-            value = getattr(self, field.name)
-            if value != field.default:
-                yield field.name, value
 
     fallback: abc.Callable[[object], str] = repr
     """Fallback formatter when no specific formatter applies."""
@@ -259,6 +272,22 @@ class FmtOpts:
     """
     Add formatted type.
     """
+
+    quote: bool = False
+    """
+    Add markdown-style
+    """
+
+    def __rich_repr__(self) -> rich.repr.Result:
+        for field in dataclasses.fields(self):
+            value = getattr(self, field.name)
+            if value != field.default:
+                yield field.name, value
+
+    def maybe_quote(self, term: str) -> str:
+        if self.quote:
+            return "`" + term + "`"
+        return term
 
 
 DEFAULT_FMT_OPTS = FmtOpts()
@@ -361,7 +390,7 @@ def fmt(x: Any, opts: FmtOpts) -> str:
     if isroutine(x):
         return fmt_routine(x, opts)
 
-    return opts.fallback(x)
+    return opts.maybe_quote(opts.fallback(x))
 
 
 @FmtOpts.provide
@@ -464,10 +493,10 @@ def fmt_type(t: type, opts: FmtOpts) -> str:
     """
 
     if name := get_name(t, opts):
-        return name
+        return opts.maybe_quote(name)
 
     # This should not really ever happen..
-    return opts.fallback(t)
+    return opts.maybe_quote(opts.fallback(t))
 
 
 @FmtOpts.provide
