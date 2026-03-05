@@ -96,9 +96,10 @@ Publishing
     
     to generate an API token.
     
-4.  Throw `poetry` at it:
+4.  Use `uv` to build and publish:
     
-        poetry publish --build --username __token__ --password <token>
+        uv build
+        uv publish --token <token>
     
 5.  Bump patch by 1 and append `a0`, commit and push (now we're on the "alpha"
     of the next patch version).
