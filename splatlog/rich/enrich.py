@@ -11,6 +11,7 @@ from rich.pretty import Pretty
 from rich.highlighter import ReprHighlighter
 from rich.text import Text
 
+from splatlog.lib import has_method
 from splatlog.lib.text import fmt_routine
 from splatlog.types import is_rich
 
@@ -86,7 +87,7 @@ def enrich(value: object, inline: Literal[False]) -> RenderableType: ...
 def enrich(value: object) -> RenderableType: ...
 
 
-def enrich(value, inline=False):
+def enrich(value, inline=False) -> RenderableType:
     """
     Convert a Python value to a Rich renderable.
 
@@ -152,6 +153,10 @@ def enrich(value, inline=False):
 
     ```
     """
+    if has_method(value, "_enrich_"):
+        return value._enrich_(inline=inline)
+
+    # Does the object implement rich-rendering itself?
     if is_rich(value) and (inline is False or isinstance(value, Text)):
         return value
 
