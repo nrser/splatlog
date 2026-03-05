@@ -272,8 +272,59 @@ More sophisticated filtering is achieved by adding a
 
 Rich: TypeAlias = ConsoleRenderable | RichCast
 """
-An object that "is Rich" — implements {py:class}`rich.console.ConsoleRenderable`
-or {py:class}`rich.console.RichCast`.
+An object that implements {py:mod}`rich` rendering. It is the union of
+{py:class}`rich.console.ConsoleRenderable` and
+{py:class}`rich.console.RichCast`.
+
+1.  {py:class}`~rich.console.ConsoleRenderable` — _directly_ renders itself as a
+    stream or sequence of plain or styled text and other {py:type}`Rich`
+    objects, with the {py:class}`rich.console.Console` available for reference.
+
+    Implements
+
+    ```python
+    def __rich_console__(
+        self,
+        console: rich.console.Console,
+        options: rich.console.ConsoleOptions,
+    ) -> rich.console.RenderResult:
+        ...
+    ```
+
+    where {py:type}`rich.console.RenderResult` is a
+    {py:class}`~collections.abc.Iterable` of
+
+    -   {py:class}`str` — plain text.
+    -   {py:class}`rich.segment.Segment` — styled text.
+    -   Other {py:type}`Rich` objects that can then be rendered-down further.
+
+    As seen in the {py:meth}`~rich.console.ConsoleRenderable.__rich_console__`
+    method signature, a {py:class}`~rich.console.Console` and
+    {py:class}`~rich.console.ConsoleOptions` are passed in as arguments, allowing
+    implementors to inspect the available {py:class}`rich.style.Style` and
+    specify fallbacks.
+
+2.  {py:class}`~rich.console.RichCast` — _converts_ itself to plain text or
+    another {py:type}`Rich` object.
+
+    Implements
+
+    ```python
+    def __rich__(
+        self,
+    ) -> rich.console.ConsoleRenderable | rich.console.RichCast | str:
+        ...
+    ```
+
+    to convert itself into one of:
+
+    -   {py:class}`str` — plain text.
+    -   {py:class}`~rich.console.ConsoleRenderable` — directly renderable, as
+        detailed above.
+    -   {py:class}`~rich.console.RichCast` — another object that implements
+        {py:meth}`~rich.console.RichCast.__rich__`, where the process can be repeated until a {py:class}`str` or
+        {py:class}`~rich.console.ConsoleRenderable` is reached or a loop is
+        detected.
 """
 
 StdioName: TypeAlias = Literal["stdout", "stderr"]
