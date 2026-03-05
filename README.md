@@ -76,12 +76,11 @@ Running Tests
 
 All of them:
 
-    dr.t ./splatlog/**/*.py ./docs/content/**/*.md
+    tox
 
-Single file, fail-fast, printing header panel (so you can find where they
-start and end easily during repeated runs):
+Single file:
 
-    dr.t -fp <filename>
+    poe test <filename>
 
 
 Publishing
