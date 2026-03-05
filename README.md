@@ -87,19 +87,8 @@ Publishing
 ------------------------------------------------------------------------------
 
 1.  Update the version in `pyproject.toml`.
+
+2.  Commit, tag `vX.Y.Z`, push. A GitHub Action will build and publish.
     
-2.  Commit, tag `vX.Y.Z`, push.
-    
-3.  Log in to [PyPI](https://pypi.org) and go to
-    
-    https://pypi.org/manage/account/
-    
-    to generate an API token.
-    
-4.  Use `uv` to build and publish:
-    
-        uv build
-        uv publish --token <token>
-    
-5.  Bump patch by 1 and append `a0`, commit and push (now we're on the "alpha"
+3.  Bump patch by 1 and append `a0`, commit and push (now we're on the "alpha"
     of the next patch version).
