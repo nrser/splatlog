@@ -39,13 +39,14 @@ class EnrichedType:
     ...     pass
 
     >>> wide.print(EnrichedType(MyType))
-    splatlog.rich.enriched_type.MyType
+    splatlog.rich.enrich.enriched_type.MyType
 
     >>> narrow.print(EnrichedType(MyType))
     splatlog
       .rich
-        .enriched_type
-          .MyType
+        .enrich
+          .enriched_type
+            .MyType
 
     ```
     """

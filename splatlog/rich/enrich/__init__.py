@@ -3,6 +3,7 @@ Utilities for enriching Python values with Rich formatting.
 """
 
 from __future__ import annotations
+from pathlib import Path
 from typing import Callable, Literal, overload
 from inspect import isclass, isroutine
 
@@ -173,5 +174,8 @@ def enrich(value, inline=False) -> RenderableType:
 
     if isroutine(value):
         return fmt_routine(value, fallback=fallback)
+
+    if isinstance(value, Path):
+        return Text(str(value), style="repr.path", end="")
 
     return fallback(value)

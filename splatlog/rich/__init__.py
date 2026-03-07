@@ -21,13 +21,13 @@ from .theme import (
     set_default_theme as set_default_theme,
     override_ansi_colors as override_ansi_colors,
 )
-from .enriched_type import EnrichedType as EnrichedType
 from .ntv_table import NtvTable, TableSource
 from .enrich import (
     REPR_HIGHLIGHTER as REPR_HIGHLIGHTER,
     enrich as enrich,
     enrich_type as enrich_type,
     enrich_type_of as enrich_type_of,
+    EnrichedType as EnrichedType,
 )
 from .inline import Inline as Inline
 from .console import to_console as to_console
