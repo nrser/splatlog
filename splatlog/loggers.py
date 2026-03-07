@@ -13,6 +13,7 @@ import logging
 from functools import cache, wraps
 from collections.abc import Generator, Callable
 from types import GenericAlias, MappingProxyType
+from typing import overload
 
 import rich.repr
 
@@ -382,22 +383,48 @@ class SplatLogger(logging.LoggerAdapter):
             suffix = ".".join((self.logger.name, suffix))
         return get(suffix)
 
-    def inject(self, fn: Callable) -> Callable:
+    @overload
+    def inject(self, fn: Callable, /) -> Callable: ...
+
+    @overload
+    def inject(self, *, level: ToLevel | None = None) -> Callable[[Callable], Callable]: ...
+
+    def inject(self, *args, **kwds) -> Callable:
         """
         Decorator that injects a child logger as a `log` keyword argument.
 
         If the wrapped function is called without a `log` kwarg, a child
         logger named after the function is automatically provided.
         """
+        match args:
+            case (fn,) if isinstance(fn, Callable):
+                @wraps(fn)
+                def log_inject_wrapper(*args, **kwds):
+                    if "log" in kwds:
+                        return fn(*args, **kwds)
+                    else:
+                        return fn(*args, log=self.getChild(fn.__name__), **kwds)
 
-        @wraps(fn)
-        def log_inject_wrapper(*args, **kwds):
-            if "log" in kwds:
-                return fn(*args, **kwds)
-            else:
-                return fn(*args, log=self.getChild(fn.__name__), **kwds)
+                return log_inject_wrapper
 
-        return log_inject_wrapper
+            case _:
+                level = kwds.get("level")
+
+                def decorator(fn):
+                    child = self.getChild(fn.__name__)
+                    if level is not None:
+                        child.setLevel(level)
+
+                    @wraps(fn)
+                    def log_inject_wrapper(*args, **kwds):
+                        if "log" in kwds:
+                            return fn(*args, **kwds)
+                        else:
+                            return fn(*args, log=child, **kwds)
+
+                    return log_inject_wrapper
+
+                return decorator
 
     def __rich_repr__(self) -> rich.repr.Result:
         """
