@@ -4,6 +4,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 from pathlib import Path
+import datetime as dt
 
 try:
     import tomllib
@@ -23,7 +24,7 @@ _project_meta = _pyproject["project"]
 
 project = _project_meta["name"]
 author = _project_meta["authors"][0]["name"]
-copyright = f"2025, {author}"
+copyright = f"{dt.date.today().year}, {author}"
 release = _project_meta["version"]
 version = ".".join(release.split(".")[:2])
 
