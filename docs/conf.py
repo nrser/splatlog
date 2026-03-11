@@ -59,6 +59,9 @@ extensions = [
     "sphinx.ext.intersphinx",
 ]
 
+# Trying to get indented (non-fenced) code blocks highlighted, no dice
+highlight_language = "python-console"
+
 # Extension Options
 # ----------------------------------------------------------------------------
 
@@ -90,6 +93,8 @@ intersphinx_mapping = {
 }
 
 ### MyST Options ###
+#
+# https://myst-parser.readthedocs.io/en/latest/configuration.html
 
 myst_enable_extensions = [
     "colon_fence",
