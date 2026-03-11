@@ -177,7 +177,7 @@ class RichHandler(logging.Handler):
 
     link_icon: bool
     """
-
+    Show a linked link icon.
     """
 
     linker: RichLinker
