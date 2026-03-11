@@ -128,7 +128,7 @@ class NtvTable(ConsoleRenderable):
     box: Box | None = None
     """See {py:class}`rich.table.Table`."""
 
-    padding: PaddingDimensions = (0, 1)
+    padding: PaddingDimensions = (0, 2)
     """See {py:class}`rich.table.Table`."""
 
     collapse_padding: bool = True

@@ -59,19 +59,48 @@ LABEL_ERR: Text = Text("err", style="log.label")
 class TimeConfig:
     """Controls how timestamps are displayed in log output.
 
-    By default, time display is off. When enabled, each log record shows a
-    formatted wall-clock time and, optionally, the elapsed time since the
-    previous record (e.g. ``14:23:45.123 Δ1.502``).
+    By default, time display is off. When enabled (set `show=True`), each log
+    record shows a formatted wall-clock time, as well as the elapsed time since
+    the previous record (e.g. `14:23:45.123 Δ1.502`).
+
+    ## Example
+
+    ```
+    DEBUG       splatlog.rich.RichHandler
+    time        00:47:57.283 Δ0.506
+    msg         Hey!
+    data        slept_for     float                 0.5
+                time_config   splatlog              TimeConfig(
+                                .rich                   show=True,
+                                  .handler              fmt='%H:%M:%S.%3f',
+                                    .TimeConfig         tz='local',
+                                                        delta=True
+                                                    )
+    ```
+
+    By default, only time is displayed, {py:attr}`TimeConfig.fmt` is applied to
+    a full {py:class}`datetime.datetime`, so it's easy to add the date as well.
+
+    Time since last log can be disabled by setting {py:attr}`TimeConfig.delta`
+    to {py:data}`False`, and the timezone can be controlled with the
+    {py:attr}`TimeConfig.tz` field.
     """
 
     @classmethod
     def of(cls, value: ToTimeConfig) -> Self:
-        """Coerce a {py:type}`ToTimeConfig` value into a {py:class}`TimeConfig`.
+        """
+        Coerce a {py:type}`ToTimeConfig` value into a {py:class}`TimeConfig`.
 
-        -   A {py:class}`TimeConfig` is returned as-is.
-        -   A {py:class}`bool` sets {py:attr}`show` (other fields keep defaults).
-        -   A {py:class}`~collections.abc.Mapping` is unpacked as keyword
-            arguments with ``show`` defaulting to {py:data}`True`.
+        Used to convert the `time` keyword argument in the
+        {py:meth}`RichHandler` constructor to a {py:class}`TimeConfig` for
+        assignment to {py:attr}`RichHandler.time_config`.
+
+        -   {py:class}`TimeConfig` — returned as-is.
+
+        -   {py:class}`bool` — sets {py:attr}`show` (other fields keep defaults).
+
+        -   {py:class}`~collections.abc.Mapping` — unpacked as keyword
+            arguments, with `show` defaulting to {py:data}`True`.
         """
         match value:
             case self if isinstance(self, cls):
@@ -104,9 +133,16 @@ ToTimeConfig: TypeAlias = TimeConfig | bool | Mapping[str, Any]
 """Accepted input types for time configuration.
 
 -   {py:class}`TimeConfig` — used directly.
--   {py:class}`bool` — shorthand to enable/disable time display with defaults.
+
+-   {py:class}`bool` — shorthand to enable/disable time display with defaults
+    (sets the {py:attr}`TimeConfig.show` field).
+
 -   {py:class}`~collections.abc.Mapping` — keyword arguments forwarded to the
-    {py:class}`TimeConfig` constructor (``show`` defaults to {py:data}`True`).
+    {py:class}`TimeConfig` constructor, with `show` defaulting to
+    {py:data}`True`[^1].
+
+[^1]:   because you probably mean to use it... feel free to add
+        `{"show": False}` if you really want it configured but hidden.
 """
 
 # Handler
@@ -154,6 +190,11 @@ class RichHandler(logging.Handler):
     """
 
     time_config: TimeConfig
+    """
+    Configuration for showing {py:class}`logging.LogRecord` creation time, as
+    well as the time delta since this handler list emitted, which can be used as
+    a very rough timing instrument.
+    """
 
     last_emit_at: dt.datetime | None = None
 
@@ -243,7 +284,7 @@ class RichHandler(logging.Handler):
         -   [rich._log_render.LogRender](https://github.com/willmcgugan/rich/blob/25a1bf06b4854bd8d9239f8ba05678d2c60a62ad/rich/_log_render.py#L26)
         """
 
-        output = Table.grid(padding=(0, 1))
+        output = Table.grid(padding=(0, 2))
         output.expand = True
 
         # Left column -- log level, time

@@ -32,7 +32,7 @@ from .enrich import (
 )
 from .inline import Inline as Inline
 from .console import to_console as to_console
-from .handler import RichHandler as RichHandler
+from .handler import RichHandler, TimeConfig, ToTimeConfig
 
 __all__ = [
     # .theme
@@ -60,6 +60,8 @@ __all__ = [
     "to_console",
     # .handler
     "RichHandler",
+    "TimeConfig",
+    "ToTimeConfig",
     # local
     "capture_riches",
 ]
