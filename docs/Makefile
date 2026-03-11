@@ -7,12 +7,15 @@
 ##############################################################################
 
 # You can set these variables from the command line, and also
-# from the environment for the first two.
+# from the environment for `?=` ones.
 SPHINX_OPTS    		?=
 SPHINX_BUILD   		?= sphinx-build
 SPHINX_AUTOBUILD	?= sphinx-autobuild
 SOURCE_DIR     		= .
 BUILD_DIR      		= _build
+# ADDED	Specify the port to serve watched docs on. Default to `0`, which means 
+# 		dynamic (random).
+SPHINX_PORT 		?= 0
 
 # Shortcut for command options. For example, this will pass the `--help` flag
 # to the underlying command:
@@ -39,7 +42,7 @@ clean:
 
 # Serve html docs, watching for source changes and updating on-demand
 watch:
-	@$(SPHINX_AUTOBUILD) --watch .. "$(SOURCE_DIR)" "$(BUILD_DIR)" $(SPHINX_OPTS) $(O)
+	@$(SPHINX_AUTOBUILD) --watch --port "$(SPHINX_PORT)" .. "$(SOURCE_DIR)" "$(BUILD_DIR)" $(SPHINX_OPTS) $(O)
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINX_OPTS).

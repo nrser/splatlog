@@ -95,7 +95,25 @@ myst_enable_extensions = [
     "colon_fence",
 ]
 
-# Python domain/signature formatting
+# Builder Options
+# ============================================================================
+#
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#builder-options
+
+# HTML Builder Options
+# ----------------------------------------------------------------------------
+#
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
+
+html_theme = "furo"
+html_static_path = ["_static"]
+
+# Domain Options
+# ============================================================================
+#
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#domain-options
+
+# Python Domain Options
 # ----------------------------------------------------------------------------
 
 # Wrap long signatures across multiple lines (per-parameter) for readability.
@@ -105,10 +123,14 @@ python_maximum_signature_line_length = 80
 # Prefer unqualified type names in rendered annotations when links are available.
 python_use_unqualified_type_names = True
 
-# Options for HTML output
-# ----------------------------------------------------------------------------
+# File System
+# ============================================================================
 #
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
+# Ensure configured directories exist, even if we never populate them, to
+# silence warnings.
 
-html_theme = "furo"
-html_static_path = ["_static"]
+for path_s in templates_path:
+    Path(path_s).mkdir(parents=True, exist_ok=True)
+
+for path_s in html_static_path:
+    Path(path_s).mkdir(parents=True, exist_ok=True)
