@@ -241,15 +241,11 @@ def get(name: str) -> logging.Handler | None:
 
 
 @overload
-def put(
-    name: Literal["console"], value: ToConsoleHandler
-) -> None: ...
+def put(name: Literal["console"], value: ToConsoleHandler) -> None: ...
 
 
 @overload
-def put(
-    name: Literal["export"], value: ToExportHandler
-) -> None: ...
+def put(name: Literal["export"], value: ToExportHandler) -> None: ...
 
 
 @overload
