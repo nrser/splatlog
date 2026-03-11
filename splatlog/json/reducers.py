@@ -10,6 +10,7 @@ Reducers are ordered by priority, allowing the JSON encoder to try more
 specific reducers before falling back to generic ones.
 """
 
+from collections import UserDict, UserList
 import dataclasses
 from collections.abc import Callable, Mapping, Collection
 from enum import Enum
@@ -28,6 +29,10 @@ else:
 
 from splatlog.lib import fmt_type, has_method
 from splatlog.types import JSONEncodable, JSONReduceFn
+
+
+# Reducer Class
+# ============================================================================
 
 
 @dataclasses.dataclass(frozen=True, order=True)
@@ -114,6 +119,28 @@ class JSONReducer:
 
     reduce: JSONReduceFn
     """Function that transforms the object to a JSON-encodable form."""
+
+
+# Reduce Functions
+# ============================================================================
+#
+# Assigned to `JSONReducer.reduce.
+
+
+def reduce_collection(obj: Collection) -> JSONEncodable:
+    # `collections.UserList` and `UserDict` are meant to imitate `list` and
+    # `dict`, respectively, so we want to encode them as arrays and objects
+    if isinstance(obj, UserList):
+        return obj.data
+
+    if isinstance(obj, UserDict):
+        return obj.data
+
+    # Other collections encode the type and items
+    return {
+        "__class__": fmt_type(obj.__class__),
+        "items": tuple(obj),
+    }
 
 
 def reduce_dataclass(value: Any) -> dict[str, JSONEncodable]:
@@ -326,10 +353,7 @@ Converts mappings (dict subclasses, etc.) to a dict with `__class__` and
 COLLECTION_REDUCER = JSONReducer.instance(
     typ=Collection,
     priority=60,
-    reduce=lambda obj: {
-        "__class__": fmt_type(obj.__class__),
-        "items": tuple(obj),
-    },
+    reduce=reduce_collection,
 )
 """Reducer for {py:class}`collections.abc.Collection` types (priority 60).
 
