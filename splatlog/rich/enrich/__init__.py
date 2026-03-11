@@ -16,6 +16,7 @@ from splatlog.lib import has_method
 from splatlog.lib.text import fmt_routine
 from splatlog.types import is_rich
 
+from .enriched_path import EnrichedPath
 from .enriched_type import EnrichedType
 
 
@@ -25,55 +26,8 @@ Shared {py:class}`rich.highlighter.ReprHighlighter` instance for repr syntax
 highlighting.
 """
 
-
-def repr_highlight(value: object, *, use_ascii: bool = False) -> Text:
-    """
-    Get a syntax-highlighted repr of a value.
-
-    ## Parameters
-
-    -   `value`: The object to repr.
-    -   `use_ascii`: If {py:data}`True`, use {py:func}`ascii` instead of
-        {py:func}`repr`.
-
-    ## Returns
-
-    A {py:class}`rich.text.Text` with repr highlighting applied.
-    """
-    text = Text(ascii(value) if use_ascii else repr(value), end="")
-    REPR_HIGHLIGHTER.highlight(text)
-    return text
-
-
-def enrich_type(typ: type[object]) -> RenderableType:
-    """
-    Create a Rich renderable for a type.
-
-    If the type has a `__rich_type__` method, calls it. Otherwise wraps
-    in {py:class}`EnrichedType`.
-
-    ## Parameters
-
-    -   `typ`: The type to enrich.
-
-    ## Returns
-
-    A Rich renderable representing the type.
-    """
-    if (rich_type := getattr(typ, "__rich_type__", None)) and isinstance(
-        rich_type, Callable
-    ):
-        return rich_type()
-    return EnrichedType(typ)
-
-
-def enrich_type_of(value: object) -> RenderableType:
-    """
-    Create a Rich renderable for the type of a value.
-
-    Shorthand for `enrich_type(type(value))`.
-    """
-    return enrich_type(type(value))
+# `enrich` — General Interface / Entry Point
+# ============================================================================
 
 
 @overload
@@ -176,6 +130,78 @@ def enrich(value, inline=False) -> RenderableType:
         return fmt_routine(value, fallback=fallback)
 
     if isinstance(value, Path):
-        return Text(str(value), style="repr.path", end="")
+        return enrich_path(value)
 
     return fallback(value)
+
+
+# Supporting Functions
+# ============================================================================
+
+
+def repr_highlight(value: object, *, use_ascii: bool = False) -> Text:
+    """
+    Get a syntax-highlighted repr of a value.
+
+    ## Parameters
+
+    -   `value`: The object to repr.
+    -   `use_ascii`: If {py:data}`True`, use {py:func}`ascii` instead of
+        {py:func}`repr`.
+
+    ## Returns
+
+    A {py:class}`rich.text.Text` with repr highlighting applied.
+    """
+    text = Text(ascii(value) if use_ascii else repr(value), end="")
+    REPR_HIGHLIGHTER.highlight(text)
+    return text
+
+
+def enrich_type(typ: type[object]) -> RenderableType:
+    """
+    Create a Rich renderable for a type.
+
+    If the type has a `__rich_type__` method, calls it. Otherwise wraps
+    in {py:class}`EnrichedType`.
+
+    ## Parameters
+
+    -   `typ`: The type to enrich.
+
+    ## Returns
+
+    A Rich renderable representing the type.
+    """
+    if (rich_type := getattr(typ, "__rich_type__", None)) and isinstance(
+        rich_type, Callable
+    ):
+        return rich_type()
+    return EnrichedType(typ)
+
+
+def enrich_type_of(value: object) -> RenderableType:
+    """
+    Create a Rich renderable for the type of a value.
+
+    Shorthand for `enrich_type(type(value))`.
+    """
+    return enrich_type(type(value))
+
+
+def enrich_path(path: Path) -> RenderableType:
+    """
+    Create a Rich renderable for a path.
+
+    Wraps in {py:class}`EnrichedPath` which shortens and adapts to
+    available console width.
+
+    ## Parameters
+
+    -   `path`: The path to enrich.
+
+    ## Returns
+
+    A Rich renderable representing the path.
+    """
+    return EnrichedPath(path)
