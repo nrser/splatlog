@@ -40,7 +40,7 @@ THEME = Theme(
 Base theme with `splatlog`-specific additions.
 """
 
-ANSI_PALETTE_DARK: dict[str, str] = dict(
+PALETTE_ANSI_DARK: dict[str, str] = dict(
     black="#0e0f12",
     red="#e06c75",
     bright_green="#5cb85c",
@@ -221,3 +221,6 @@ def override_ansi_colors(
             styles[name] = Style(color=color)
 
     return Theme(styles)
+
+
+THEME_ANSI_DARK = override_ansi_colors(THEME, **PALETTE_ANSI_DARK)

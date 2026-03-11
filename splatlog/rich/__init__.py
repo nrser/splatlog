@@ -15,7 +15,8 @@ from splatlog.types import ToRichConsole
 from .theme import (
     ToTheme as ToTheme,
     THEME as THEME,
-    ANSI_PALETTE_DARK as ANSI_PALETTE_DARK,
+    PALETTE_ANSI_DARK,
+    THEME_ANSI_DARK,
     to_theme as to_theme,
     get_default_theme as get_default_theme,
     set_default_theme as set_default_theme,
@@ -37,7 +38,8 @@ __all__ = [
     # .theme
     "ToTheme",
     "THEME",
-    "ANSI_PALETTE_DARK",
+    "PALETTE_ANSI_DARK",
+    "THEME_ANSI_DARK",
     "to_theme",
     "get_default_theme",
     "set_default_theme",
