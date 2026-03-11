@@ -30,13 +30,13 @@ TValue = TypeVar("TValue")
 # Constants
 # ============================================================================
 
-_ERR_MSG_UNARY_EMPTY = (
-    "expected exactly one item, given empty `iterable` of type {}"
+ERR_MSG_UNARY_EMPTY = (
+    "expected exactly one item, given empty `iterable` of type {type}: {arg}"
 )
 
-_ERR_MSG_UNARY_MANY = (
-    "expected exactly one item, given `iterable` of type {} with at least two "
-    "items: {}"
+ERR_MSG_UNARY_MANY = (
+    "expected exactly one item, given `iterable` of type {type} with at least "
+    "two items: {items}"
 )
 
 # Functions
@@ -221,7 +221,12 @@ def group_by(
     return dict(groups.items())
 
 
-def unary(iterable: Iterable[T]) -> T:
+def unary(
+    iterable: Iterable[T],
+    *,
+    empty_msg: str = ERR_MSG_UNARY_EMPTY,
+    many_msg: str = ERR_MSG_UNARY_MANY,
+) -> T:
     """
     Return the only item from an {py:class}`~collections.abc.Iterable`, raising
     a {py:exc}`ValueError` if there are no items or more than one.
@@ -293,7 +298,10 @@ def unary(iterable: Iterable[T]) -> T:
         first = next(it)
     except StopIteration:
         raise ValueError(
-            _ERR_MSG_UNARY_EMPTY.format(fmt(iterable, typing=True, quote=True))
+            empty_msg.format(
+                type=fmt_type_of(iterable, quote=True),
+                arg=fmt(iterable, quote=True),
+            )
         )
 
     try:
@@ -302,8 +310,8 @@ def unary(iterable: Iterable[T]) -> T:
         return first
 
     raise ValueError(
-        _ERR_MSG_UNARY_MANY.format(
-            fmt_type_of(iterable, quote=True),
-            fmt_list((first, second), quote=True),
+        many_msg.format(
+            type=fmt_type_of(iterable, quote=True),
+            items=fmt_list((first, second), quote=True),
         )
     )
