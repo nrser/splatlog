@@ -4,8 +4,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 import datetime as dt
 import dataclasses as dc
-import sys
-from typing import Any, Literal, Mapping, TypeAlias
+from typing import Any, Literal, Mapping, TypeAlias, Self
 import logging
 
 from rich.style import Style
@@ -28,12 +27,6 @@ from splatlog.rich.link import (
     to_rich_linker,
 )
 from splatlog.types import LevelSpec, ToRichConsole, assert_never
-
-# TODO  Remove when min Python is 3.11+
-if sys.version_info >= (3, 11):
-    from typing import Self
-else:
-    from typing_extensions import Self
 
 
 # Constants

@@ -8,20 +8,11 @@ import logging
 import json
 import os
 import re
-import sys
-from typing import Any, Literal, TypeAlias, cast
+from typing import Any, Literal, TypeAlias, cast, Never, Self
 from datetime import datetime, tzinfo
 from collections.abc import Mapping, Sequence
 
 import rich.repr
-
-
-# `Self` and `Never` were added to stdlib typing in 3.11
-if sys.version_info >= (3, 11):
-    from typing import Never, Self
-else:
-    from typing_extensions import Never, Self
-
 from rich.console import Console
 from rich.text import Text
 

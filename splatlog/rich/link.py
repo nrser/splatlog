@@ -16,14 +16,8 @@ This all sounds great and super useful, but the catch is _what_ to link to...
 
 """
 
-import sys
 from pathlib import Path
-from typing import Literal, Protocol, TypeAlias, cast, runtime_checkable
-
-if sys.version_info >= (3, 11):
-    from typing import Never
-else:
-    from typing_extensions import Never
+from typing import Literal, Protocol, TypeAlias, cast, runtime_checkable, Never
 
 from splatlog.types import assert_never
 
@@ -59,9 +53,11 @@ class RichLinker(Protocol):
         """
         ...
 
+
 RichLinkerName: TypeAlias = Literal["file", "vscode", "cursor"]
 
 ToRichLinker: TypeAlias = RichLinker | RichLinkerName | None
+
 
 def to_rich_linker(value: ToRichLinker) -> RichLinker:
     match value:
@@ -79,6 +75,7 @@ def to_rich_linker(value: ToRichLinker) -> RichLinker:
             # cast: checker doesn't narrow ToRichLinker to Never after
             # isinstance(..., RichLinker) and literal cases
             assert_never(cast(Never, value), ToRichLinker)
+
 
 def file_linker(
     path: Path | str,

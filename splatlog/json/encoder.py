@@ -3,18 +3,11 @@ A JSON encoder that handles arbitrary Python objects.
 """
 
 import json
-import sys
-from typing import IO, cast
+from typing import IO, cast, Never, Self
 from collections.abc import Iterable, Callable, Mapping, Sequence
 from warnings import warn
 
 import rich.repr
-
-# `Self` and `Never` were added to stdlib typing in 3.11
-if sys.version_info >= (3, 11):
-    from typing import Never, Self
-else:
-    from typing_extensions import Never, Self
 
 from splatlog.lib import fmt, fmt_type_value
 from splatlog.types import (

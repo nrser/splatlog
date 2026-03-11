@@ -34,16 +34,11 @@ from typing import (
     Union,
     get_args,
     get_origin,
+    Self,
 )
 import types
 from collections import abc
 import datetime as dt
-
-# `Self` was added to stdlib typing in 3.11
-if sys.version_info >= (3, 11):
-    from typing import Self
-else:
-    from typing_extensions import Self
 
 import rich.repr
 

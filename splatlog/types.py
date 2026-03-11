@@ -26,15 +26,10 @@ from typing import (
     Union,
     TYPE_CHECKING,
     runtime_checkable,
+    Never,
 )
 import typing
 from collections.abc import Mapping, Callable
-
-# Never was added to stdlib typing in 3.11
-if sys.version_info >= (3, 11):
-    from typing import Never
-else:
-    from typing_extensions import Never
 
 # TypeIs was added to stdlib typing in 3.13
 if sys.version_info >= (3, 13):
@@ -573,25 +568,7 @@ def is_level_name(
     if not case_sensitive:
         name = name.upper()
 
-    # `logging.getLevelNamesMapping` was added in Python 3.11, providing a much
-    # more sane way to figure out if a string is a level name.
-
-    if sys.version_info >= (3, 11):
-        return name in logging.getLevelNamesMapping()
-
-    # As of writing (2025-12-03) we `requires-python = ">=3.10"`, so
-    # `logging.getLevelNamesMapping` might not be there. As we already have the
-    # code to do the legacy detection, so it doesn't seem worth bumping the
-    # required python version.
-    #
-    # This is uses a weird (and deprecated, in recent Pythons) way of testing if
-    # `name` is a level name — `logging.getLevelName` will return the
-    # `int` level if `name` is a known level name, otherwise returning
-    # `f"Level {name}`
-    if isinstance(logging.getLevelName(name), int):
-        return True
-
-    return False
+    return name in logging.getLevelNamesMapping()
 
 
 def is_level(value: object) -> TypeIs[Level]:
@@ -977,60 +954,29 @@ def to_level(value: ToLevel, *, case_sensitive: bool = False) -> Level:
             assert_level(level)
             return level
 
-        if sys.version_info >= (3, 11):
-            mapping = logging.getLevelNamesMapping()
+        mapping = logging.getLevelNamesMapping()
 
-            if value in mapping:
-                return mapping[value]
-
-            if case_sensitive:
-                raise TypeError(
-                    (
-                        "{} is not a valid level name (case-sensitive), "
-                        "valid names: {}"
-                    ).format(fmt(value), fmt_list(mapping.keys()))
-                )
-
-            upper_value = value.upper()
-
-            if upper_value in mapping:
-                return mapping[upper_value]
-
-            raise TypeError(
-                (
-                    "Neither given value {} or upper-case version {} are valid "
-                    "level names, valid names: {}"
-                ).format(fmt(value), fmt(upper_value), fmt_list(mapping.keys()))
-            )
-
-        # This is the funky, pre-3.11 way (that I know) to go about it...
-
-        # If `value` _is_ a registered level name then `getLevelName` will
-        # return the level value (go figure)
-        level = logging.getLevelName(value)
-
-        if isinstance(level, int):
-            return level
+        if value in mapping:
+            return mapping[value]
 
         if case_sensitive:
             raise TypeError(
-                "{} is not a valid level name (case-sensitive)".format(
-                    fmt(value)
-                )
+                (
+                    "{} is not a valid level name (case-sensitive), "
+                    "valid names: {}"
+                ).format(fmt(value), fmt_list(mapping.keys()))
             )
 
         upper_value = value.upper()
 
-        level = logging.getLevelName(upper_value)
-
-        if isinstance(level, int):
-            return level
+        if upper_value in mapping:
+            return mapping[upper_value]
 
         raise TypeError(
             (
                 "Neither given value {} or upper-case version {} are valid "
-                "level names"
-            ).format(fmt(value), fmt(upper_value))
+                "level names, valid names: {}"
+            ).format(fmt(value), fmt(upper_value), fmt_list(mapping.keys()))
         )
 
     assert_never(value, ToLevel)

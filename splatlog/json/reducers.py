@@ -16,16 +16,9 @@ from collections.abc import Callable, Mapping, Collection
 from enum import Enum
 from inspect import isclass
 import os
-import sys
 import traceback
 from types import TracebackType
-from typing import Any
-
-# `Self` was added to stdlib typing in 3.11
-if sys.version_info >= (3, 11):
-    from typing import Self
-else:
-    from typing_extensions import Self
+from typing import Any, Self
 
 from splatlog.lib import fmt_type, has_method
 from splatlog.types import JSONEncodable, JSONReduceFn

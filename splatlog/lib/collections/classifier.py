@@ -4,7 +4,6 @@ The {py:class}`Classifier` class.
 
 from __future__ import annotations
 
-import sys
 from collections.abc import (
     Collection,
     Iterable,
@@ -12,16 +11,10 @@ from collections.abc import (
     Mapping,
     Sequence,
 )
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, assert_never
 
 from rich.console import Console, ConsoleOptions, RenderResult
 from rich.text import Text
-
-# `assert_never` was added to stdlib typing in 3.11
-if sys.version_info >= (3, 11):
-    from typing import assert_never
-else:
-    from typing_extensions import assert_never
 
 
 T = TypeVar("T")

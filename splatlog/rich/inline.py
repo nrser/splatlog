@@ -2,13 +2,7 @@
 Inline rendering of mixed text and objects.
 """
 
-import sys
-
-# `Self` was added to stdlib typing in 3.11
-if sys.version_info >= (3, 11):
-    from typing import Self
-else:
-    from typing_extensions import Self
+from typing import Self
 
 from rich.text import Text
 

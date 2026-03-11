@@ -3,7 +3,7 @@ name = "splatlog"
 version = "0.4.2a0"
 description = "Python logger that accepts ** values and prints 'em out."
 authors = [{ name = "nrser", email = "neil@neilsouza.com" }]
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 readme = "README.md"
 license = "BSD-3-Clause"
 classifiers = [
