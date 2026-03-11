@@ -1,6 +1,11 @@
 {
-    "Splatlog Referene": {
+    "Splatlog Reference": {
         "prefix": "ref-splatlog",
         "body": "{py:${1:obj}}`splatlog${2}`"
     },
+
+    "LogRecord Ref": {
+        "prefix": "ref-LogRecord",
+        "body": "{py:${1:obj}}`logging.LogRecord${2}`"
+    }
 }

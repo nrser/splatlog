@@ -2,29 +2,117 @@
 
 from __future__ import annotations
 from collections.abc import Sequence
-from typing import Any, Mapping
+import datetime as dt
+import dataclasses as dc
+import sys
+from typing import Any, Literal, Mapping, TypeAlias
 import logging
 
 from rich.style import Style
 from rich.table import Table
-from rich.console import Console
+from rich.console import Console, RenderableType
 from rich.text import Text
 from rich.traceback import Traceback
 
 from splatlog.levels import Filter
 from splatlog.lib import str_find_all
+from splatlog.lib.text import fmt_timedelta
+from splatlog.lib.timedate import strftime
 from splatlog.rich.ntv_table import NtvTable
 from splatlog.rich.theme import to_theme, ToTheme
 from splatlog.rich.enrich import enrich
 from splatlog.rich.console import to_console
-from splatlog.rich.link import RichLinker, ToRichLinker, file_linker, to_rich_linker
-from splatlog.types import LevelSpec, Rich, ToRichConsole
+from splatlog.rich.link import (
+    RichLinker,
+    ToRichLinker,
+    file_linker,
+    to_rich_linker,
+)
+from splatlog.types import LevelSpec, ToRichConsole, assert_never
 
+# TODO  Remove when min Python is 3.11+
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
+
+
+# Constants
+# ============================================================================
+#
+# Pre-built `rich.text.Text` instances for the static text pieces, because why
+# not... simpler to read and better for the environment.
+
+LABEL_TIME: Text = Text("time", style="log.label")
 LABEL_LOC: Text = Text("loc", style="log.label")
 LABEL_SELF: Text = Text("self", style="log.label")
 LABEL_MSG: Text = Text("msg", style="log.label")
 LABEL_DATA: Text = Text("data", style="log.label")
 LABEL_ERR: Text = Text("err", style="log.label")
+
+
+# Supporting Structures
+# ============================================================================
+
+
+@dc.dataclass
+class TimeConfig:
+    """Controls how timestamps are displayed in log output.
+
+    By default, time display is off. When enabled, each log record shows a
+    formatted wall-clock time and, optionally, the elapsed time since the
+    previous record (e.g. ``14:23:45.123 Δ1.502``).
+    """
+
+    @classmethod
+    def of(cls, value: ToTimeConfig) -> Self:
+        """Coerce a {py:type}`ToTimeConfig` value into a {py:class}`TimeConfig`.
+
+        -   A {py:class}`TimeConfig` is returned as-is.
+        -   A {py:class}`bool` sets {py:attr}`show` (other fields keep defaults).
+        -   A {py:class}`~collections.abc.Mapping` is unpacked as keyword
+            arguments with ``show`` defaulting to {py:data}`True`.
+        """
+        match value:
+            case self if isinstance(self, cls):
+                return self
+            case True | False:
+                return cls(show=value)
+            case map if isinstance(map, Mapping):
+                return cls(**{"show": True, **map})
+            case other:
+                assert_never(other, ToTimeConfig)  # type: ignore
+
+    show: bool = False
+    """Whether to include a time row in the log output."""
+
+    fmt: str = "%H:%M:%S.%3f"
+    """A {py:func}`~splatlog.lib.timedate.strftime` format string for the
+    wall-clock time. Supports the ``%3f`` directive for milliseconds."""
+
+    tz: dt.tzinfo | Literal["local"] = "local"
+    """Timezone for formatting. ``"local"`` (the default) uses the system's
+    local time."""
+
+    delta: bool = True
+    """When {py:data}`True`, append the elapsed time since the previous log
+    record as a ``Δ`` suffix (e.g. ``Δ0.032``). Useful for spotting slow
+    operations at a glance."""
+
+
+ToTimeConfig: TypeAlias = TimeConfig | bool | Mapping[str, Any]
+"""Accepted input types for time configuration.
+
+-   {py:class}`TimeConfig` — used directly.
+-   {py:class}`bool` — shorthand to enable/disable time display with defaults.
+-   {py:class}`~collections.abc.Mapping` — keyword arguments forwarded to the
+    {py:class}`TimeConfig` constructor (``show`` defaults to {py:data}`True`).
+"""
+
+# Handler
+# ============================================================================
+#
+# The main event.
 
 
 class RichHandler(logging.Handler):
@@ -65,6 +153,10 @@ class RichHandler(logging.Handler):
     the operating system.
     """
 
+    time_config: TimeConfig
+
+    last_emit_at: dt.datetime | None = None
+
     # Construction
     # ========================================================================
 
@@ -74,6 +166,7 @@ class RichHandler(logging.Handler):
         *,
         console: ToRichConsole | None = None,
         theme: ToTheme | None = None,
+        time: ToTimeConfig = False,
         show_path: bool = False,
         link_path: bool = False,
         link_icon: bool = False,
@@ -88,6 +181,7 @@ class RichHandler(logging.Handler):
         self.link_path = link_path
         self.link_icon = link_icon
         self.linker = to_rich_linker(linker)
+        self.time_config = TimeConfig.of(time)
 
     # Rich
     # ========================================================================
@@ -166,6 +260,10 @@ class RichHandler(logging.Handler):
             ),
             self.render_record_name(record),
         )
+
+        # Row (optional) -- "time", record time
+        if self.time_config.show:
+            output.add_row(LABEL_TIME, self.render_record_time(record))
 
         # Row (optional) -- "loc", source location
         if self.show_path:
@@ -247,8 +345,13 @@ class RichHandler(logging.Handler):
 
         return text
 
-    def render_record_msg(self, record: logging.LogRecord) -> str | Rich:
-        """ """
+    def render_record_msg(self, record: logging.LogRecord) -> RenderableType:
+        """
+        Render {py:attr}`logging.LogRecord.msg` — in rich
+        {py:class}`~rich.text.Text` if it's a
+        {py:class}`~splatlog.loggers.SplatLogger` record, or poor
+        {py:meth}`logging.LogRecord.getMessage` if not.
+        """
         if not getattr(record, "_splatlog_", None):
             return record.getMessage()
 
@@ -265,3 +368,19 @@ class RichHandler(logging.Handler):
         msg = msg.format(*args, **kwds)
 
         return Text.from_markup(msg)
+
+    def render_record_time(self, record: logging.LogRecord) -> RenderableType:
+        """
+        Render (date)time a {py:class}`logging.LogRecord` was created, for
+        display in emitted logs.
+        """
+        t = dt.datetime.fromtimestamp(record.created)
+        t_s = strftime(t, self.time_config.fmt)
+
+        if self.time_config.delta:
+            if t_last := self.last_emit_at:
+                d_t = t - t_last
+                t_s = f"{t_s} Δ{fmt_timedelta(d_t)}"
+            self.last_emit_at = t
+
+        return t_s

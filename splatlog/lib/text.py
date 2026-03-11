@@ -19,7 +19,7 @@ function or method bodies if they can't be.
 """
 
 from __future__ import annotations
-import dataclasses
+import dataclasses as dc
 from functools import wraps
 from inspect import isroutine
 import sys
@@ -37,6 +37,7 @@ from typing import (
 )
 import types
 from collections import abc
+import datetime as dt
 
 # `Self` was added to stdlib typing in 3.11
 if sys.version_info >= (3, 11):
@@ -117,7 +118,7 @@ class Formatter(Protocol):
     def __call__(self, *args, **kwds) -> str: ...
 
 
-@dataclasses.dataclass(frozen=True)
+@dc.dataclass(frozen=True)
 class FmtOpts:
     """
     Options controlling text formatting behavior.
@@ -205,7 +206,7 @@ class FmtOpts:
 
         ```
         """
-        field_names = {field.name for field in dataclasses.fields(cls)}
+        field_names = {field.name for field in dc.fields(cls)}
 
         @wraps(fn)
         def wrapped(*args, **kwds):
@@ -215,7 +216,7 @@ class FmtOpts:
             if isinstance(args[-1], cls):
                 *args, instance = args
                 if field_kwds:
-                    instance = dataclasses.replace(instance, **field_kwds)
+                    instance = dc.replace(instance, **field_kwds)
             elif field_kwds:
                 instance = cls(**field_kwds)
             else:
@@ -279,7 +280,7 @@ class FmtOpts:
     """
 
     def __rich_repr__(self) -> rich.repr.Result:
-        for field in dataclasses.fields(self):
+        for field in dc.fields(self):
             value = getattr(self, field.name)
             if value != field.default:
                 yield field.name, value
@@ -378,7 +379,7 @@ def fmt(x: Any, opts: FmtOpts) -> str:
     ```
     """
     if opts.typing:
-        opts = dataclasses.replace(opts, typing=False)
+        opts = dc.replace(opts, typing=False)
         return fmt_type_value(x, opts)
 
     if is_typing(x):
@@ -389,6 +390,9 @@ def fmt(x: Any, opts: FmtOpts) -> str:
 
     if isroutine(x):
         return fmt_routine(x, opts)
+
+    if isinstance(x, dt.timedelta):
+        return fmt_timedelta(x, opts)
 
     return opts.maybe_quote(opts.fallback(x))
 
@@ -744,3 +748,100 @@ def fmt_seq(seq: abc.Sequence, opts: FmtOpts) -> str:
         items = [fmt(item, opts) for item in seq]
 
     return open_bracket + ", ".join(items) + close_bracket
+
+
+@FmtOpts.provide
+def fmt_timedelta(td: dt.timedelta, opts: FmtOpts) -> str:
+    """Format a {py:class}`datetime.timedelta` as a compact human-readable
+    string with millisecond precision.
+
+    Like {py:meth}`datetime.timedelta.__str__` but without leading zero
+    components — the most significant unit has no padding, and sub-components
+    are zero-padded to two digits.
+
+    ## Examples
+
+    Sub-second:
+
+    ```python
+    >>> fmt_timedelta(dt.timedelta(milliseconds=12))
+    '0.012'
+
+    >>> fmt_timedelta(dt.timedelta(milliseconds=500))
+    '0.500'
+
+    ```
+
+    Seconds:
+
+    ```python
+    >>> fmt_timedelta(dt.timedelta(seconds=5))
+    '5.000'
+
+    >>> fmt_timedelta(dt.timedelta(seconds=12, milliseconds=345))
+    '12.345'
+
+    ```
+
+    Minutes and above:
+
+    ```python
+    >>> fmt_timedelta(dt.timedelta(minutes=5, seconds=30, milliseconds=100))
+    '5:30.100'
+
+    >>> fmt_timedelta(dt.timedelta(hours=12, minutes=34, seconds=56, milliseconds=789))
+    '12:34:56.789'
+
+    ```
+
+    Days:
+
+    ```python
+    >>> fmt_timedelta(dt.timedelta(days=1, hours=23, minutes=45, seconds=56, milliseconds=789))
+    '1d 23:45:56.789'
+
+    >>> fmt_timedelta(dt.timedelta(days=100, hours=5, minutes=3, seconds=2, milliseconds=1))
+    '100d 05:03:02.001'
+
+    ```
+
+    Zero:
+
+    ```python
+    >>> fmt_timedelta(dt.timedelta())
+    '0.000'
+
+    ```
+
+    Negative:
+
+    ```python
+    >>> fmt_timedelta(-dt.timedelta(seconds=1, milliseconds=500))
+    '-1.500'
+
+    >>> fmt_timedelta(-dt.timedelta(hours=2, minutes=30))
+    '-2:30:00.000'
+
+    ```
+    """
+    if td < dt.timedelta(0):
+        return "-" + fmt_timedelta(-td, opts)
+
+    days = td.days
+    hours, rem = divmod(td.seconds, 3600)
+    minutes, seconds = divmod(rem, 60)
+    ms = td.microseconds // 1000
+
+    if days:
+        s = f"{days}d {hours:02d}:{minutes:02d}:{seconds:02d}.{ms:03d}"
+    elif hours:
+        s = f"{hours}:{minutes:02d}:{seconds:02d}.{ms:03d}"
+    elif minutes:
+        s = f"{minutes}:{seconds:02d}.{ms:03d}"
+    else:
+        s = f"{seconds}.{ms:03d}"
+
+    if opts.quote:
+        return "`" + s + "`"
+
+    return s
