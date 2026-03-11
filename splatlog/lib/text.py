@@ -129,6 +129,11 @@ class FmtOpts:
     arguments.
     """
 
+    DEFAULT_DT_FMT: str = "%Y-%m-%d %H:%M:%S.%3f %Z"
+    """
+    Default for {py:attr}`FmtOpts.dt_fmt`.
+    """
+
     @classmethod
     def of(cls: type[Self], x) -> Self:
         """
@@ -269,7 +274,7 @@ class FmtOpts:
     Should {py:func}`fmt_list` use the [Oxford comma][] style?
     """
 
-    typing: bool = False
+    type: bool = False
     """
     Add formatted type.
     """
@@ -277,6 +282,11 @@ class FmtOpts:
     quote: bool = False
     """
     Add markdown-style
+    """
+
+    dt_fmt: str = DEFAULT_DT_FMT
+    """
+    Template for formatting {py:class}`datetime.datetime`.
     """
 
     def __rich_repr__(self) -> rich.repr.Result:
@@ -372,14 +382,46 @@ def fmt(x: Any, opts: FmtOpts) -> str:
 
     ## Examples
 
-    ```python
-    >>> fmt(int.__add__)
-    'int.__add__()'
+    -   **Types & Type Hints** — TODO
 
-    ```
+    -   **Functions & Methods** — Uses {py:func}`inspect.isroutine` to detect
+        functions and methods and format them clearly and concisely:
+
+            >>> fmt(int.__add__)
+            'int.__add__()'
+
+        Compare to what {py:class}`str` (and {py:func}`repr`) will give you:
+
+            >>> str(int.__add__)
+            "<slot wrapper '__add__' of 'int' objects>"
+
+        See {py:func}`fmt_routine` for more info.
+
+    -   **Dates & Times** — Formats {py:class}`~datetime.datetime`, see
+        {py:func}`fmt_datetime` and {py:attr}`FmtOpts.dt_fmt`.
+
+            >>> import datetime as dt
+
+            >>> fmt(dt.datetime(2026, 3, 10, 14, 23, 45, 123_456))
+            '2026-03-10 14:23:45.123'
+
+        TODO {py:class}`datetime.date` and {py:class}`datetime.time`
+
+        Produces a concise, readable rendering of {py:class}`datetime.timedelta`
+        as well:
+
+            >>> fmt_timedelta(dt.timedelta(milliseconds=12))
+            '0.012'
+
+            >>> fmt_timedelta(
+            ...     dt.timedelta(days=1, hours=23, minutes=45, seconds=56)
+            ... )
+            '1d 23:45:56.000'
+
+        {py:func}`fmt_timedelta` has more information and examples.
     """
-    if opts.typing:
-        opts = dc.replace(opts, typing=False)
+    if opts.type:
+        opts = dc.replace(opts, type=False)
         return fmt_type_value(x, opts)
 
     if is_typing(x):
@@ -391,26 +433,13 @@ def fmt(x: Any, opts: FmtOpts) -> str:
     if isroutine(x):
         return fmt_routine(x, opts)
 
+    if isinstance(x, dt.datetime):
+        return fmt_datetime(x, opts)
+
     if isinstance(x, dt.timedelta):
         return fmt_timedelta(x, opts)
 
     return opts.maybe_quote(opts.fallback(x))
-
-
-@FmtOpts.provide
-def p(x: Any, opts: FmtOpts, **kwds) -> None:
-    """
-    Print a formatted value.
-
-    Shorthand for `print(fmt(x, opts), **kwds)`.
-
-    ## Parameters
-
-    -   `x`: The value to format and print.
-    -   `opts`: Formatting options.
-    -   `**kwds`: Additional arguments passed to {py:func}`print`.
-    """
-    print(fmt(x, opts), **kwds)
 
 
 @FmtOpts.provide
@@ -433,11 +462,13 @@ def fmt_routine(fn: types.FunctionType, opts: FmtOpts) -> str:
     ## Examples
 
     ```python
-    >>> fmt_routine(fmt_routine)
-    'splatlog.lib.text.fmt_routine()'
+    >>> import splatlog
 
-    >>> fmt_routine(fmt_routine, module_names=False)
-    'fmt_routine()'
+    >>> fmt_routine(splatlog.setup)
+    'splatlog.setup()'
+
+    >>> fmt_routine(splatlog.setup, module_names=False)
+    'setup()'
 
     >>> fmt_routine(lambda x, y: x + y)
     'λ()'
@@ -789,7 +820,9 @@ def fmt_timedelta(td: dt.timedelta, opts: FmtOpts) -> str:
     >>> fmt_timedelta(dt.timedelta(minutes=5, seconds=30, milliseconds=100))
     '5:30.100'
 
-    >>> fmt_timedelta(dt.timedelta(hours=12, minutes=34, seconds=56, milliseconds=789))
+    >>> fmt_timedelta(
+    ...     dt.timedelta(hours=12, minutes=34, seconds=56, milliseconds=789)
+    ... )
     '12:34:56.789'
 
     ```
@@ -797,10 +830,18 @@ def fmt_timedelta(td: dt.timedelta, opts: FmtOpts) -> str:
     Days:
 
     ```python
-    >>> fmt_timedelta(dt.timedelta(days=1, hours=23, minutes=45, seconds=56, milliseconds=789))
+    >>> fmt_timedelta(
+    ...     dt.timedelta(
+    ...         days=1, hours=23, minutes=45, seconds=56, milliseconds=789
+    ...     )
+    ... )
     '1d 23:45:56.789'
 
-    >>> fmt_timedelta(dt.timedelta(days=100, hours=5, minutes=3, seconds=2, milliseconds=1))
+    >>> fmt_timedelta(
+    ...     dt.timedelta(
+    ...         days=100, hours=5, minutes=3, seconds=2, milliseconds=1
+    ...     )
+    ... )
     '100d 05:03:02.001'
 
     ```
@@ -845,3 +886,82 @@ def fmt_timedelta(td: dt.timedelta, opts: FmtOpts) -> str:
         return "`" + s + "`"
 
     return s
+
+
+@FmtOpts.provide
+def fmt_datetime(t: dt.datetime, opts: FmtOpts) -> str:
+    """
+    Format a {py:class}`datetime.datetime` with sub-second directives.
+
+    Wraps {py:meth}`datetime.datetime.strftime` and adds support for:
+
+    -   `%3f` — milliseconds, zero-padded to 3 digits.
+
+    The standard `%f` (microseconds, 6 digits) continues to work as it's handled
+    by {py:class}`~datetime.datetime` itself.
+
+    The implementation follows the same strategy Python uses for `%f`:
+    pre-process the format string to replace custom directives before delegating
+    to {py:meth}`~datetime.datetime.strftime`.
+
+    It also calls {py:meth}`str.strip` on the result, allowing formats like
+    `"%Y-%m-%d %H:%M:%S.%3f %Z"` to not produce a trailing space when used with
+    naive {py:class}`~datetime.datetime` instances.
+
+    Examples
+    --------------------------------------------------------------------------
+
+    We'll be demonstrating on the {py:class}`~datetime.datetime` `t`, which we
+    set to the _naive_ (without timezone) moment of `March 14, 2026` at
+    `14:23.123456` — that's `2:23PM` at `123,456` microseconds past the
+    minute-mark.
+
+        >>> import datetime as dt
+
+        >>> t = dt.datetime(2026, 3, 10, 14, 23, 45, 123_456)
+        >>> t.isoformat()
+        '2026-03-10T14:23:45.123456'
+
+    Default format:
+
+        >>> fmt_datetime(t)
+        '2026-03-10 14:23:45.123'
+
+    Extract just the milliseconds:
+
+        >>> fmt_datetime(t, dt_fmt="%3f ms")
+        '123 ms'
+
+    Mixed with standard directives:
+
+        >>> fmt_datetime(t, dt_fmt="%H:%M:%S.%3f")
+        '14:23:45.123'
+
+    Standard ``%f`` (microseconds) still works:
+
+        >>> fmt_datetime(t, dt_fmt="%H:%M:%S.%f")
+        '14:23:45.123456'
+
+    No custom directives — passes through to
+    {py:meth}`~datetime.datetime.strftime`:
+
+        >>> fmt_datetime(t, dt_fmt="%X")
+        '14:23:45'
+
+    With timezone:
+
+        >>> fmt_datetime(
+        ...     dt.datetime(2026, 3, 10, 14, 23, 45, 123_456, dt.timezone.utc)
+        ... )
+        '2026-03-10 14:23:45.123 UTC'
+
+        >>> fmt_datetime(
+        ...     dt.datetime(2026, 3, 10, 14, 23, 45, 123_456, dt.timezone.utc)
+        ... )
+        '2026-03-10 14:23:45.123 UTC'
+
+    """
+    fmt = opts.dt_fmt
+    if "%3f" in fmt:
+        fmt = fmt.replace("%3f", f"{t.microsecond // 1000:03d}")
+    return t.strftime(fmt).strip()
