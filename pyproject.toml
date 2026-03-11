@@ -104,6 +104,8 @@ help = "Run type checking on all files"
 [tool.poe.tasks.docs]
 cmd = "make $target"
 cwd = "docs"
+# Serve docs at http://localhost:7564 
+env = {SPHINX_PORT = "7564"} # T9: SLOG
 
 [[tool.poe.tasks.docs.args]]
 name = "target"
