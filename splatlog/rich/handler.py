@@ -415,7 +415,8 @@ class RichHandler(logging.Handler):
         Render (date)time a {py:class}`logging.LogRecord` was created, for
         display in emitted logs.
         """
-        t = dt.datetime.fromtimestamp(record.created)
+        tz = None if self.time_config.tz == "local" else self.time_config.tz
+        t = dt.datetime.fromtimestamp(record.created, tz=tz)
         t_s = strftime(t, self.time_config.fmt)
 
         if self.time_config.delta:
