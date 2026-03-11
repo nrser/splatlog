@@ -16,8 +16,7 @@ from rich.traceback import Traceback
 
 from splatlog.levels import Filter
 from splatlog.lib import str_find_all
-from splatlog.lib.text import fmt_timedelta
-from splatlog.lib.timedate import strftime
+from splatlog.lib.text import fmt_timedelta, fmt_datetime
 from splatlog.rich.ntv_table import NtvTable
 from splatlog.rich.theme import to_theme, ToTheme
 from splatlog.rich.enrich import enrich
@@ -417,7 +416,7 @@ class RichHandler(logging.Handler):
         """
         tz = None if self.time_config.tz == "local" else self.time_config.tz
         t = dt.datetime.fromtimestamp(record.created, tz=tz)
-        t_s = strftime(t, self.time_config.fmt)
+        t_s = fmt_datetime(t, dt_fmt=self.time_config.fmt)
 
         if self.time_config.delta:
             if t_last := self.last_emit_at:
