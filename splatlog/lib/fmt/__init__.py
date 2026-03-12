@@ -13,14 +13,14 @@ from typing import (
 import typing
 from warnings import warn
 
-from .writer import FmtWriter
-from .func import FmtFunc
-from .opts import FmtOpts
+from .formatter import Formatter
+from .opts import FmtOpts, FmtOut
 
 __all__ = [
-    "FmtWriter",
-    "FmtFunc",
+    "Formatter",
     "FmtOpts",
+    "FmtOut",
+    "fmt",
 ]
 
 
@@ -62,84 +62,150 @@ Separator for fully-qualified names, for example the '.' in 'typing.Any'.
 """
 
 
-@FmtFunc
-def fmt(f: FmtWriter, x: object) -> None:
+@Formatter
+def fmt(opts: FmtOpts, x: object) -> FmtOut:
+    """
+    Format a `value` for concise, human-readable output.
+
+    Dispatches to specialized formatters based on the value's type:
+    typing constructs, types, and routines each have dedicated formatters.
+
+    ## Parameters
+
+    -   `opts`: Formatting options.
+    -   `value`: The value to format.
+
+    ## Returns
+
+    A formatted string representation.
+
+    ## Examples
+
+    -   **Types & Type Hints** — Formats types by qualified name, and type
+        hints with concise shorthands:
+
+            >>> from collections.abc import Collection
+
+            >>> fmt(str)
+            'str'
+
+            >>> fmt(Collection)
+            'collections.abc.Collection'
+
+            >>> from typing import Optional
+
+            >>> fmt(Optional[str])
+            'str?'
+
+            >>> fmt(list[int])
+            'int[]'
+
+            >>> fmt(dict[str, int])
+            '{str: int}'
+
+        See {py:func}`fmt_type` and {py:func}`fmt_type_hint` for more info.
+
+    -   **Functions & Methods** — Uses {py:func}`inspect.isroutine` to detect
+        functions and methods and format them clearly and concisely:
+
+            >>> fmt(int.__add__)
+            'int.__add__()'
+
+        Compare to what {py:class}`str` (and {py:func}`repr`) will give you:
+
+            >>> str(int.__add__)
+            "<slot wrapper '__add__' of 'int' objects>"
+
+        See {py:func}`fmt_routine` for more info.
+
+    -   **Dates & Times** — Formats {py:class}`~datetime.datetime`, see
+        {py:func}`fmt_datetime` and {py:attr}`FmtOpts.dt_fmt`.
+
+            >>> import datetime as dt
+
+            >>> fmt(dt.datetime(2026, 3, 10, 14, 23, 45, 123_456))
+            '2026-03-10 14:23:45.123'
+
+        Also handles {py:class}`datetime.date` and {py:class}`datetime.time`:
+
+            >>> fmt(dt.date(2026, 3, 10))
+            '2026-03-10'
+
+            >>> fmt(dt.time(14, 23, 45, 123_456))
+            '14:23:45.123'
+
+        Produces a concise, readable rendering of {py:class}`datetime.timedelta`
+        as well:
+
+            >>> fmt_timedelta(dt.timedelta(milliseconds=12))
+            '0.012'
+
+            >>> fmt_timedelta(
+            ...     dt.timedelta(days=1, hours=23, minutes=45, seconds=56)
+            ... )
+            '1d 23:45:56.000'
+
+        {py:func}`fmt_timedelta` has more information and examples.
+    """
     if is_typing(x):
-        return fmt_type_hint.into(f, x)
+        return fmt_type_hint.with_opts(opts)(x)
 
     if isinstance(x, type):
-        return fmt_type.into(f, x)
+        return fmt_type.with_opts(opts)(x)
 
     if isroutine(x):
-        return fmt_routine.into(f, x)
+        return fmt_routine.with_opts(opts)(x)
 
-    f.write_obj(x)
-
-
-# def fmt_name(f: Formatter, x: Any):
-#     name = getattr(x, "__qualname__", None) or getattr(x, "__name__", None)
-#     if (
-#         f.fqn
-#         and (module_name := getattr(x, "__module__", None))
-#         and (module_name != BUILTINS_MODULE or f.fq_builtins)
-#     ):
-#         f.write(module_name)
-#         f.write(FQN_SEP)
-#     f.write(name)
+    return opts.fallback(x)
 
 
-@FmtFunc
-def fmt_routine(f: FmtWriter, x: Routine) -> None:
+@Formatter
+def fmt_routine(f: FmtOpts, x: Routine) -> FmtOut:
     if x.__name__ == LAMBDA_NAME:
-        f.write("λ()")
+        yield "λ()"
     else:
-        if f.opts.fqn and (
-            x.__module__ != BUILTINS_MODULE or f.opts.fq_builtins
-        ):
-            f.write(x.__module__)
-            f.write(FQN_SEP)
-        # concat: "stick" things written in this context together as one term
-        with f.concat():
-            f.write(x.__qualname__)
-            f.write("()")
+        if f.fqn and (x.__module__ != BUILTINS_MODULE or f.fq_builtins):
+            yield x.__module__
+            yield FQN_SEP
+        else:
+            yield x.__qualname__
+            yield "()"
 
 
-@FmtFunc
-def fmt_type(f: FmtWriter, x: type) -> None:
-    if f.opts.fqn and (x.__module__ != BUILTINS_MODULE or f.opts.fq_builtins):
-        f.write(x.__module__)
-        f.write(FQN_SEP)
-    f.write(x.__qualname__)
+@Formatter
+def fmt_type(opts: FmtOpts, x: type) -> FmtOut:
+    if opts.fqn and (x.__module__ != BUILTINS_MODULE or opts.fq_builtins):
+        yield x.__module__
+        yield FQN_SEP
+    yield x.__qualname__
 
 
-@FmtFunc
-def fmt_type_value(f: FmtWriter, x: object) -> None:
-    with f.concat():
-        fmt_type.into(f, type(x))
-        f.write(":")
-    f.space()
-    fmt.into(f, x)
+@Formatter
+def fmt_type_value(opts: FmtOpts, x: object) -> FmtOut:
+    yield fmt_type.with_opts(opts)(type(x))
+    yield ": "
+    yield fmt.with_opts(opts)(x)
 
 
-@FmtFunc
-def fmt_type_hint(f: FmtWriter, x: Any) -> None:
+@Formatter
+def fmt_type_hint(opts: FmtOpts, x: Any) -> FmtOut:
     if x is Ellipsis:
-        f.write("...")
+        yield "..."
         return
 
     if x is types.NoneType:
-        f.write("None")
+        yield "None"
         return
 
     if isinstance(x, ForwardRef):
-        f.write(x.__forward_arg__)
+        yield x.__forward_arg__
         return
 
     if isinstance(x, TypeVar):
         # NOTE  Just gonna punt on this for now... for some reason the way
         #       Python handles generics just manages to frustrate and confuse
         #       me...
-        f.write_obj(x)
+        yield repr(x)
         return
 
     origin = get_origin(x)
@@ -147,71 +213,66 @@ def fmt_type_hint(f: FmtWriter, x: Any) -> None:
 
     if args == ():
         if isclass(origin):
-            return fmt_type.into(f, origin)
+            yield fmt_type.with_opts(opts)(origin)
         elif isclass(x):
-            return fmt_type.into(f, x)
+            yield fmt_type.with_opts(opts)(x)
         else:
-            # Unexpected!?!
             warn("expected typing|origin with no args to be type")
-            warn("received typing {t!r} with origin {origin!r}")
-            return f.write_obj(origin or x)
+            warn(f"received typing {x!r} with origin {origin!r}")
+            yield repr(origin or x)
+        return
 
     if origin is Union or origin is Literal:
-        with f.join("|", space="opt"):
-            for arg in args:
-                fmt_type_hint.into(f, arg)
+        yield " | ".join(fmt_type_hint.with_opts(opts)(arg) for arg in args)
         return
 
     if origin is dict:
-        f.write("{")
-        with f.concat():
-            fmt_type_hint.into(f, args[0])
-            f.write(":")
-        f.space()
-        fmt_type_hint.into(f, args[1])
-        f.write("}")
-
+        yield "{"
+        yield fmt_type_hint.with_opts(opts)(args[0])
+        yield ": "
+        yield fmt_type_hint.with_opts(opts)(args[1])
+        yield "}"
         if len(args) > 2:
             warn(f"`dict` typing has more than 2 args: {args!r}")
-
         return
 
     if origin is list:
-        with f.concat():
-            fmt_type_hint.into(f, args[0])
-            f.write("[]")
+        yield fmt_type_hint.with_opts(opts)(args[0])
+        yield "[]"
         return
 
     if origin is tuple:
-        f.write("(")
-        with f.join(",", space=("never", "req")):
-            for arg in args:
-                fmt_type_hint.into(f, arg)
-        f.write(")")
+        yield "("
+        yield ", ".join(fmt_type_hint.with_opts(opts)(arg) for arg in args)
+        yield ")"
         return
 
     if origin is set:
-        f.write("{")
-        with f.join(",", space=("never", "req")):
-            for arg in args:
-                fmt_type_hint.into(f, arg)
-        f.write("}")
+        yield "{"
+        yield ", ".join(fmt_type_hint.with_opts(opts)(arg) for arg in args)
+        yield "}"
         return
 
     if origin is Callable:
-        f.write("(")
-        with f.join(",", space=("never", "req")):
-            for arg in args[0]:
-                fmt_type_hint.into(f, arg)
-        f.write(")")
-        f.space()
-        f.write("->")
-        f.space()
-        fmt_type_hint.into(f, args[1])
+        yield "("
+        yield ", ".join(fmt_type_hint.with_opts(opts)(arg) for arg in args[0])
+        yield ") -> "
+        yield fmt_type_hint.with_opts(opts)(args[1])
         return
 
-    f.write_obj(x)
+    yield repr(x)
 
+
+# def fmt_name(f: FmtOpts, x: Any):
+#     name = getattr(x, "__qualname__", None) or getattr(x, "__name__", None)
+#     if (
+#         f.fqn
+#         and (module_name := getattr(x, "__module__", None))
+#         and (module_name != BUILTINS_MODULE or f.fq_builtins)
+#     ):
+#         yield module_name
+#         yield FQN_SEP
+#     yield name
 
 # Helpers
 # ============================================================================
