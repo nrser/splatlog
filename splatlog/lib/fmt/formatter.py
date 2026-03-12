@@ -4,11 +4,43 @@ import dataclasses as dc
 from typing import (
     Concatenate,
     Self,
+    Unpack,
+    overload,
 )
 
-from .opts import FmtOpts
+from .opts import FmtOpts, OptsKwds
 from .writer import FmtWriter
 from .chunk_io import ChunkIO, FmtOut
+
+
+@overload
+def formatter[**P](
+    **kwds: Unpack[OptsKwds],
+) -> Callable[[Callable[Concatenate[FmtWriter, P], None]], Formatter[P]]: ...
+
+
+@overload
+def formatter[**P](
+    fn: Callable[Concatenate[FmtWriter, P], None],
+    /,
+) -> Formatter[P]: ...
+
+
+def formatter[**P](
+    fn: Callable[Concatenate[FmtWriter, P], None] | None = None,
+    /,
+    **kwds: Unpack[OptsKwds],
+):
+    def wrap(
+        fn: Callable[Concatenate[FmtWriter, P], None],
+        /,
+    ) -> Formatter[P]:
+        return Formatter(fn=fn, opts=FmtOpts(**kwds))
+
+    if fn is None:
+        return wrap
+
+    return wrap(fn)
 
 
 @dc.dataclass(frozen=True)
@@ -24,42 +56,8 @@ class Formatter[**P]:
             # course!) with `object.__setattr__`
             object.__setattr__(self, "__doc__", self.fn.__doc__)
 
-    def with_opts(
-        self,
-        *,
-        fallback: Callable[[object], str] = repr,
-        fqn: bool = True,
-        fq_builtins: bool = False,
-        items: int | None = None,
-        ellipsis: str = "...",
-        ls_sep: str = ",",
-        ls_conj: str | None = None,
-        ls_ox: bool = True,
-        type: bool = False,
-        quote: bool = False,
-        d_fmt: str = FmtOpts.DEFAULT_D_FMT,
-        t_fmt: str = FmtOpts.DEFAULT_T_FMT,
-        dt_fmt: str = FmtOpts.DEFAULT_DT_FMT,
-    ) -> Self:
-        return dc.replace(
-            self,
-            opts=dc.replace(
-                self.opts,
-                fallback=fallback,
-                fqn=fqn,
-                fq_builtins=fq_builtins,
-                items=items,
-                ellipsis=ellipsis,
-                ls_sep=ls_sep,
-                ls_conj=ls_conj,
-                ls_ox=ls_ox,
-                type=type,
-                quote=quote,
-                d_fmt=d_fmt,
-                t_fmt=t_fmt,
-                dt_fmt=dt_fmt,
-            ),
-        )
+    def with_opts(self, **kwds: Unpack[OptsKwds]) -> Self:
+        return dc.replace(self, opts=dc.replace(self.opts, **kwds))
 
     def into(self, f: FmtWriter, *args: P.args, **kwds: P.kwargs) -> None:
         # TODO  This would need handling before and after to group the output

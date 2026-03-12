@@ -15,7 +15,7 @@ import typing
 from warnings import warn
 
 from .writer import FmtWriter
-from .formatter import Formatter
+from .formatter import Formatter, formatter
 from .opts import FmtOpts
 
 __all__ = [
@@ -63,7 +63,7 @@ Separator for fully-qualified names, for example the '.' in 'typing.Any'.
 """
 
 
-@Formatter
+@formatter
 def fmt(f: FmtWriter, x: object) -> None:
     if is_typing(x):
         return fmt_type_hint.into(f, x)
@@ -77,7 +77,7 @@ def fmt(f: FmtWriter, x: object) -> None:
     f.write_obj(x)
 
 
-@Formatter
+@formatter
 def fmt_name(f: FmtWriter, named: object):
     name = (
         getattr(named, "__qualname__", None)
@@ -95,7 +95,7 @@ def fmt_name(f: FmtWriter, named: object):
     f.write(name)
 
 
-@Formatter
+@formatter
 def fmt_routine(f: FmtWriter, x: Routine) -> None:
     """
     Format a function or method for display.
@@ -143,7 +143,7 @@ def fmt_routine(f: FmtWriter, x: Routine) -> None:
     f.write("()")
 
 
-@Formatter
+@formatter
 def fmt_type(f: FmtWriter, x: type) -> None:
     if f.opts.fqn and (x.__module__ != BUILTINS_MODULE or f.opts.fq_builtins):
         f.write(x.__module__)
@@ -151,7 +151,7 @@ def fmt_type(f: FmtWriter, x: type) -> None:
     f.write(x.__qualname__)
 
 
-@Formatter
+@formatter
 def fmt_type_value(f: FmtWriter, x: object) -> None:
     with f.concat():
         fmt_type.into(f, type(x))
@@ -160,7 +160,7 @@ def fmt_type_value(f: FmtWriter, x: object) -> None:
     fmt.into(f, x)
 
 
-@Formatter
+@formatter
 def fmt_type_hint(f: FmtWriter, x: Any) -> None:
     if x is Ellipsis:
         f.write("...")

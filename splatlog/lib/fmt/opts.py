@@ -2,10 +2,29 @@ from __future__ import annotations
 import dataclasses as dc
 from typing import (
     Self,
+    TypedDict,
 )
 from collections import abc
 
 import rich.repr
+
+
+class OptsKwds(TypedDict, total=False):
+    """Keyword arguments matching :class:`FmtOpts` fields, all optional."""
+
+    fallback: abc.Callable[[object], str]
+    fqn: bool
+    fq_builtins: bool
+    items: int | None
+    ellipsis: str
+    ls_sep: str
+    ls_conj: str | None
+    ls_ox: bool
+    type: bool
+    quote: bool
+    d_fmt: str
+    t_fmt: str
+    dt_fmt: str
 
 
 @dc.dataclass(frozen=True)
