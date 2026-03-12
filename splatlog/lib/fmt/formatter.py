@@ -23,7 +23,9 @@ class Formatter[**P]:
         if self.fn.__doc__:
             object.__setattr__(self, "__doc__", self.fn.__doc__)
 
-    def with_opts(self, opts: FmtOpts | None = None, **kwds: Unpack[FmtOptsKwds]) -> Self:
+    def with_opts(
+        self, opts: FmtOpts | None = None, **kwds: Unpack[FmtOptsKwds]
+    ) -> Self:
         new_opts = self.opts
 
         if opts:
