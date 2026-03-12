@@ -13,7 +13,11 @@ from types import ModuleType
 
 from splatlog.types import ExcInfo, ToLevel, to_level
 
-__all__ = ["get_constant_docstrings", "make_log_record"]
+__all__ = [
+    "get_constant_docstrings",
+    "get_formatter_docstrings",
+    "make_log_record",
+]
 
 
 def get_constant_docstrings(module: str | ModuleType):
@@ -60,6 +64,43 @@ def get_constant_docstrings(module: str | ModuleType):
                         docstrings[target.id] = next_node.value.value
 
     return docstrings
+
+
+def get_formatter_docstrings(module: str | ModuleType):
+    """
+    Collect docstrings from {py:class}`~splatlog.lib.fmt.Formatter` instances
+    in a module for {py:mod}`doctest` discovery via the ``__test__`` dict.
+
+    ## Parameters
+
+    -   `module`: name of or reference to the module.
+
+    ## Returns
+
+    A {py:class}`dict` mapping instance names to their docstrings, suitable to
+    assign to ``__test__``.
+
+    ## Examples
+
+    ```python
+    import os
+
+    if os.environ.get("TESTING"):
+        from splatlog._testing import get_formatter_docstrings
+
+        __test__ = get_formatter_docstrings(sys.modules[__name__])
+    ```
+    """
+    from splatlog.lib.fmt.formatter import Formatter
+
+    if isinstance(module, str):
+        module = sys.modules[module]
+
+    return {
+        name: obj.__doc__
+        for name, obj in vars(module).items()
+        if isinstance(obj, Formatter) and obj.__doc__
+    }
 
 
 def make_log_record(

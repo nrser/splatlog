@@ -19,6 +19,10 @@ class Formatter[**P]:
     fn: Callable[Concatenate[FmtOpts, P], str | Iterable[str]]
     opts: FmtOpts = dc.field(default_factory=FmtOpts)
 
+    def __post_init__(self):
+        if self.fn.__doc__:
+            object.__setattr__(self, "__doc__", self.fn.__doc__)
+
     def with_opts(self, opts: FmtOpts | None = None, **kwds: Unpack[FmtOptsKwds]) -> Self:
         new_opts = self.opts
 
