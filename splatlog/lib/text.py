@@ -124,10 +124,14 @@ class FmtOpts:
     arguments.
     """
 
+    DEFAULT_D_FMT: str = "%Y-%m-%d"
+    """Default for {py:attr}`FmtOpts.d_fmt`."""
+
+    DEFAULT_T_FMT: str = "%H:%M:%S.%3f"
+    """Default for {py:attr}`FmtOpts.t_fmt`."""
+
     DEFAULT_DT_FMT: str = "%Y-%m-%d %H:%M:%S.%3f %Z"
-    """
-    Default for {py:attr}`FmtOpts.dt_fmt`.
-    """
+    """Default for {py:attr}`FmtOpts.dt_fmt`."""
 
     @classmethod
     def of(cls: type[Self], x) -> Self:
@@ -279,10 +283,14 @@ class FmtOpts:
     Add markdown-style
     """
 
+    d_fmt: str = DEFAULT_D_FMT
+    """Template for formatting {py:class}`datetime.date`."""
+
+    t_fmt: str = DEFAULT_T_FMT
+    """Template for formatting {py:class}`datetime.time`."""
+
     dt_fmt: str = DEFAULT_DT_FMT
-    """
-    Template for formatting {py:class}`datetime.datetime`.
-    """
+    """Template for formatting {py:class}`datetime.datetime`."""
 
     def __rich_repr__(self) -> rich.repr.Result:
         for field in dc.fields(self):
@@ -359,16 +367,16 @@ def get_name(x: Any, opts: FmtOpts) -> Optional[str]:
 
 
 @FmtOpts.provide
-def fmt(x: Any, opts: FmtOpts) -> str:
+def fmt(value: object, opts: FmtOpts) -> str:
     """
-    Format a value for human-readable output.
+    Format a `value` for concise, human-readable output.
 
     Dispatches to specialized formatters based on the value's type:
     typing constructs, types, and routines each have dedicated formatters.
 
     ## Parameters
 
-    -   `x`: The value to format.
+    -   `value`: The value to format.
     -   `opts`: Formatting options.
 
     ## Returns
@@ -377,7 +385,27 @@ def fmt(x: Any, opts: FmtOpts) -> str:
 
     ## Examples
 
-    -   **Types & Type Hints** — TODO
+    -   **Types & Type Hints** — Formats types by qualified name, and type
+        hints with concise shorthands:
+
+            >>> fmt(str)
+            'str'
+
+            >>> fmt(abc.Collection)
+            'collections.abc.Collection'
+
+            >>> from typing import Optional
+
+            >>> fmt(Optional[str])
+            'str?'
+
+            >>> fmt(list[int])
+            'int[]'
+
+            >>> fmt(dict[str, int])
+            '{str: int}'
+
+        See {py:func}`fmt_type` and {py:func}`fmt_type_hint` for more info.
 
     -   **Functions & Methods** — Uses {py:func}`inspect.isroutine` to detect
         functions and methods and format them clearly and concisely:
@@ -400,7 +428,13 @@ def fmt(x: Any, opts: FmtOpts) -> str:
             >>> fmt(dt.datetime(2026, 3, 10, 14, 23, 45, 123_456))
             '2026-03-10 14:23:45.123'
 
-        TODO {py:class}`datetime.date` and {py:class}`datetime.time`
+        Also handles {py:class}`datetime.date` and {py:class}`datetime.time`:
+
+            >>> fmt(dt.date(2026, 3, 10))
+            '2026-03-10'
+
+            >>> fmt(dt.time(14, 23, 45, 123_456))
+            '14:23:45.123'
 
         Produces a concise, readable rendering of {py:class}`datetime.timedelta`
         as well:
@@ -417,24 +451,30 @@ def fmt(x: Any, opts: FmtOpts) -> str:
     """
     if opts.type:
         opts = dc.replace(opts, type=False)
-        return fmt_type_value(x, opts)
+        return fmt_type_value(value, opts)
 
-    if is_typing(x):
-        return fmt_type_hint(x, opts)
+    if is_typing(value):
+        return fmt_type_hint(value, opts)
 
-    if isinstance(x, type):
-        return fmt_type(x, opts)
+    if isinstance(value, type):
+        return fmt_type(value, opts)
 
-    if isroutine(x):
-        return fmt_routine(x, opts)
+    if isroutine(value):
+        return fmt_routine(value, opts)
 
-    if isinstance(x, dt.datetime):
-        return fmt_datetime(x, opts)
+    if isinstance(value, dt.datetime):
+        return fmt_datetime(value, opts)
 
-    if isinstance(x, dt.timedelta):
-        return fmt_timedelta(x, opts)
+    if isinstance(value, dt.date):
+        return fmt_date(value, opts)
 
-    return opts.maybe_quote(opts.fallback(x))
+    if isinstance(value, dt.time):
+        return fmt_time(value, opts)
+
+    if isinstance(value, dt.timedelta):
+        return fmt_timedelta(value, opts)
+
+    return opts.maybe_quote(opts.fallback(value))
 
 
 @FmtOpts.provide
@@ -957,6 +997,67 @@ def fmt_datetime(t: dt.datetime, opts: FmtOpts) -> str:
 
     """
     fmt = opts.dt_fmt
+    if "%3f" in fmt:
+        fmt = fmt.replace("%3f", f"{t.microsecond // 1000:03d}")
+    return t.strftime(fmt).strip()
+
+
+@FmtOpts.provide
+def fmt_date(d: dt.date, opts: FmtOpts) -> str:
+    """
+    Format a {py:class}`datetime.date`.
+
+    Uses {py:attr}`FmtOpts.d_fmt` as the format string, defaulting to
+    ISO 8601 (``%Y-%m-%d``).
+
+    Examples
+    --------------------------------------------------------------------------
+
+    ```pycon
+    >>> import datetime as dt
+
+    >>> fmt_date(dt.date(2026, 3, 10))
+    '2026-03-10'
+
+    >>> fmt_date(dt.date(2026, 3, 10), d_fmt="%m/%d/%Y")
+    '03/10/2026'
+
+    >>> fmt_date(dt.date(2026, 12, 25), d_fmt="%B %d, %Y")
+    'December 25, 2026'
+
+    ```
+    """
+    return d.strftime(opts.d_fmt).strip()
+
+
+@FmtOpts.provide
+def fmt_time(t: dt.time, opts: FmtOpts) -> str:
+    """
+    Format a {py:class}`datetime.time` with sub-second directives.
+
+    Uses {py:attr}`FmtOpts.t_fmt` as the format string, defaulting to
+    `%H:%M:%S.%3f`. Supports the `%3f` directive for milliseconds, same
+    as {py:func}`fmt_datetime`.
+
+    Examples
+    --------------------------------------------------------------------------
+
+    ```pycon
+    >>> import datetime as dt
+
+    >>> fmt_time(dt.time(14, 23, 45, 123_456))
+    '14:23:45.123'
+
+    >>> fmt_time(dt.time(14, 23, 45), t_fmt="%I:%M %p")
+    '02:23 PM'
+
+    >>> fmt_time(dt.time())
+    '00:00:00.000'
+
+    ```
+
+    """
+    fmt = opts.t_fmt
     if "%3f" in fmt:
         fmt = fmt.replace("%3f", f"{t.microsecond // 1000:03d}")
     return t.strftime(fmt).strip()
