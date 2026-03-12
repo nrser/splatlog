@@ -26,6 +26,8 @@ class Formatter[T](Protocol):
 
 @overload
 def formatter[T](
+    *,
+    auto_quote: bool = True,
     **kwds: Unpack[FmtKwds],
 ) -> Callable[[FmtImpl[T]], Formatter[T]]: ...
 
@@ -37,6 +39,7 @@ def formatter[T](fn: FmtImpl[T], /) -> Formatter[T]: ...
 def formatter[T](
     fn: FmtImpl[T] | None = None,
     /,
+    auto_quote: bool = True,
     **defaults: Unpack[FmtKwds],
 ):
     default_opts = FmtOpts(**defaults)
@@ -59,13 +62,25 @@ def formatter[T](
             if kwds:
                 opts = dc.replace(opts, **kwds)
 
+            quote_result = False
+            if auto_quote and opts.quote:
+                quote_result = True
+                opts = dc.replace(opts, quote=False)
+
+            result: str
+
             match fn(x, opts):
                 case str(s):
-                    return s
+                    result = s
                 case itr if isinstance(itr, Iterable):
-                    return "".join(itr)
+                    result = "".join(itr)
                 case other:
                     assert_never(cast(Never, other), str | Iterable[str])
+
+            if quote_result:
+                return "`" + result + "`"
+
+            return result
 
         return format
 

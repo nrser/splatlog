@@ -73,7 +73,7 @@ Separator for fully-qualified names, for example the '.' in 'typing.Any'.
 """
 
 
-@formatter
+@formatter()
 def fmt(x: object, opts: FmtOpts) -> FmtResult:
     """
     Format a `value` for concise, human-readable output.
@@ -202,6 +202,7 @@ def fmt_name(x: object, opts: FmtOpts) -> str:
         opts.fqn
         and (module_name := getattr(x, "__module__", None))
         and (module_name != BUILTINS_MODULE or opts.fq_builtins)
+        and (module_name != TYPING_MODULE or opts.fq_typing)
     ):
         return f"{module_name}.{name}"
     return name
@@ -218,16 +219,33 @@ def fmt_routine(x: Routine, opts: FmtOpts) -> FmtResult:
     return opts.fallback(x)
 
 
-@formatter
+@formatter()
 def fmt_type(x: type, opts: FmtOpts) -> FmtResult:
-    if opts.fqn and (x.__module__ != BUILTINS_MODULE or opts.fq_builtins):
-        yield x.__module__
-        yield FQN_SEP
-    yield x.__qualname__
+    """
+
+    Examples
+    --------------------------------------------------------------------------
+
+        >>> fmt_type(str, quote=True)
+        '`str`'
+
+    """
+    return fmt_name(x, opts)
 
 
-@formatter
+@formatter(auto_quote=False)
 def fmt_type_value(x: object, opts: FmtOpts) -> FmtResult:
+    """
+    Examples
+    --------------------------------------------------------------------------
+
+        >>> fmt_type_value(123)
+        'int: 123'
+
+        >>> fmt_type_value(123, quote=True)
+        '`int`: `123`'
+
+    """
     yield fmt_type(type(x), opts)
     yield ": "
     yield fmt(x, opts)

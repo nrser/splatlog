@@ -55,8 +55,14 @@ class FmtOpts:
 
     fq_builtins: bool = False
     """
-    Fully-Qualified Builtins" — Whether to include the `builtins` module prefix
+    "Fully-Qualified Builtins" — Whether to include the `builtins` module prefix
     for built-in types.
+    """
+
+    fq_typing: bool = False
+    """
+    "Fully-Qualified Typing" — Whether to include the {py:mod}`typing` module
+    prefix — e.g. `typing.Any` versus `Any`.
     """
 
     items: int | None = None
