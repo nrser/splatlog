@@ -211,6 +211,44 @@ def fmt_name(x: object, opts: FmtOpts) -> str:
 
 @formatter
 def fmt_routine(x: Routine, opts: FmtOpts) -> FmtResult:
+    """
+    Format a function or method for display.
+
+    Lambdas are shown as `λ()`. Named functions include their qualified name
+    followed by `()`.
+
+    ## Parameters
+
+    -   `fn`: The function to format.
+    -   `opts`: Formatting options.
+
+    ## Returns
+
+    A formatted string like `module.func()` or `λ()`.
+
+    ## Examples
+
+    ```pycon
+    >>> import splatlog
+
+    >>> fmt_routine(splatlog.setup)
+    'splatlog.setup()'
+
+    >>> fmt_routine(splatlog.setup, fqn=False)
+    'setup()'
+
+    >>> fmt_routine(lambda x, y: x + y)
+    'λ()'
+
+    >>> def f():
+    ...     def g():
+    ...         pass
+    ...     return g
+    >>> fmt_routine(f())
+    'splatlog.lib.fmt.f.<locals>.g()'
+
+    ```
+    """
     if x.__name__ == LAMBDA_NAME:
         return "λ()"
 
@@ -223,20 +261,73 @@ def fmt_routine(x: Routine, opts: FmtOpts) -> FmtResult:
 @formatter()
 def fmt_type(x: type, opts: FmtOpts) -> FmtResult:
     """
+    Format a type for display.
 
-    Examples
-    --------------------------------------------------------------------------
+    ## Parameters
 
-        >>> fmt_type(str, quote=True)
-        '`str`'
+    -   `x`: The type to format.
+    -   `opts`: Formatting options.
 
+    ## Returns
+
+    The type's qualified name, with or without module prefix per options.
+
+    ## Examples
+
+    ```python
+    >>> from collections.abc import Collection
+    >>> fmt_type(Collection)
+    'collections.abc.Collection'
+
+    >>> fmt_type(Collection, fqn=False)
+    'Collection'
+
+    >>> fmt_type(Collection, FmtOpts(fqn=False))
+    'Collection'
+
+    >>> fmt_type(Collection, FmtOpts(fqn=False), fqn=True)
+    'collections.abc.Collection'
+
+    ```
     """
     return fmt_name(x, opts)
+
+
+@formatter
+def fmt_type_of(x: object, opts: FmtOpts) -> str:
+    """
+    Format the type of a value.
+
+    Shorthand for `fmt_type(type(x), opts)`.
+
+    ## Parameters
+
+    -   `x`: The value whose type to format.
+    -   `opts`: Formatting options.
+
+    ## Returns
+
+    The formatted type name.
+    """
+    return fmt_type(type(x), opts)
 
 
 @formatter(auto_quote=False)
 def fmt_type_value(x: object, opts: FmtOpts) -> FmtResult:
     """
+    Format the type of a value.
+
+    Shorthand for `fmt_type(type(x), opts)`.
+
+    ## Parameters
+
+    -   `x`: The value whose type to format.
+    -   `opts`: Formatting options.
+
+    ## Returns
+
+    The formatted type name.
+
     Examples
     --------------------------------------------------------------------------
 
