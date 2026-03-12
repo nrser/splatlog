@@ -23,6 +23,15 @@ __all__ = [
     "FmtOpts",
     "FmtOut",
     "fmt",
+    "fmt_name",
+    "fmt_type_value",
+    "fmt_type_hint",
+    "fmt_type",
+    "fmt_routine",
+    "fmt_datetime",
+    "fmt_date",
+    "fmt_time",
+    "fmt_timedelta",
 ]
 
 
