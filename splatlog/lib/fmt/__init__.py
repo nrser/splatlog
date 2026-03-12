@@ -1,5 +1,6 @@
-from collections.abc import Callable
+from collections.abc import Callable, Iterable, Sequence
 from inspect import isclass, isroutine
+import sys
 import types
 from typing import (
     Any,
@@ -395,6 +396,114 @@ def fmt_type_hint(x: object, opts: FmtOpts) -> FmtResult:
         return
 
     yield repr(x)
+
+
+@formatter
+def fmt_range(rng: range, opts: FmtOpts) -> str:
+    """
+    Format a range for concise display.
+
+    Short ranges (≤3 elements) are shown in full. Longer ranges show the
+    first elements and an ellipsis.
+
+    ## Parameters
+
+    -   `rng`: The range to format.
+
+    ## Returns
+
+    A string like `[0, 1, 2]` or `[0, 1, ..., 100]`.
+    """
+    length = len(rng)
+    if length <= 3:
+        return str(list(rng))
+    if rng.stop == sys.maxsize:
+        if rng.step == 1:
+            return f"[{rng[0]}, ...]"
+        return f"[{rng[0]}, {rng[1]}, ...]"
+    return f"[{rng[0]}, {rng[1]}, ..., {rng.stop}]"
+
+
+@formatter
+def fmt_list(items: Iterable, opts: FmtOpts) -> str:
+    """
+    Format a list of `items`. By default this is comma-separated, like
+    `A, B, C`.
+    """
+    if opts.ls_conj is None:
+        return f"{opts.ls_sep} ".join(fmt(item, opts) for item in items)
+
+    s = ""
+    sep_sp = f"{opts.ls_sep} "
+    ls = list(items)
+    i_end = len(ls) - 1
+    for i, item in enumerate(ls):
+        if i == i_end:
+            if opts.ls_ox:
+                s += opts.ls_sep
+            s += f" {opts.ls_conj} "
+        elif i > 0:
+            s += sep_sp
+
+        s += fmt(item, opts)
+
+    return s
+
+
+@formatter
+def fmt_seq(seq: Sequence, opts: FmtOpts) -> str:
+    """
+    Format a sequence, respecting the {py:attr}`FmtOpts.items` limit and
+    {py:attr}`FmtOpts.ellipsis` for truncation.
+
+    ## Parameters
+
+    -   `seq`: The sequence to format (list or tuple).
+    -   `opts`: Formatting options.
+
+    ## Returns
+
+    A formatted string like `[1, 2, 3]` or `(1, 2, ...)`.
+
+    ## Examples
+
+    ```python
+    >>> fmt_seq([1, 2, 3])
+    '[1, 2, 3]'
+
+    >>> fmt_seq((1, 2, 3))
+    '(1, 2, 3)'
+
+    >>> fmt_seq([1, 2, 3, 4, 5], items=3)
+    '[1, 2, 3, ...]'
+
+    >>> fmt_seq((1, 2, 3, 4, 5), items=2)
+    '(1, 2, ...)'
+
+    >>> fmt_seq([1, 2, 3, 4, 5], items=3, ellipsis='…')
+    '[1, 2, 3, …]'
+
+    >>> fmt_seq([])
+    '[]'
+
+    >>> fmt_seq(())
+    '()'
+
+    >>> fmt_seq([1, 2], items=5)
+    '[1, 2]'
+
+    ```
+    """
+    is_tuple = isinstance(seq, tuple)
+    open_bracket, close_bracket = ("(", ")") if is_tuple else ("[", "]")
+
+    if opts.items is not None and len(seq) > opts.items:
+        items = [fmt(item, opts) for item in seq[: opts.items]]
+        items.append(opts.ellipsis)
+    else:
+        items = [fmt(item, opts) for item in seq]
+
+    return open_bracket + ", ".join(items) + close_bracket
 
 
 @formatter
