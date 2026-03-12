@@ -1,5 +1,6 @@
 from collections.abc import Callable
 from inspect import isclass, isroutine
+import os
 import types
 from typing import (
     Any,
@@ -14,12 +15,12 @@ import typing
 from warnings import warn
 
 from .writer import FmtWriter
-from .func import FmtFunc
+from .formatter import Formatter
 from .opts import FmtOpts
 
 __all__ = [
     "FmtWriter",
-    "FmtFunc",
+    "Formatter",
     "FmtOpts",
 ]
 
@@ -62,7 +63,7 @@ Separator for fully-qualified names, for example the '.' in 'typing.Any'.
 """
 
 
-@FmtFunc
+@Formatter
 def fmt(f: FmtWriter, x: object) -> None:
     if is_typing(x):
         return fmt_type_hint.into(f, x)
@@ -76,35 +77,73 @@ def fmt(f: FmtWriter, x: object) -> None:
     f.write_obj(x)
 
 
-# def fmt_name(f: Formatter, x: Any):
-#     name = getattr(x, "__qualname__", None) or getattr(x, "__name__", None)
-#     if (
-#         f.fqn
-#         and (module_name := getattr(x, "__module__", None))
-#         and (module_name != BUILTINS_MODULE or f.fq_builtins)
-#     ):
-#         f.write(module_name)
-#         f.write(FQN_SEP)
-#     f.write(name)
+@Formatter
+def fmt_name(f: FmtWriter, named: object):
+    name = (
+        getattr(named, "__qualname__", None)
+        or getattr(named, "__name__", None)
+        or str(named)
+    )
+
+    if (
+        f.opts.fqn
+        and (mod_name := get_module_name(named))
+        and (mod_name != BUILTINS_MODULE or f.opts.fq_builtins)
+    ):
+        f.write(mod_name)
+        f.write(FQN_SEP)
+    f.write(name)
 
 
-@FmtFunc
+@Formatter
 def fmt_routine(f: FmtWriter, x: Routine) -> None:
+    """
+    Format a function or method for display.
+
+    Lambdas are shown as `λ()`. Named functions include their qualified name
+    followed by `()`.
+
+    ## Parameters
+
+    -   `opts`: Formatting options.
+    -   `named`: The function to format.
+
+    ## Returns
+
+    A formatted string like `module.func()` or `λ()`.
+
+    ## Examples
+
+    ```python
+    >>> import datetime
+
+    >>> fmt_routine(datetime.date.today)
+    'datetime.date.today()'
+
+    >>> fmt_routine.with_opts(fqn=False)(datetime.date.today)
+    'date.today()'
+
+    >>> fmt_routine(lambda x, y: x + y)
+    'λ()'
+
+    >>> def f():
+    ...     def g():
+    ...         pass
+    ...     return g
+    >>> fmt_routine(f())
+    'splatlog.lib.fmt.f.<locals>.g()'
+
+    ```
+    """
     if x.__name__ == LAMBDA_NAME:
         f.write("λ()")
-    else:
-        if f.opts.fqn and (
-            x.__module__ != BUILTINS_MODULE or f.opts.fq_builtins
-        ):
-            f.write(x.__module__)
-            f.write(FQN_SEP)
-        # concat: "stick" things written in this context together as one term
-        with f.concat():
-            f.write(x.__qualname__)
-            f.write("()")
+        return
+
+    fmt_name.into(f, x)
+    f.write("()")
 
 
-@FmtFunc
+@Formatter
 def fmt_type(f: FmtWriter, x: type) -> None:
     if f.opts.fqn and (x.__module__ != BUILTINS_MODULE or f.opts.fq_builtins):
         f.write(x.__module__)
@@ -112,7 +151,7 @@ def fmt_type(f: FmtWriter, x: type) -> None:
     f.write(x.__qualname__)
 
 
-@FmtFunc
+@Formatter
 def fmt_type_value(f: FmtWriter, x: object) -> None:
     with f.concat():
         fmt_type.into(f, type(x))
@@ -121,7 +160,7 @@ def fmt_type_value(f: FmtWriter, x: object) -> None:
     fmt.into(f, x)
 
 
-@FmtFunc
+@Formatter
 def fmt_type_hint(f: FmtWriter, x: Any) -> None:
     if x is Ellipsis:
         f.write("...")
@@ -217,6 +256,16 @@ def fmt_type_hint(f: FmtWriter, x: Any) -> None:
 # ============================================================================
 
 
+def get_module_name(x: object) -> str | None:
+    if mod_name := getattr(x, "__module__", None):
+        return mod_name
+
+    if self := getattr(x, "__self__", None):
+        return get_module_name(self)
+
+    return None
+
+
 def is_typing(x: Any) -> bool:
     """
     Check if a value is a typing construct (generic, type alias, etc.).
@@ -238,3 +287,12 @@ def is_builtins(x: object) -> bool:
     if isclass(x):
         return x.__module__ == BUILTINS_MODULE
     return is_builtins(type(x))
+
+
+# Testing
+# ============================================================================
+
+if os.environ.get("TESTING"):
+    from splatlog._testing import get_formatter_docstrings
+
+    __test__ = get_formatter_docstrings(__name__)

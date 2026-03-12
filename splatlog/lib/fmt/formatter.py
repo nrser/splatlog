@@ -12,9 +12,17 @@ from .chunk_io import ChunkIO, FmtOut
 
 
 @dc.dataclass(frozen=True)
-class FmtFunc[**P]:
+class Formatter[**P]:
     fn: Callable[Concatenate[FmtWriter, P], None]
     opts: FmtOpts = dc.field(default_factory=FmtOpts)
+
+    def __post_init__(self):
+        # Carry the `__doc__` along so we can doctest (after surmounting
+        # additional challenges)
+        if self.fn.__doc__:
+            # Object is already frozen (why?!?), but we can get around that (of
+            # course!) with `object.__setattr__`
+            object.__setattr__(self, "__doc__", self.fn.__doc__)
 
     def with_opts(
         self,
