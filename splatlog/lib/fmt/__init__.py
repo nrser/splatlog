@@ -96,6 +96,7 @@ def fmt(x: object, opts: FmtOpts) -> FmtOut:
     -   **Types & Type Hints** — Formats types by qualified name, and type
         hints with concise shorthands:
 
+            >>> from typing import Optional
             >>> from collections.abc import Collection
 
             >>> fmt(str)
@@ -105,7 +106,7 @@ def fmt(x: object, opts: FmtOpts) -> FmtOut:
             'collections.abc.Collection'
 
             >>> fmt(str | None)
-            'str | None'
+            'str?'
 
             >>> fmt(list[int])
             'int[]'
@@ -234,7 +235,68 @@ def fmt_type_value(x: object, opts: FmtOpts) -> FmtOut:
 
 
 @formatter
-def fmt_type_hint(x: Any, opts: FmtOpts) -> FmtOut:
+def fmt_type_hint(x: object, opts: FmtOpts) -> FmtOut:
+    """
+    Format a type hint for human-readable display.
+
+    Produces concise representations:
+
+    -   `str?` for `str | None` and `Optional[str]`
+    -   `int[]` for `list[int]`
+    -   `{str: int}` for `dict[str, int]`
+
+    ## Parameters
+
+    -   `t`: The type hint to format.
+    -   `opts`: Formatting options.
+    -   `nested`: Whether this is a nested type (used internally for
+        parenthesization).
+
+    ## Returns
+
+    A formatted string representation of the type hint.
+
+    Examples
+    ------------------------------------------------------------------------
+
+    -   **Optional types** — unions of {py:data}`None` with a _single_ other
+        type are abbreviated with a `?` suffix:
+
+            >>> fmt_type_hint(int | None)
+            'int?'
+
+            >>> fmt_type_hint(None | int)
+            'int?'
+
+        This includes construction using {py:obj}`typing.Optional`:
+
+            >>> from typing import Optional
+
+            >>> fmt_type_hint(Optional[int])
+            'int?'
+
+        We used to exclude {py:obj}`typing.Literal` from this rule, but on
+        revisit favored consistency and simplicity:
+
+            >>> from typing import Literal
+
+            >>> fmt_type_hint(Literal["some"] | None)
+            "'some'?"
+
+            >>> fmt_type_hint(Optional[Literal[123]])
+            '123?'
+
+        You can disable this feature by setting the
+        {py:attr}`~splatlog.lib.fmt.opts.FmtOpts.short_optional` option to
+        {py:data}`False`:
+
+            >>> fmt_type_hint(int | None, short_optional=False)
+            'int | None'
+
+            >>> fmt_type_hint(Optional[Literal["some"]], short_optional=False)
+            "'some' | None"
+
+    """
     if x is Ellipsis:
         yield "..."
         return
@@ -251,7 +313,7 @@ def fmt_type_hint(x: Any, opts: FmtOpts) -> FmtOut:
         # NOTE  Just gonna punt on this for now... for some reason the way
         #       Python handles generics just manages to frustrate and confuse
         #       me...
-        yield repr(x)
+        yield opts.fallback(x)
         return
 
     origin = get_origin(x)
@@ -263,12 +325,21 @@ def fmt_type_hint(x: Any, opts: FmtOpts) -> FmtOut:
         elif isclass(x):
             yield fmt_type(x, opts)
         else:
-            warn("expected typing|origin with no args to be type")
-            warn(f"received typing {x!r} with origin {origin!r}")
             yield repr(origin or x)
         return
 
-    if origin is Union or origin is Literal:
+    if origin is Union or origin is types.UnionType:
+        if opts.short_optional and len(args) == 2:
+            match [arg for arg in args if arg is not types.NoneType]:
+                case [arg]:
+                    yield fmt_type_hint(arg, opts)
+                    yield "?"
+                    return
+
+        yield " | ".join(fmt_type_hint(arg, opts) for arg in args)
+        return
+
+    if origin is Literal:
         yield " | ".join(fmt_type_hint(arg, opts) for arg in args)
         return
 
@@ -500,7 +571,7 @@ def fmt_date(d: dt.date, opts: FmtOpts) -> str:
     """
     Format a {py:class}`datetime.date`.
 
-    Uses {py:attr}`FmtOpts.d_fmt` as the format string, defaulting to
+    Uses {py:attr}`FmtOpts.date_fmt` as the format string, defaulting to
     ISO 8601 (``%Y-%m-%d``).
 
     Examples
@@ -512,15 +583,15 @@ def fmt_date(d: dt.date, opts: FmtOpts) -> str:
     >>> fmt_date(dt.date(2026, 3, 10))
     '2026-03-10'
 
-    >>> fmt_date(dt.date(2026, 3, 10), d_fmt="%m/%d/%Y")
+    >>> fmt_date(dt.date(2026, 3, 10), date_fmt="%m/%d/%Y")
     '03/10/2026'
 
-    >>> fmt_date(dt.date(2026, 12, 25), d_fmt="%B %d, %Y")
+    >>> fmt_date(dt.date(2026, 12, 25), date_fmt="%B %d, %Y")
     'December 25, 2026'
 
     ```
     """
-    return d.strftime(opts.d_fmt).strip()
+    return d.strftime(opts.date_fmt).strip()
 
 
 @formatter
@@ -528,7 +599,7 @@ def fmt_time(t: dt.time, opts: FmtOpts) -> str:
     """
     Format a {py:class}`datetime.time` with sub-second directives.
 
-    Uses {py:attr}`FmtOpts.t_fmt` as the format string, defaulting to
+    Uses {py:attr}`FmtOpts.time_fmt` as the format string, defaulting to
     `%H:%M:%S.%3f`. Supports the `%3f` directive for milliseconds, same
     as {py:func}`fmt_datetime`.
 
@@ -541,7 +612,7 @@ def fmt_time(t: dt.time, opts: FmtOpts) -> str:
     >>> fmt_time(dt.time(14, 23, 45, 123_456))
     '14:23:45.123'
 
-    >>> fmt_time(dt.time(14, 23, 45), t_fmt="%I:%M %p")
+    >>> fmt_time(dt.time(14, 23, 45), time_fmt="%I:%M %p")
     '02:23 PM'
 
     >>> fmt_time(dt.time())
@@ -550,7 +621,7 @@ def fmt_time(t: dt.time, opts: FmtOpts) -> str:
     ```
 
     """
-    fmt = opts.t_fmt
+    fmt = opts.time_fmt
     if "%3f" in fmt:
         fmt = fmt.replace("%3f", f"{t.microsecond // 1000:03d}")
     return t.strftime(fmt).strip()
@@ -581,9 +652,3 @@ def is_builtins(x: object) -> bool:
     if isclass(x):
         return x.__module__ == BUILTINS_MODULE
     return is_builtins(type(x))
-
-
-if os.environ.get("TESTING"):
-    from splatlog._testing import get_formatter_docstrings
-
-    __test__ = get_formatter_docstrings(__name__)
