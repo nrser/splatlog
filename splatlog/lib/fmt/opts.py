@@ -50,26 +50,6 @@ class FmtOpts:
     DEFAULT_DT_FMT: ClassVar[str] = "%Y-%m-%d %H:%M:%S.%3f %Z"
     """Default for {py:attr}`FmtOpts.dt_fmt`."""
 
-    @classmethod
-    def of(cls: type[Self], x) -> Self:
-        """
-        Coerce a value to a {py:class}`FmtOpts` instance.
-
-        ## Parameters
-
-        -   `x`: {py:data}`None` (returns default), an existing instance
-            (returned as-is), or a dict of field values.
-
-        ## Returns
-
-        A {py:class}`FmtOpts` instance.
-        """
-        if x is None:
-            return cls()
-        if isinstance(x, cls):
-            return x
-        return cls(**x)
-
     fallback: abc.Callable[[object], FmtOut] = repr
     """Fallback formatter when no specific formatter applies."""
 

@@ -15,10 +15,11 @@ import typing
 from warnings import warn
 import datetime as dt
 
-from .formatter import Formatter
+from .formatter import Formatter, formatter
 from .opts import FmtOpts, FmtOut
 
 __all__ = [
+    "formatter",
     "Formatter",
     "FmtOpts",
     "FmtOut",
@@ -73,8 +74,8 @@ Separator for fully-qualified names, for example the '.' in 'typing.Any'.
 """
 
 
-@Formatter
-def fmt(opts: FmtOpts, x: object) -> FmtOut:
+@formatter
+def fmt(x: object, opts: FmtOpts) -> FmtOut:
     """
     Format a `value` for concise, human-readable output.
 
@@ -157,31 +158,31 @@ def fmt(opts: FmtOpts, x: object) -> FmtOut:
         {py:func}`fmt_timedelta` has more information and examples.
     """
     if is_typing(x):
-        return fmt_type_hint.with_opts(opts)(x)
+        return fmt_type_hint(x, opts)
 
     if isinstance(x, type):
-        return fmt_type.with_opts(opts)(x)
+        return fmt_type(x, opts)
 
     if isroutine(x):
-        return fmt_routine.with_opts(opts)(x)
+        return fmt_routine(x, opts)
 
     if isinstance(x, dt.datetime):
-        return fmt_datetime.with_opts(opts)(x)
+        return fmt_datetime(x, opts)
 
     if isinstance(x, dt.date):
-        return fmt_date.with_opts(opts)(x)
+        return fmt_date(x, opts)
 
     if isinstance(x, dt.time):
-        return fmt_time.with_opts(opts)(x)
+        return fmt_time(x, opts)
 
     if isinstance(x, dt.timedelta):
-        return fmt_timedelta.with_opts(opts)(x)
+        return fmt_timedelta(x, opts)
 
     return opts.fallback(x)
 
 
-@Formatter
-def fmt_name(opts: FmtOpts, x: object) -> str:
+@formatter
+def fmt_name(x: object, opts: FmtOpts) -> str:
     """
     Get the qualified name of an object, optionally with module prefix.
 
@@ -206,34 +207,34 @@ def fmt_name(opts: FmtOpts, x: object) -> str:
     return name
 
 
-@Formatter
-def fmt_routine(opts: FmtOpts, x: Routine) -> FmtOut:
+@formatter
+def fmt_routine(x: Routine, opts: FmtOpts) -> FmtOut:
     if x.__name__ == LAMBDA_NAME:
         return "λ()"
 
-    if name := fmt_name.with_opts(opts)(x):
+    if name := fmt_name(x, opts):
         return name + "()"
 
     return opts.fallback(x)
 
 
-@Formatter
-def fmt_type(opts: FmtOpts, x: type) -> FmtOut:
+@formatter
+def fmt_type(x: type, opts: FmtOpts) -> FmtOut:
     if opts.fqn and (x.__module__ != BUILTINS_MODULE or opts.fq_builtins):
         yield x.__module__
         yield FQN_SEP
     yield x.__qualname__
 
 
-@Formatter
-def fmt_type_value(opts: FmtOpts, x: object) -> FmtOut:
-    yield fmt_type.with_opts(opts)(type(x))
+@formatter
+def fmt_type_value(x: object, opts: FmtOpts) -> FmtOut:
+    yield fmt_type(type(x), opts)
     yield ": "
-    yield fmt.with_opts(opts)(x)
+    yield fmt(x, opts)
 
 
-@Formatter
-def fmt_type_hint(opts: FmtOpts, x: Any) -> FmtOut:
+@formatter
+def fmt_type_hint(x: Any, opts: FmtOpts) -> FmtOut:
     if x is Ellipsis:
         yield "..."
         return
@@ -258,9 +259,9 @@ def fmt_type_hint(opts: FmtOpts, x: Any) -> FmtOut:
 
     if args == ():
         if isclass(origin):
-            yield fmt_type.with_opts(opts)(origin)
+            yield fmt_type(origin, opts)
         elif isclass(x):
-            yield fmt_type.with_opts(opts)(x)
+            yield fmt_type(x, opts)
         else:
             warn("expected typing|origin with no args to be type")
             warn(f"received typing {x!r} with origin {origin!r}")
@@ -268,48 +269,48 @@ def fmt_type_hint(opts: FmtOpts, x: Any) -> FmtOut:
         return
 
     if origin is Union or origin is Literal:
-        yield " | ".join(fmt_type_hint.with_opts(opts)(arg) for arg in args)
+        yield " | ".join(fmt_type_hint(arg, opts) for arg in args)
         return
 
     if origin is dict:
         yield "{"
-        yield fmt_type_hint.with_opts(opts)(args[0])
+        yield fmt_type_hint(args[0], opts)
         yield ": "
-        yield fmt_type_hint.with_opts(opts)(args[1])
+        yield fmt_type_hint(args[1], opts)
         yield "}"
         if len(args) > 2:
             warn(f"`dict` typing has more than 2 args: {args!r}")
         return
 
     if origin is list:
-        yield fmt_type_hint.with_opts(opts)(args[0])
+        yield fmt_type_hint(args[0], opts)
         yield "[]"
         return
 
     if origin is tuple:
         yield "("
-        yield ", ".join(fmt_type_hint.with_opts(opts)(arg) for arg in args)
+        yield ", ".join(fmt_type_hint(arg, opts) for arg in args)
         yield ")"
         return
 
     if origin is set:
         yield "{"
-        yield ", ".join(fmt_type_hint.with_opts(opts)(arg) for arg in args)
+        yield ", ".join(fmt_type_hint(arg, opts) for arg in args)
         yield "}"
         return
 
     if origin is Callable:
         yield "("
-        yield ", ".join(fmt_type_hint.with_opts(opts)(arg) for arg in args[0])
+        yield ", ".join(fmt_type_hint(arg, opts) for arg in args[0])
         yield ") -> "
-        yield fmt_type_hint.with_opts(opts)(args[1])
+        yield fmt_type_hint(args[1], opts)
         return
 
     yield repr(x)
 
 
-@Formatter
-def fmt_timedelta(opts: FmtOpts, td: dt.timedelta) -> str:
+@formatter
+def fmt_timedelta(td: dt.timedelta, opts: FmtOpts) -> str:
     """Format a {py:class}`datetime.timedelta` as a compact human-readable
     string with millisecond precision.
 
@@ -393,7 +394,7 @@ def fmt_timedelta(opts: FmtOpts, td: dt.timedelta) -> str:
     ```
     """
     if td < dt.timedelta(0):
-        return "-" + fmt_timedelta.with_opts(opts)(-td)
+        return "-" + fmt_timedelta(-td, opts)
 
     days = td.days
     hours, rem = divmod(td.seconds, 3600)
@@ -415,8 +416,8 @@ def fmt_timedelta(opts: FmtOpts, td: dt.timedelta) -> str:
     return s
 
 
-@Formatter
-def fmt_datetime(opts: FmtOpts, t: dt.datetime) -> str:
+@formatter
+def fmt_datetime(t: dt.datetime, opts: FmtOpts) -> str:
     """
     Format a {py:class}`datetime.datetime` with sub-second directives.
 
@@ -456,23 +457,23 @@ def fmt_datetime(opts: FmtOpts, t: dt.datetime) -> str:
 
     Extract just the milliseconds:
 
-        >>> fmt_datetime.with_opts(dt_fmt="%3f ms")(t)
+        >>> fmt_datetime(t, dt_fmt="%3f ms")
         '123 ms'
 
     Mixed with standard directives:
 
-        >>> fmt_datetime.with_opts(dt_fmt="%H:%M:%S.%3f")(t)
+        >>> fmt_datetime(t, dt_fmt="%H:%M:%S.%3f")
         '14:23:45.123'
 
     Standard ``%f`` (microseconds) still works:
 
-        >>> fmt_datetime.with_opts(dt_fmt="%H:%M:%S.%f")(t)
+        >>> fmt_datetime(t, dt_fmt="%H:%M:%S.%f")
         '14:23:45.123456'
 
     No custom directives — passes through to
     {py:meth}`~datetime.datetime.strftime`:
 
-        >>> fmt_datetime.with_opts(dt_fmt="%X")(t)
+        >>> fmt_datetime(t, dt_fmt="%X")
         '14:23:45'
 
     With timezone:
@@ -494,8 +495,8 @@ def fmt_datetime(opts: FmtOpts, t: dt.datetime) -> str:
     return t.strftime(fmt).strip()
 
 
-@Formatter
-def fmt_date(opts: FmtOpts, d: dt.date) -> str:
+@formatter
+def fmt_date(d: dt.date, opts: FmtOpts) -> str:
     """
     Format a {py:class}`datetime.date`.
 
@@ -511,10 +512,10 @@ def fmt_date(opts: FmtOpts, d: dt.date) -> str:
     >>> fmt_date(dt.date(2026, 3, 10))
     '2026-03-10'
 
-    >>> fmt_date.with_opts(d_fmt="%m/%d/%Y")(dt.date(2026, 3, 10))
+    >>> fmt_date(dt.date(2026, 3, 10), d_fmt="%m/%d/%Y")
     '03/10/2026'
 
-    >>> fmt_date.with_opts(d_fmt="%B %d, %Y")(dt.date(2026, 12, 25))
+    >>> fmt_date(dt.date(2026, 12, 25), d_fmt="%B %d, %Y")
     'December 25, 2026'
 
     ```
@@ -522,8 +523,8 @@ def fmt_date(opts: FmtOpts, d: dt.date) -> str:
     return d.strftime(opts.d_fmt).strip()
 
 
-@Formatter
-def fmt_time(opts: FmtOpts, t: dt.time) -> str:
+@formatter
+def fmt_time(t: dt.time, opts: FmtOpts) -> str:
     """
     Format a {py:class}`datetime.time` with sub-second directives.
 
@@ -540,7 +541,7 @@ def fmt_time(opts: FmtOpts, t: dt.time) -> str:
     >>> fmt_time(dt.time(14, 23, 45, 123_456))
     '14:23:45.123'
 
-    >>> fmt_time.with_opts(t_fmt="%I:%M %p")(dt.time(14, 23, 45))
+    >>> fmt_time(dt.time(14, 23, 45), t_fmt="%I:%M %p")
     '02:23 PM'
 
     >>> fmt_time(dt.time())
