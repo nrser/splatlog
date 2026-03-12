@@ -59,8 +59,12 @@ extensions = [
     "sphinx.ext.intersphinx",
 ]
 
-# Trying to get indented (non-fenced) code blocks highlighted, no dice
-highlight_language = "python-console"
+# TODO  Trying to get indented (non-fenced) code blocks highlighted, not
+#       working.
+#
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-highlight_language
+# https://pygments.org/docs/lexers/#pygments.lexers.python.PythonConsoleLexer
+highlight_language = "pycon"
 
 # Extension Options
 # ----------------------------------------------------------------------------
