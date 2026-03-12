@@ -14,14 +14,15 @@ from typing import (
 import typing
 from warnings import warn
 
-from .writer import FmtWriter
+from .writer import Writer
 from .formatter import Formatter, formatter
-from .opts import FmtOpts
+from .opts import Opts
 
 __all__ = [
-    "FmtWriter",
+    "Writer",
     "Formatter",
-    "FmtOpts",
+    "Opts",
+    "formatter",
 ]
 
 
@@ -64,7 +65,7 @@ Separator for fully-qualified names, for example the '.' in 'typing.Any'.
 
 
 @formatter
-def fmt(f: FmtWriter, x: object) -> None:
+def fmt(f: Writer, x: object) -> None:
     if is_typing(x):
         return fmt_type_hint.into(f, x)
 
@@ -78,7 +79,7 @@ def fmt(f: FmtWriter, x: object) -> None:
 
 
 @formatter
-def fmt_name(f: FmtWriter, named: object):
+def fmt_name(f: Writer, named: object):
     name = (
         getattr(named, "__qualname__", None)
         or getattr(named, "__name__", None)
@@ -96,7 +97,7 @@ def fmt_name(f: FmtWriter, named: object):
 
 
 @formatter
-def fmt_routine(f: FmtWriter, x: Routine) -> None:
+def fmt_routine(f: Writer, x: Routine) -> None:
     """
     Format a function or method for display.
 
@@ -144,7 +145,7 @@ def fmt_routine(f: FmtWriter, x: Routine) -> None:
 
 
 @formatter
-def fmt_type(f: FmtWriter, x: type) -> None:
+def fmt_type(f: Writer, x: type) -> None:
     if f.opts.fqn and (x.__module__ != BUILTINS_MODULE or f.opts.fq_builtins):
         f.write(x.__module__)
         f.write(FQN_SEP)
@@ -152,7 +153,7 @@ def fmt_type(f: FmtWriter, x: type) -> None:
 
 
 @formatter
-def fmt_type_value(f: FmtWriter, x: object) -> None:
+def fmt_type_value(f: Writer, x: object) -> None:
     with f.concat():
         fmt_type.into(f, type(x))
         f.write(":")
@@ -161,7 +162,7 @@ def fmt_type_value(f: FmtWriter, x: object) -> None:
 
 
 @formatter
-def fmt_type_hint(f: FmtWriter, x: Any) -> None:
+def fmt_type_hint(f: Writer, x: Any) -> None:
     if x is Ellipsis:
         f.write("...")
         return

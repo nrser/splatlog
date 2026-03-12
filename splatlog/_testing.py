@@ -91,7 +91,7 @@ def get_formatter_docstrings(module: str | ModuleType):
         __test__ = get_formatter_docstrings(sys.modules[__name__])
     ```
     """
-    from splatlog.lib.fmt.formatter import Formatter
+    from splatlog.lib.txt.formatter import Formatter
 
     if isinstance(module, str):
         module = sys.modules[module]

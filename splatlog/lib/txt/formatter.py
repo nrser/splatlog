@@ -8,34 +8,34 @@ from typing import (
     overload,
 )
 
-from .opts import FmtOpts, OptsKwds
-from .writer import FmtWriter
+from .opts import Opts, OptsKwds
+from .writer import Writer
 from .chunk_io import ChunkIO, FmtOut
 
 
 @overload
 def formatter[**P](
     **kwds: Unpack[OptsKwds],
-) -> Callable[[Callable[Concatenate[FmtWriter, P], None]], Formatter[P]]: ...
+) -> Callable[[Callable[Concatenate[Writer, P], None]], Formatter[P]]: ...
 
 
 @overload
 def formatter[**P](
-    fn: Callable[Concatenate[FmtWriter, P], None],
+    fn: Callable[Concatenate[Writer, P], None],
     /,
 ) -> Formatter[P]: ...
 
 
 def formatter[**P](
-    fn: Callable[Concatenate[FmtWriter, P], None] | None = None,
+    fn: Callable[Concatenate[Writer, P], None] | None = None,
     /,
     **kwds: Unpack[OptsKwds],
 ):
     def wrap(
-        fn: Callable[Concatenate[FmtWriter, P], None],
+        fn: Callable[Concatenate[Writer, P], None],
         /,
     ) -> Formatter[P]:
-        return Formatter(fn=fn, opts=FmtOpts(**kwds))
+        return Formatter(fn=fn, opts=Opts(**kwds))
 
     if fn is None:
         return wrap
@@ -45,8 +45,8 @@ def formatter[**P](
 
 @dc.dataclass(frozen=True)
 class Formatter[**P]:
-    fn: Callable[Concatenate[FmtWriter, P], None]
-    opts: FmtOpts = dc.field(default_factory=FmtOpts)
+    fn: Callable[Concatenate[Writer, P], None]
+    opts: Opts = dc.field(default_factory=Opts)
 
     def __post_init__(self):
         # Carry the `__doc__` along so we can doctest (after surmounting
@@ -59,13 +59,13 @@ class Formatter[**P]:
     def with_opts(self, **kwds: Unpack[OptsKwds]) -> Self:
         return dc.replace(self, opts=dc.replace(self.opts, **kwds))
 
-    def into(self, f: FmtWriter, *args: P.args, **kwds: P.kwargs) -> None:
+    def into(self, f: Writer, *args: P.args, **kwds: P.kwargs) -> None:
         # TODO  This would need handling before and after to group the output
         #       from the call together
         self.fn(f, *args, **kwds)
 
     def __call__(self, *args: P.args, **kwds: P.kwargs) -> FmtOut:
         io = ChunkIO()
-        f = FmtWriter(io=io, opts=self.opts)
+        f = Writer(io=io, opts=self.opts)
         self.into(f, *args, **kwds)
         return io.getvalue()

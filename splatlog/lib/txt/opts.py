@@ -28,7 +28,7 @@ class OptsKwds(TypedDict, total=False):
 
 
 @dc.dataclass(frozen=True)
-class FmtOpts:
+class Opts:
     """
     Options controlling text formatting behavior.
 
