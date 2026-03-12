@@ -16,16 +16,26 @@ thinking of operating on them as collections of characters/bytes.
 
 from __future__ import annotations
 from collections import defaultdict
-from typing import Any, Optional, TypeVar, Union, overload
+from typing import Optional, cast, overload
 from collections.abc import Callable, Iterable, Mapping, Container
 
 from splatlog.lib.text import fmt, fmt_list, fmt_type_of
 
-T = TypeVar("T")
-TEntry = TypeVar("TEntry")
-TNotFound = TypeVar("TNotFound")
-TKey = TypeVar("TKey")
-TValue = TypeVar("TValue")
+# Types
+# ============================================================================
+
+type RecursiveIterable[T] = Iterable[T | RecursiveIterable[T]]
+"""
+Generic recursively-nested {py:class}`~collections.abc.Iterable` of items of
+type `T`.
+
+Examples
+----------------------------------------------------------------------------
+
+```py
+strings: RecursiveIterable[str] = ["hey", ["ho", ["let's", "go"]]]
+```
+"""
 
 # Constants
 # ============================================================================
@@ -43,40 +53,19 @@ ERR_MSG_UNARY_MANY = (
 # ============================================================================
 
 
-def default_each_descend(target: Any) -> bool:
-    """
-    Default predicate for determining if a value should be descended into.
-
-    Returns {py:data}`True` for iterables except strings and byte sequences,
-    which are treated as leaf values.
-
-    ## Parameters
-
-    -   `target`: The value to check.
-
-    ## Returns
-
-    {py:data}`True` if `target` is iterable but not a `str`, `bytes`, or
-    `bytearray`.
-    """
-    return isinstance(target, Iterable) and not isinstance(
-        target, (str, bytes, bytearray)
-    )
+@overload
+def find[T](
+    predicate: Callable[[T], bool], iterable: Iterable[T]
+) -> Optional[T]: ...
 
 
 @overload
-def find(
-    predicate: Callable[[TEntry], bool], iterable: Iterable[TEntry]
-) -> Optional[TEntry]: ...
-
-
-@overload
-def find(
-    predicate: Callable[[TEntry], bool],
-    iterable: Iterable[TEntry],
+def find[T, E](
+    predicate: Callable[[T], bool],
+    iterable: Iterable[T],
     *,
-    not_found: TNotFound,
-) -> Union[TEntry, TNotFound]: ...
+    not_found: E,
+) -> T | E: ...
 
 
 def find(predicate, iterable, *, not_found=None):
@@ -115,10 +104,10 @@ def find(predicate, iterable, *, not_found=None):
     return not_found
 
 
-def partition_mapping(
-    mapping: Mapping[TKey, TValue],
-    by: Container | Callable[[TKey], bool],
-) -> tuple[dict[TKey, TValue], dict[TKey, TValue]]:
+def partition_mapping[K, V](
+    mapping: Mapping[K, V],
+    by: Container | Callable[[K], bool],
+) -> tuple[dict[K, V], dict[K, V]]:
     """
     Partition a mapping into two dicts based on key membership.
 
@@ -131,8 +120,8 @@ def partition_mapping(
 
     ## Returns
 
-    A tuple of two dicts: the first contains entries where the key matched
-    `by`, the second contains the remaining entries.
+    A tuple of two dicts: the first contains items where the key matched
+    `by`, the second contains the remaining items.
 
     ## Examples
 
@@ -174,25 +163,25 @@ def partition_mapping(
     return (inside, outside)
 
 
-def group_by(
-    iterable: Iterable[TEntry], get_key: Callable[[TEntry], TKey]
-) -> dict[TKey, list[TEntry]]:
+def group_by[T, K](
+    iterable: Iterable[T], get_key: Callable[[T], K]
+) -> dict[K, list[T]]:
     """
-    Group entries by a key function.
+    Group items by a key function.
 
-    Aggregates entries into lists indexed by the result of `get_key`.
+    Aggregates items into lists indexed by the result of `get_key`.
 
     > **Note:** This differs from {py:func}`itertools.groupby`, which only
     > groups consecutive elements with the same key.
 
     ## Parameters
 
-    -   `iterable`: The entries to group.
+    -   `iterable`: The items to group.
     -   `get_key`: A function that extracts the grouping key from each entry.
 
     ## Returns
 
-    A dict mapping each unique key to a list of entries with that key.
+    A dict mapping each unique key to a list of items with that key.
 
     ## Examples
 
@@ -221,7 +210,7 @@ def group_by(
     return dict(groups.items())
 
 
-def unary(
+def unary[T](
     iterable: Iterable[T],
     *,
     empty_msg: str = ERR_MSG_UNARY_EMPTY,
@@ -315,3 +304,42 @@ def unary(
             items=fmt_list((first, second), quote=True),
         )
     )
+
+
+def iter_flat[T](
+    itr: RecursiveIterable[T],
+    *,
+    no_iter: type | tuple[type, ...] = (str, bytes, bytearray),
+) -> Iterable[T]:
+    """
+    Depth-first iteration of recursively nested
+    {py:class}`~collections.abc.Iterable` of some type `T`.
+
+    :::{warning}
+
+    This function is not really type-sound, as `T` can of course itself be
+    {py:class}`~collections.abc.Iterable`.
+
+    📋 If `T` is an {py:class}`~collections.abc.Iterable` then the concrete
+    {py:class}`type` of `T` **_must_** be included in the `no_iter` list.
+
+    {py:class}`str`, {py:class}`bytes`, and {py:class}`bytearray` are covered by
+    default, but anything else is on you.
+
+    :::
+
+    Parameters
+    --------------------------------------------------------------------------
+
+    -   `itr`: top-level {py:class}`~collections.abc.Iterable` to start at.
+    -   `no_iter`: type or types that are {py:class}`~collections.abc.Iterable`
+        but should be treated as items.
+
+    """
+    for item in itr:
+        if isinstance(item, Iterable) and not isinstance(item, no_iter):
+            yield from iter_flat(item, no_iter=no_iter)
+        else:
+            # NOTE  Not type-sound, as `T` may itself be `Iterable`, so we need
+            #       to force our invariant on the type checker with a `cast`
+            yield cast(T, item)

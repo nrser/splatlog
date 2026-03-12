@@ -1,30 +1,64 @@
 from __future__ import annotations
-from collections.abc import Callable
 import dataclasses as dc
-from typing import ClassVar, Concatenate, Self
+from typing import (
+    Self,
+)
+from collections import abc
+
+import rich.repr
 
 
 @dc.dataclass(frozen=True)
-class Formatter[**P, R]:
-    DEFAULT_D_FMT: ClassVar[str] = "%Y-%m-%d"
+class FmtOpts:
+    """
+    Options controlling text formatting behavior.
+
+    This is a frozen dataclass; use {py:func}`dataclasses.replace` to create
+    modified copies. The {py:meth}`provide` decorator allows functions to
+    accept these options either as a final positional argument or as keyword
+    arguments.
+    """
+
+    DEFAULT_D_FMT: str = "%Y-%m-%d"
     """Default for {py:attr}`FmtOpts.d_fmt`."""
 
-    DEFAULT_T_FMT: ClassVar[str] = "%H:%M:%S.%3f"
+    DEFAULT_T_FMT: str = "%H:%M:%S.%3f"
     """Default for {py:attr}`FmtOpts.t_fmt`."""
 
-    DEFAULT_DT_FMT: ClassVar[str] = "%Y-%m-%d %H:%M:%S.%3f %Z"
+    DEFAULT_DT_FMT: str = "%Y-%m-%d %H:%M:%S.%3f %Z"
     """Default for {py:attr}`FmtOpts.dt_fmt`."""
 
-    fn: Callable[Concatenate[Formatter, P], R]
+    @classmethod
+    def of(cls: type[Self], x) -> Self:
+        """
+        Coerce a value to a {py:class}`FmtOpts` instance.
 
-    fallback: Callable[[object], str] = repr
+        ## Parameters
+
+        -   `x`: {py:data}`None` (returns default), an existing instance
+            (returned as-is), or a dict of field values.
+
+        ## Returns
+
+        A {py:class}`FmtOpts` instance.
+        """
+        if x is None:
+            return cls()
+        if isinstance(x, cls):
+            return x
+        return cls(**x)
+
+    fallback: abc.Callable[[object], str] = repr
     """Fallback formatter when no specific formatter applies."""
 
-    module_names: bool = True
+    fqn: bool = True
     """Whether to include module names in formatted output."""
 
-    omit_builtins: bool = True
-    """Whether to omit the `builtins` module prefix for built-in types."""
+    fq_builtins: bool = False
+    """
+    Fully-Qualified Builtins" — Whether to include the `builtins` module prefix
+    for built-in types.
+    """
 
     items: int | None = None
     """
@@ -79,44 +113,13 @@ class Formatter[**P, R]:
     dt_fmt: str = DEFAULT_DT_FMT
     """Template for formatting {py:class}`datetime.datetime`."""
 
-    def opts(
-        self,
-        *,
-        fallback: Callable[[object], str] = repr,
-        module_names: bool = True,
-        omit_builtins: bool = True,
-        items: int | None = None,
-        ellipsis: str = "...",
-        ls_sep: str = ",",
-        ls_conj: str | None = None,
-        ls_ox: bool = True,
-        type: bool = False,
-        quote: bool = False,
-        d_fmt: str = DEFAULT_D_FMT,
-        t_fmt: str = DEFAULT_T_FMT,
-        dt_fmt: str = DEFAULT_DT_FMT,
-    ) -> Self:
-        return dc.replace(
-            self,
-            fallback=fallback,
-            module_names=module_names,
-            omit_builtins=omit_builtins,
-            items=items,
-            ellipsis=ellipsis,
-            ls_sep=ls_sep,
-            ls_conj=ls_conj,
-            ls_ox=ls_ox,
-            type=type,
-            quote=quote,
-            d_fmt=d_fmt,
-            t_fmt=t_fmt,
-            dt_fmt=dt_fmt,
-        )
+    def __rich_repr__(self) -> rich.repr.Result:
+        for field in dc.fields(self):
+            value = getattr(self, field.name)
+            if value != field.default:
+                yield field.name, value
 
-    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R:
-        return self.fn(self, *args, **kwargs)
-
-
-@Formatter
-def fmt_obj(fmt: Formatter, value: object) -> str:
-    return fmt.fallback(object)
+    def maybe_quote(self, term: str) -> str:
+        if self.quote:
+            return "`" + term + "`"
+        return term
