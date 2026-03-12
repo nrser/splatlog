@@ -2,7 +2,6 @@ from __future__ import annotations
 import dataclasses as dc
 from typing import (
     ClassVar,
-    Self,
     TypedDict,
 )
 from collections import abc
