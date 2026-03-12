@@ -34,6 +34,9 @@ class Formatter[**P]:
         if kwds:
             new_opts = dc.replace(new_opts, **kwds)
 
+        if new_opts is self.opts:
+            return self
+
         return dc.replace(self, opts=new_opts)
 
     def __call__(self, *args: P.args, **kwds: P.kwargs) -> str:
