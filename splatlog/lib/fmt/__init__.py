@@ -14,14 +14,14 @@ import typing
 from warnings import warn
 import datetime as dt
 
-from .formatter import Formatter, formatter
-from .opts import FmtOpts, FmtOut
+from .formatter import Formatter, formatter, FmtResult
+from .opts import FmtOpts
 
 __all__ = [
     "formatter",
     "Formatter",
     "FmtOpts",
-    "FmtOut",
+    "FmtResult",
     "fmt",
     "fmt_name",
     "fmt_type_value",
@@ -74,7 +74,7 @@ Separator for fully-qualified names, for example the '.' in 'typing.Any'.
 
 
 @formatter
-def fmt(x: object, opts: FmtOpts) -> FmtOut:
+def fmt(x: object, opts: FmtOpts) -> FmtResult:
     """
     Format a `value` for concise, human-readable output.
 
@@ -208,7 +208,7 @@ def fmt_name(x: object, opts: FmtOpts) -> str:
 
 
 @formatter
-def fmt_routine(x: Routine, opts: FmtOpts) -> FmtOut:
+def fmt_routine(x: Routine, opts: FmtOpts) -> FmtResult:
     if x.__name__ == LAMBDA_NAME:
         return "λ()"
 
@@ -219,7 +219,7 @@ def fmt_routine(x: Routine, opts: FmtOpts) -> FmtOut:
 
 
 @formatter
-def fmt_type(x: type, opts: FmtOpts) -> FmtOut:
+def fmt_type(x: type, opts: FmtOpts) -> FmtResult:
     if opts.fqn and (x.__module__ != BUILTINS_MODULE or opts.fq_builtins):
         yield x.__module__
         yield FQN_SEP
@@ -227,14 +227,14 @@ def fmt_type(x: type, opts: FmtOpts) -> FmtOut:
 
 
 @formatter
-def fmt_type_value(x: object, opts: FmtOpts) -> FmtOut:
+def fmt_type_value(x: object, opts: FmtOpts) -> FmtResult:
     yield fmt_type(type(x), opts)
     yield ": "
     yield fmt(x, opts)
 
 
 @formatter
-def fmt_type_hint(x: object, opts: FmtOpts) -> FmtOut:
+def fmt_type_hint(x: object, opts: FmtOpts) -> FmtResult:
     """
     Format a type hint for human-readable display.
 

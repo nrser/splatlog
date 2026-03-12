@@ -8,8 +8,6 @@ from collections import abc
 
 import rich.repr
 
-type FmtOut = str | abc.Iterable[str]
-
 
 class FmtKwds(TypedDict, total=False):
     """Keyword arguments matching :class:`FmtOpts` fields, all optional."""
