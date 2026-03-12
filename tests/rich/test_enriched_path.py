@@ -1,11 +1,8 @@
 """Tests for splatlog.rich.enrich.enriched_path module."""
 
-import sys
 from io import StringIO
 from pathlib import Path, PurePosixPath
-from unittest.mock import patch
 
-import pytest
 from rich.console import Console
 
 from splatlog.rich.enrich.enriched_path import EnrichedPath, _shorten
