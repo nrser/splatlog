@@ -28,7 +28,6 @@ from typing import (
     runtime_checkable,
     Never,
 )
-import typing
 from collections.abc import Mapping, Callable
 
 # TypeIs was added to stdlib typing in 3.13
@@ -51,10 +50,6 @@ if TYPE_CHECKING:
 
 # Helpers
 # ============================================================================
-
-_ASSERT_NEVER_REPR_MAX_LENGTH: int = getattr(
-    typing, "_ASSERT_NEVER_REPR_MAX_LENGTH", 100
-)
 
 
 def assert_never(arg: Never, typ: Any) -> Never:

@@ -121,18 +121,20 @@ def enrich(value, inline=False) -> RenderableType:
         else:
             return repr_highlight(value)
 
-    fallback = repr_highlight if inline else Pretty
-
     if isclass(value):
         return enrich_type(value)
 
     if isroutine(value):
-        return fmt_routine(value, fallback=fallback)
+        # TODO  This could/should be better
+        return repr_highlight(fmt_routine(value))
 
     if isinstance(value, Path):
         return enrich_path(value)
 
-    return fallback(value)
+    if inline:
+        return repr_highlight(value)
+
+    return Pretty(value)
 
 
 # Supporting Functions

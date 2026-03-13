@@ -65,14 +65,14 @@ Routine = (
     | types.ClassMethodDescriptorType
 )
 
-BUILTINS_MODULE = object.__module__
+BUILTINS_MODULE_NAME = object.__module__
 """
 The module name for built-in types (e.g., `str`, `int`).
 
 The name is `'builtins'` but we read it from `object.__module__`.
 """
 
-TYPING_MODULE = typing.__name__
+TYPING_MODULE_NAME = typing.__name__
 """
 The module name of the {py:mod}`typing` module.
 
@@ -220,8 +220,8 @@ def fmt_name(x: object, opts: FmtOpts) -> str:
     if (
         opts.fqn
         and (module_name := getattr(x, "__module__", None))
-        and (module_name != BUILTINS_MODULE or opts.fq_builtins)
-        and (module_name != TYPING_MODULE or opts.fq_typing)
+        and (module_name != BUILTINS_MODULE_NAME or opts.fq_builtins)
+        and (module_name != TYPING_MODULE_NAME or opts.fq_typing)
     ):
         return f"{module_name}.{name}"
     return name
@@ -263,7 +263,7 @@ def fmt_routine(x: Routine, opts: FmtOpts) -> FmtResult:
     ...         pass
     ...     return g
     >>> fmt_routine(f())
-    'splatlog.lib.fmt.f.<locals>.g()'
+    'splatlog.lib.text.fmt_impl.f.<locals>.g()'
 
     ```
     """
@@ -887,11 +887,18 @@ def is_typing(x: Any) -> bool:
     {py:data}`True` if `x` appears to be from the `typing` module.
     """
     return bool(
-        get_origin(x) or get_args(x) or type(x).__module__ == TYPING_MODULE
+        get_origin(x) or get_args(x) or type(x).__module__ == TYPING_MODULE_NAME
     )
 
 
-def is_builtins(x: object) -> bool:
-    if isclass(x):
-        return x.__module__ == BUILTINS_MODULE
-    return is_builtins(type(x))
+def is_builtins(obj: object) -> bool:
+    """
+    Is an {py:class}`object` `obj` part of the {py:mod}`builtins` package of
+    all "built-in" identifiers of Python.
+
+    I'm not sure that we can always tell, but we try!
+    """
+
+    if isclass(obj):
+        return obj.__module__ == BUILTINS_MODULE_NAME
+    return type(obj).__module__ == BUILTINS_MODULE_NAME

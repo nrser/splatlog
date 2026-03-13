@@ -13,7 +13,7 @@ from rich.text import Text
 from rich.measure import Measurement
 from splatlog.lib.functions import SlotCachedProperty
 
-from splatlog.lib.text import BUILTINS_MODULE, fmt_type
+from splatlog.lib.text import is_builtins, fmt_type
 
 _MODULE_STYLE = "inspect.class"
 _CLASS_STYLE = "repr.tag_name"
@@ -69,7 +69,7 @@ class EnrichedType:
     @SlotCachedProperty
     def parts(self) -> list[str]:
         """The module path segments plus the class name."""
-        if self._type.__module__ == BUILTINS_MODULE:
+        if is_builtins(self._type):
             return [self._type.__qualname__]
         parts = self._type.__module__.split(".")
         parts.append(self._type.__qualname__)
@@ -78,7 +78,7 @@ class EnrichedType:
     @SlotCachedProperty
     def min_width(self) -> int:
         """Minimum display width (stacked/tree format)."""
-        if self._type.__module__ == BUILTINS_MODULE:
+        if is_builtins(self._type):
             return len(self._type.__qualname__)
         return max(
             (len(name) + _INDENT_LENGTH * index + int(bool(index)))
@@ -144,7 +144,7 @@ class EnrichedType:
 
         ```
         """
-        if self._type.__module__ == BUILTINS_MODULE:
+        if is_builtins(self._type):
             yield Text(self._type.__qualname__, style=_CLASS_STYLE, end="")
         else:
             if self.max_width < options.max_width:

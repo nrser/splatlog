@@ -19,7 +19,6 @@ gets to piggy-back on functionality that most projects can use.
 [typeguard]: https://pypi.org/project/typeguard/
 """
 
-from typing import Any
 from inspect import ismethod
 
 # Re-exports
@@ -35,21 +34,28 @@ from .functions import (
     required_arity,
     is_callable_with,
 )
-from .formatting import (
+from .text import (
+    str_find_all,
     is_typing,
+    is_builtins,
+    formatter,
     Formatter,
     FmtOpts,
+    FmtResult,
     fmt,
-    fmt_routine,
+    fmt_name,
     fmt_type,
     fmt_type_of,
     fmt_type_value,
-    fmt_range,
     fmt_type_hint,
+    fmt_routine,
+    fmt_range,
     fmt_list,
-)
-from .text import (
-    str_find_all,
+    fmt_seq,
+    fmt_datetime,
+    fmt_date,
+    fmt_time,
+    fmt_timedelta,
 )
 
 from .typeguard import satisfies
@@ -63,18 +69,29 @@ __all__ = [
     "is_required_parameter",
     "required_arity",
     "is_callable_with",
-    "is_typing",
+    # .text
     "str_find_all",
+    "is_typing",
+    "is_builtins",
+    "formatter",
     "Formatter",
     "FmtOpts",
+    "FmtResult",
     "fmt",
-    "fmt_routine",
+    "fmt_name",
     "fmt_type",
     "fmt_type_of",
     "fmt_type_value",
-    "fmt_range",
     "fmt_type_hint",
+    "fmt_routine",
+    "fmt_range",
     "fmt_list",
+    "fmt_seq",
+    "fmt_datetime",
+    "fmt_datetime",
+    "fmt_date",
+    "fmt_time",
+    "fmt_timedelta",
     "satisfies",
     "has_method",
     "respond_to",
