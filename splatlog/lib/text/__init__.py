@@ -17,11 +17,11 @@ function or method bodies if they can't be.
 from __future__ import annotations
 from collections import abc
 
-from .formatting import (
-    formatter,
-    Formatter,
-    FmtOpts,
-    FmtResult,
+# NOTE  These need to be imported from the modules they're defined in, doc gen
+#       doesn't work if imported from `.formatting`
+from .formatting.decorator import formatter, Formatter, FmtResult
+from .formatting.opts import FmtOpts
+from .formatting.impls import (
     is_typing,
     is_builtins,
     fmt,
@@ -39,6 +39,7 @@ from .formatting import (
     fmt_time,
     fmt_timedelta,
 )
+
 
 __all__ = [
     "is_typing",

@@ -45,6 +45,7 @@ exclude_patterns = [
     "apidocs/splatlog/splatlog.levels.*.md",
     "apidocs/splatlog/splatlog.rich.*.md",
     "apidocs/splatlog/splatlog.lib.functions.*.md",
+    "apidocs/splatlog/splatlog.lib.text.*.md",
 ]
 
 suppress_warnings = [
