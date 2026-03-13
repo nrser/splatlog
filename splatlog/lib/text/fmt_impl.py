@@ -31,28 +31,8 @@ import typing
 from warnings import warn
 import datetime as dt
 
-from .formatter import Formatter, formatter, FmtResult
-from .opts import FmtOpts
-
-__all__ = [
-    "is_typing",
-    "is_builtins",
-    "formatter",
-    "Formatter",
-    "FmtOpts",
-    "FmtResult",
-    "fmt",
-    "fmt_name",
-    "fmt_type_value",
-    "fmt_type_hint",
-    "fmt_type",
-    "fmt_routine",
-    "fmt_datetime",
-    "fmt_date",
-    "fmt_time",
-    "fmt_timedelta",
-]
-
+from .fmt_deco import formatter, FmtResult
+from .fmt_opts import FmtOpts
 
 Routine = (
     types.FunctionType

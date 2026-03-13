@@ -24,7 +24,7 @@ from typing import (
     overload,
 )
 
-from .opts import FmtOpts, FmtKwds
+from .fmt_opts import FmtOpts, FmtKwds
 
 # ⚠️⚠️⚠️ WARNING   No cross-package `import` at top-level, see module doc. ⚠️⚠️⚠️
 
@@ -64,6 +64,9 @@ def formatter[T](
     auto_quote: bool = True,
     **defaults: Unpack[FmtKwds],
 ):
+    """
+    Decorator used to define a formatter implementation.
+    """
     default_opts = FmtOpts(**defaults)
 
     def wrap(
