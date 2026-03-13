@@ -19,7 +19,7 @@ from collections import defaultdict
 from typing import Optional, cast, overload
 from collections.abc import Callable, Iterable, Mapping, Container
 
-from splatlog.lib.text import fmt, fmt_list, fmt_type_of
+from splatlog.lib.formatting import fmt, fmt_list, fmt_type_of
 
 # Types
 # ============================================================================

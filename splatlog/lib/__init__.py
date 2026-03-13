@@ -35,12 +35,10 @@ from .functions import (
     required_arity,
     is_callable_with,
 )
-from .text import (
+from .formatting import (
     is_typing,
-    str_find_all,
     Formatter,
     FmtOpts,
-    DEFAULT_FMT_OPTS,
     fmt,
     fmt_routine,
     fmt_type,
@@ -49,6 +47,9 @@ from .text import (
     fmt_range,
     fmt_type_hint,
     fmt_list,
+)
+from .text import (
+    str_find_all,
 )
 
 from .typeguard import satisfies
@@ -66,7 +67,6 @@ __all__ = [
     "str_find_all",
     "Formatter",
     "FmtOpts",
-    "DEFAULT_FMT_OPTS",
     "fmt",
     "fmt_routine",
     "fmt_type",
@@ -82,7 +82,7 @@ __all__ = [
 
 
 def has_method(
-    obj: Any, method_name: str, req_arity: int | None = None
+    obj: object, method_name: str, req_arity: int | None = None
 ) -> bool:
     """
     Check if an object has a method with the given name.
@@ -111,7 +111,7 @@ def has_method(
     return True
 
 
-def respond_to(obj: Any, name: str, *args, **kwds) -> bool:
+def respond_to(obj: object, name: str, *args, **kwds) -> bool:
     """
     Check if an object has a method that can be called with the given arguments.
 

@@ -84,6 +84,7 @@ autodoc2_module_all_regexes = [
     r"^splatlog\.levels$",
     r"^splatlog\.rich$",
     r"^splatlog\.lib\.functions$",
+    r"^splatlog\.lib\.formatting$",
 ]
 
 ### `sphinx.ext.intersphinx` Options ###

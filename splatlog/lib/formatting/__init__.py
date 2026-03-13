@@ -1,3 +1,19 @@
+"""
+Text utilities.
+
+:::{warning}
+### No cross-package `import` at top-level
+
+This module is considered _foundational_ due to its primary use in formatting
+error messages. To avoid circular imports it is prohibited from importing other
+{py:mod}`splatlog` modules at the top-level.
+
+Imports of other {py:mod}`splatlog` modules should be avoided, and placed inside
+function or method bodies if they can't be.
+
+:::
+"""
+
 from collections.abc import Callable, Iterable, Sequence
 from inspect import isclass, isroutine
 import sys
@@ -19,6 +35,8 @@ from .formatter import Formatter, formatter, FmtResult
 from .opts import FmtOpts
 
 __all__ = [
+    "is_typing",
+    "is_builtins",
     "formatter",
     "Formatter",
     "FmtOpts",

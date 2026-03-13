@@ -25,6 +25,7 @@ class FmtKwds(TypedDict, total=False):
     date_fmt: str
     time_fmt: str
     dt_fmt: str
+    short_optional: bool
 
 
 @dc.dataclass(frozen=True)
