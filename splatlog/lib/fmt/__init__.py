@@ -515,11 +515,19 @@ def fmt_range(rng: range, opts: FmtOpts) -> str:
     return f"[{rng[0]}, {rng[1]}, ..., {rng.stop}]"
 
 
-@formatter
+# Let the `items` quote individually as they hit the next formatter.
+@formatter(auto_quote=False)
 def fmt_list(items: Iterable, opts: FmtOpts) -> str:
     """
     Format a list of `items`. By default this is comma-separated, like
     `A, B, C`.
+
+    Examples
+    --------------------------------------------------------------------------
+
+        >>> fmt_list([1, 2, 3], quote=True, ls_conj="and")
+        '`1`, `2`, and `3`'
+
     """
     if opts.ls_conj is None:
         return f"{opts.ls_sep} ".join(fmt(item, opts) for item in items)
