@@ -17,9 +17,11 @@ function or method bodies if they can't be.
 from __future__ import annotations
 from collections import abc
 
-from .fmt_deco import formatter, Formatter, FmtResult
-from .fmt_opts import FmtOpts
-from .fmt_impl import (
+from .formatting import (
+    formatter,
+    Formatter,
+    FmtOpts,
+    FmtResult,
     is_typing,
     is_builtins,
     fmt,

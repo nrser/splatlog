@@ -24,7 +24,7 @@ from typing import (
     overload,
 )
 
-from .fmt_opts import FmtOpts, FmtKwds
+from .opts import FmtOpts, FmtKwds
 
 # ⚠️⚠️⚠️ WARNING   No cross-package `import` at top-level, see module doc. ⚠️⚠️⚠️
 

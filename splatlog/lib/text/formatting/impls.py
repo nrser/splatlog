@@ -31,8 +31,8 @@ import typing
 from warnings import warn
 import datetime as dt
 
-from .fmt_deco import formatter, FmtResult
-from .fmt_opts import FmtOpts
+from .decorator import formatter, FmtResult
+from .opts import FmtOpts
 
 Routine = (
     types.FunctionType
@@ -243,7 +243,7 @@ def fmt_routine(x: Routine, opts: FmtOpts) -> FmtResult:
     ...         pass
     ...     return g
     >>> fmt_routine(f())
-    'splatlog.lib.text.fmt_impl.f.<locals>.g()'
+    'splatlog.lib.text.formatting.impls.f.<locals>.g()'
 
     ```
     """
