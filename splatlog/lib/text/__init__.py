@@ -22,8 +22,6 @@ from collections import abc
 from .formatting.decorator import formatter, Formatter, FmtResult
 from .formatting.opts import FmtOpts
 from .formatting.formatters import (
-    is_typing,
-    is_builtins,
     fmt,
     fmt_name,
     fmt_type,
@@ -42,8 +40,6 @@ from .formatting.formatters import (
 
 
 __all__ = [
-    "is_typing",
-    "is_builtins",
     "formatter",
     "Formatter",
     "FmtOpts",

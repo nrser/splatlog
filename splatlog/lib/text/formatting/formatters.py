@@ -26,14 +26,12 @@ from typing import (
     get_args,
     get_origin,
 )
-import typing
 from warnings import warn
 import datetime as dt
 
 from splatlog.lib.types import (
     BUILTINS_MODULE_NAME,
     TYPING_MODULE_NAME,
-    is_builtins,
     is_typing,
 )
 from .decorator import formatter, FmtResult

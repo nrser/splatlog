@@ -13,7 +13,8 @@ from rich.text import Text
 from rich.measure import Measurement
 from splatlog.lib.functions import SlotCachedProperty
 
-from splatlog.lib.text import is_builtins, fmt_type
+from splatlog.lib.types import is_builtins
+from splatlog.lib.text import fmt_type
 
 _MODULE_STYLE = "inspect.class"
 _CLASS_STYLE = "repr.tag_name"

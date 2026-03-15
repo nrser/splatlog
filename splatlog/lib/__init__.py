@@ -22,6 +22,10 @@ gets to piggy-back on functionality that most projects can use.
 from inspect import ismethod
 
 # Re-exports
+from .types import (
+    is_builtins,
+    is_typing,
+)
 from .collections import (
     find,
     partition_mapping,
@@ -36,8 +40,6 @@ from .functions import (
 )
 from .text import (
     str_find_all,
-    is_typing,
-    is_builtins,
     formatter,
     Formatter,
     FmtOpts,
