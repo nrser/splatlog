@@ -21,7 +21,7 @@ from collections import abc
 #       doesn't work if imported from `.formatting`
 from .formatting.decorator import formatter, Formatter, FmtResult
 from .formatting.opts import FmtOpts
-from .formatting.impls import (
+from .formatting.formatters import (
     is_typing,
     is_builtins,
     fmt,
