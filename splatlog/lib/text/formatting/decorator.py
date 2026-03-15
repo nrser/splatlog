@@ -85,12 +85,12 @@ def formatter[T](
                 opts = default_opts
 
             if kwds:
-                opts = dc.replace(opts, **kwds)
+                opts = opts.replace(**kwds)
 
             quote_result = False
             if auto_quote and opts.quote:
                 quote_result = True
-                opts = dc.replace(opts, quote=False)
+                opts = opts.replace(quote=False)
 
             result: str
 

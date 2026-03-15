@@ -2,7 +2,9 @@ from __future__ import annotations
 import dataclasses as dc
 from typing import (
     ClassVar,
+    Self,
     TypedDict,
+    Unpack,
 )
 from collections import abc
 
@@ -127,6 +129,17 @@ class FmtOpts:
             value = getattr(self, field.name)
             if value != field.default:
                 yield field.name, value
+
+    def replace(self, **kwds: Unpack[FmtKwds]) -> Self:
+        """
+        Return a new object replacing specified fields with new values
+        (immutable update).
+
+        Just calls {py:func}`dataclasses.replace`, but also types the keyword
+        arguments with {py:type}`FmtKwds` so type checking and IDE suggestions
+        work.
+        """
+        return dc.replace(self, **kwds)
 
     def maybe_quote(self, term: str) -> str:
         if self.quote:
