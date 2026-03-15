@@ -17,6 +17,7 @@ class FmtKwds(TypedDict, total=False):
     fallback: abc.Callable[[object], str]
     fqn: bool
     fq_builtins: bool
+    fq_typing: bool
     items: int | None
     ellipsis: str
     ls_sep: str
@@ -41,6 +42,13 @@ class FmtOpts:
     arguments.
     """
 
+    # Constants (Defaults)
+    # ========================================================================
+    #
+    # Non-trivial defaults are exposed as class constants for wrapping/proxying
+    # use, though `**kwds: Unpack[FmtKwds]` replaces a lot of this use with a
+    # much cleaner solution.
+
     DEFAULT_DATE_FMT: ClassVar[str] = "%Y-%m-%d"
     """Default for {py:attr}`FmtOpts.date_fmt`."""
 
@@ -49,6 +57,9 @@ class FmtOpts:
 
     DEFAULT_DT_FMT: ClassVar[str] = "%Y-%m-%d %H:%M:%S.%3f %Z"
     """Default for {py:attr}`FmtOpts.dt_fmt`."""
+
+    # Attributes (Options)
+    # ========================================================================
 
     fallback: abc.Callable[[object], str] = repr
     """Fallback formatter when no specific formatter applies."""

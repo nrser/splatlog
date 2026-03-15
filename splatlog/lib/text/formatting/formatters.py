@@ -19,7 +19,6 @@ from inspect import isclass, isroutine
 import sys
 import types
 from typing import (
-    Any,
     ForwardRef,
     Literal,
     TypeVar,
@@ -31,6 +30,12 @@ import typing
 from warnings import warn
 import datetime as dt
 
+from splatlog.lib.types import (
+    BUILTINS_MODULE_NAME,
+    TYPING_MODULE_NAME,
+    is_builtins,
+    is_typing,
+)
 from .decorator import formatter, FmtResult
 from .opts import FmtOpts
 
@@ -44,20 +49,6 @@ Routine = (
     | types.MethodDescriptorType
     | types.ClassMethodDescriptorType
 )
-
-BUILTINS_MODULE_NAME = object.__module__
-"""
-The module name for built-in types (e.g., `str`, `int`).
-
-The name is `'builtins'` but we read it from `object.__module__`.
-"""
-
-TYPING_MODULE_NAME = typing.__name__
-"""
-The module name of the {py:mod}`typing` module.
-
-The name is `'typing'` but we read it from `typing.__name__`.
-"""
 
 LAMBDA_NAME = (lambda x: x).__name__
 """
@@ -156,11 +147,11 @@ def fmt(x: object, opts: FmtOpts) -> FmtResult:
 
         {py:func}`fmt_timedelta` has more information and examples.
     """
-    if is_typing(x):
-        return fmt_type_hint(x, opts)
-
     if isinstance(x, type):
         return fmt_type(x, opts)
+
+    if is_typing(x):
+        return fmt_type_hint(x, opts)
 
     if isroutine(x):
         return fmt_routine(x, opts)
@@ -243,7 +234,7 @@ def fmt_routine(x: Routine, opts: FmtOpts) -> FmtResult:
     ...         pass
     ...     return g
     >>> fmt_routine(f())
-    'splatlog.lib.text.formatting.impls.f.<locals>.g()'
+    'splatlog.lib.text.formatting.formatters.f.<locals>.g()'
 
     ```
     """
@@ -848,37 +839,3 @@ def fmt_time(t: dt.time, opts: FmtOpts) -> str:
     if "%3f" in fmt:
         fmt = fmt.replace("%3f", f"{t.microsecond // 1000:03d}")
     return t.strftime(fmt).strip()
-
-
-# Helpers
-# ============================================================================
-
-
-def is_typing(x: Any) -> bool:
-    """
-    Check if a value is a typing construct (generic, type alias, etc.).
-
-    ## Parameters
-
-    -   `x`: The value to check.
-
-    ## Returns
-
-    {py:data}`True` if `x` appears to be from the `typing` module.
-    """
-    return bool(
-        get_origin(x) or get_args(x) or type(x).__module__ == TYPING_MODULE_NAME
-    )
-
-
-def is_builtins(obj: object) -> bool:
-    """
-    Is an {py:class}`object` `obj` part of the {py:mod}`builtins` package of
-    all "built-in" identifiers of Python.
-
-    I'm not sure that we can always tell, but we try!
-    """
-
-    if isclass(obj):
-        return obj.__module__ == BUILTINS_MODULE_NAME
-    return type(obj).__module__ == BUILTINS_MODULE_NAME
