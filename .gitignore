@@ -98,11 +98,6 @@ __pypackages__/
 celerybeat-schedule
 celerybeat.pid
 
-# dev/ run artifacts and logs (PIDs, logs, etc.; never checked in)
-dev/run/
-dev/log/
-dev/sh/
-
 # SageMath parsed files
 *.sage.py
 
@@ -133,6 +128,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# Project
+# ============================================================================
+
 # Lock files (since it's a library)
 /poetry.lock
 /uv.lock
@@ -140,3 +138,13 @@ dmypy.json
 _site/
 /tmp/
 /docs/apidocs/
+
+# dev/ run artifacts and logs (PIDs, logs, etc.; never checked in)
+dev/run/
+dev/log/
+
+# `zsh` droppings
+.zcompdump
+
+# Generated `zsh` completion for `poe`
+/dev/sh/.zfunc/_poe

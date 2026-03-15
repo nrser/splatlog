@@ -18,12 +18,15 @@ pkgs.mkShell {
     uv sync
     source .venv/bin/activate
 
-    # Poe zsh completion: write script and set FPATH so zsh loads it when you
-    # start zsh (shellHook runs in bash, so we can't source it here; zsh will
-    # pick it up via FPATH)
-    POE_COMPLETION_DIR="$PWD/dev/sh/poe-zsh-completion"
-    mkdir -p "$POE_COMPLETION_DIR"
-    poe _zsh_completion > "$POE_COMPLETION_DIR/_poe"
-    export FPATH="$POE_COMPLETION_DIR${fpathSuffix}"
+    # Shell Configuration (`zsh`)
+    # ========================================================================
+    # 
+    # Tell `zsh` to source `dev/sh/.zshrc` when it loads up.
+    # 
+    # We're not _in_ `zsh` right here, we're in `bash` through a shim that
+    # somehow gets `zsh` loaded up for us (`nix` is very tightly connected to 
+    # `bash`, requiring a plugin hack to use `zsh`).
+    
+    export ZDOTDIR="$PWD/dev/sh"
   '';
 }
