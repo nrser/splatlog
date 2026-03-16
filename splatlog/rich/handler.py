@@ -190,6 +190,12 @@ class RichHandler(logging.Handler):
 
     last_emit_at: dt.datetime | None = None
 
+    fqn: bool = True
+    """
+    Show "Fully-Qualified Names" (FNQ), i.e. module names, in Name/Type/Value
+    (NTV) tables.
+    """
+
     # Construction
     # ========================================================================
 
@@ -204,6 +210,7 @@ class RichHandler(logging.Handler):
         link_path: bool = False,
         link_icon: bool = False,
         linker: ToRichLinker = file_linker,
+        fqn: bool = True,
     ):
         super().__init__()
         Filter.apply(self, level)
@@ -215,6 +222,7 @@ class RichHandler(logging.Handler):
         self.link_icon = link_icon
         self.linker = to_rich_linker(linker)
         self.time_config = TimeConfig.of(time)
+        self.fqn = fqn
 
     # Rich
     # ========================================================================
@@ -320,7 +328,10 @@ class RichHandler(logging.Handler):
 
         # Row (data-dependent) -- "data", data table
         if data := getattr(record, "data", None):
-            output.add_row(LABEL_DATA, NtvTable(data))
+            output.add_row(
+                LABEL_DATA,
+                NtvTable(data, fqn=self.fqn),
+            )
 
         # Row (data-dependent) -- "err", exception info (traceback)
         match record.exc_info:

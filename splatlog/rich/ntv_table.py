@@ -166,6 +166,9 @@ class NtvTable(ConsoleRenderable):
     extras: dict[str, Any] = dc.field(default_factory=dict)
     """Additional keyword arguments for {py:class}`rich.table.Table`."""
 
+    fqn: bool = True
+    """Use "fully-qualified" names (including module) for types."""
+
     def __rich_console__(
         self, console: Console, options: ConsoleOptions
     ) -> RenderResult:
@@ -207,9 +210,9 @@ class NtvTable(ConsoleRenderable):
                 rich_value = value
             elif isclass(value):
                 rich_value_type = None
-                rich_value = enrich_type(value)
+                rich_value = enrich_type(value, fqn=self.fqn)
             else:
-                rich_value_type = enrich_type_of(value)
+                rich_value_type = enrich_type_of(value, fqn=self.fqn)
                 rich_value = enrich(value)
             table.add_row(key, rich_value_type, rich_value)
 
