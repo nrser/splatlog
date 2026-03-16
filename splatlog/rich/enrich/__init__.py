@@ -160,7 +160,7 @@ def repr_highlight(value: object, *, use_ascii: bool = False) -> Text:
     return text
 
 
-def enrich_type(typ: type[object]) -> RenderableType:
+def enrich_type(typ: type[object], *, fqn: bool = True) -> RenderableType:
     """
     Create a Rich renderable for a type.
 
@@ -179,16 +179,20 @@ def enrich_type(typ: type[object]) -> RenderableType:
         rich_type, Callable
     ):
         return rich_type()
-    return EnrichedType(typ)
+
+    if fqn:
+        return EnrichedType(typ)
+
+    return Text(typ.__qualname__, style="repr.tag_name", end="")
 
 
-def enrich_type_of(value: object) -> RenderableType:
+def enrich_type_of(value: object, *, fqn: bool = True) -> RenderableType:
     """
     Create a Rich renderable for the type of a value.
 
     Shorthand for `enrich_type(type(value))`.
     """
-    return enrich_type(type(value))
+    return enrich_type(type(value), fqn=fqn)
 
 
 def enrich_path(path: Path) -> RenderableType:
