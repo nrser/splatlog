@@ -16,7 +16,6 @@ function or method bodies if they can't be.
 
 from __future__ import annotations
 from collections.abc import Callable, Iterable
-import dataclasses as dc
 from functools import wraps
 from typing import (
     Protocol,
