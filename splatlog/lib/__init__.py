@@ -43,6 +43,9 @@ from .text import (
     formatter,
     Formatter,
     FmtOpts,
+    FmtKwds,
+    FmtFallback,
+    FmtTdBase,
     FmtResult,
     fmt,
     fmt_name,
@@ -79,6 +82,9 @@ __all__ = [
     "Formatter",
     "FmtOpts",
     "FmtResult",
+    "FmtKwds",
+    "FmtFallback",
+    "FmtTdBase",
     "fmt",
     "fmt_name",
     "fmt_type",
@@ -94,7 +100,9 @@ __all__ = [
     "fmt_date",
     "fmt_time",
     "fmt_timedelta",
+    # .typeguard
     "satisfies",
+    # .
     "has_method",
     "respond_to",
 ]

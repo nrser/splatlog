@@ -20,7 +20,7 @@ from collections import abc
 # NOTE  These need to be imported from the modules they're defined in, doc gen
 #       doesn't work if imported from `.formatting`
 from .formatting.decorator import formatter, Formatter, FmtResult
-from .formatting.opts import FmtOpts
+from .formatting.opts import FmtOpts, FmtFallback, FmtKwds, FmtTdBase
 from .formatting.formatters import (
     fmt,
     fmt_name,
@@ -40,10 +40,16 @@ from .formatting.formatters import (
 
 
 __all__ = [
+    # .formatting.decorator
     "formatter",
     "Formatter",
+    # .formatting.opts
     "FmtOpts",
     "FmtResult",
+    "FmtFallback",
+    "FmtKwds",
+    "FmtTdBase",
+    # .formatting.formatters
     "fmt",
     "fmt_name",
     "fmt_type",
