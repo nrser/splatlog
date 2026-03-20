@@ -693,7 +693,7 @@ def fmt_timedelta(td: dt.timedelta, opts: FmtOpts) -> str:
 
     We also support `"hms"` for "config file style" formatting... `"7d"`,
     `"12h"`, `"1h30m"`, like people often use in configuration files to specify
-    durations. We always encode `days` that way, so this setting effects hours,
+    durations. We always encode `days` that way, so this setting affects hours,
     minutes, and seconds:
 
     ```pycon
@@ -714,9 +714,10 @@ def fmt_timedelta(td: dt.timedelta, opts: FmtOpts) -> str:
 
     ```pycon
     >>> fmt_timedelta(
-    ...     dt.timedelta(minutes=3, seconds=45, milliseconds=678)
+    ...     dt.timedelta(minutes=3, seconds=45, milliseconds=678),
+    ...     td_base="hms",
     ... )
-    '3m45.678s
+    '3m45.678s'
 
     ```
 
@@ -757,7 +758,10 @@ def fmt_timedelta(td: dt.timedelta, opts: FmtOpts) -> str:
     They can also use the `"hms"` format:
 
     ```pycon
-    >>> fmt_timedelta(dt.timedelta(days=7, minutes=5, seconds=30))
+    >>> fmt_timedelta(
+    ...     dt.timedelta(days=7, minutes=5, seconds=30),
+    ...     td_base="hms",
+    ... )
     '7d5m30s'
 
     ```
@@ -789,8 +793,13 @@ def fmt_timedelta(td: dt.timedelta, opts: FmtOpts) -> str:
     """
     if td < dt.timedelta(0):
         pos = fmt_timedelta(-td, opts)
-        if pos.endswith("s"):
-            return "-" + pos[:-1]
+        if pos.endswith("ms"):
+            return "-" + pos
+        if pos.endswith("s") and "h" not in pos and "d" not in pos:
+            # `m` alone is ambiguous (`12ms` vs `5m30s`); only strip unit `s`
+            # for plain second/sub-second forms, not compact h/m/s.
+            if "m" not in pos or pos.endswith("ms"):
+                return "-" + pos[:-1]
         return "-" + pos
 
     base = opts.td_base
@@ -834,6 +843,40 @@ def fmt_timedelta(td: dt.timedelta, opts: FmtOpts) -> str:
             h, m, s, sub_ms, always_ms=always_ms, pad_hours=True
         )
 
+    def fmt_td_hms(
+        d: int, h: int, m: int, s: int, sub_ms: int
+    ) -> str:
+        """Config-style compact durations: `7d5m30s`, `1h30m`, `0.012s`."""
+
+        def compact_body(
+            bh: int, bm: int, bs: int, bms: int
+        ) -> str:
+            parts: list[str] = []
+            if bh > 0:
+                parts.append(f"{bh}h")
+            if bm > 0:
+                parts.append(f"{bm}m")
+            if bs > 0 or bms > 0:
+                if bms:
+                    parts.append(f"{bs}.{bms:03d}s")
+                else:
+                    parts.append(f"{bs}s")
+            return "".join(parts)
+
+        if d > 0:
+            out = f"{d}d"
+            rest = compact_body(h, m, s, sub_ms)
+            if rest:
+                out += rest
+            return out
+
+        if h == 0 and m == 0 and s == 0:
+            if sub_ms > 0:
+                return f"0.{sub_ms:03d}s"
+            return "0s"
+
+        return compact_body(h, m, s, sub_ms)
+
     # Zero
     if td == dt.timedelta(0):
         if base == "ms":
@@ -842,6 +885,8 @@ def fmt_timedelta(td: dt.timedelta, opts: FmtOpts) -> str:
             s = "00:00:00"
         else:
             s = "0s"
+    elif base == "hms":
+        s = fmt_td_hms(days, hours, minutes, seconds, ms)
     # Forced wall-clock (sub-day only in doctests; multi-day uses day + remainder)
     elif base == "HH:MM:SS":
         if days == 0:

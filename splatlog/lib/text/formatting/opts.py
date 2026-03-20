@@ -178,6 +178,9 @@ class FmtOpts:
 
     Changing to `"ms"` will format sub-second {py:class}`~datetime.timedelta` as
     milliseconds, like `123ms`.
+
+    Use `"HH:MM:SS"` for a wall-clock style, or `"hms"` for compact config-style
+    pieces (`7d5m30s`, `1h`, `0.012s`).
     """
 
     def __rich_repr__(self) -> rich.repr.Result:
