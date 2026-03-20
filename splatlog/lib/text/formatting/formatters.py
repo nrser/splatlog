@@ -773,11 +773,11 @@ def fmt_timedelta(td: dt.timedelta, opts: FmtOpts) -> str:
     ) -> str:
         """HH:MM:SS[.mmm].
 
-        When ``pad_hours`` is false (standalone clock): hours un-padded if
-        ``h > 0``, else ``00``. When true (after ``Nd``): hours zero-padded.
+        When `pad_hours` is false (standalone clock): hours un-padded if
+        `h > 0`, else `00`. When true (after `Nd`): hours zero-padded.
 
-        When ``always_ms`` is true, emit a millisecond field even if zero
-        (used when the leading clock unit is hours, excluding ``Nd`` forms).
+        When `always_ms` is true, emit a millisecond field even if zero
+        (used when the leading clock unit is hours, excluding `Nd` forms).
         """
         if pad_hours:
             out = f"{h:02d}:{m:02d}:{s:02d}"
@@ -897,7 +897,7 @@ def fmt_datetime(t: dt.datetime, opts: FmtOpts) -> str:
         >>> fmt_datetime(t, dt_fmt="%H:%M:%S.%3f")
         '14:23:45.123'
 
-    Standard ``%f`` (microseconds) still works:
+    Standard `%f` (microseconds) still works:
 
         >>> fmt_datetime(t, dt_fmt="%H:%M:%S.%f")
         '14:23:45.123456'
@@ -933,7 +933,7 @@ def fmt_date(d: dt.date, opts: FmtOpts) -> str:
     Format a {py:class}`datetime.date`.
 
     Uses {py:attr}`FmtOpts.date_fmt` as the format string, defaulting to
-    ISO 8601 (``%Y-%m-%d``).
+    ISO 8601 (`%Y-%m-%d`).
 
     Examples
     --------------------------------------------------------------------------
