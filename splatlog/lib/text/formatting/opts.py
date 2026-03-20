@@ -4,6 +4,7 @@ from typing import (
     ClassVar,
     Literal,
     Self,
+    TypeAlias,
     TypedDict,
     Unpack,
 )
@@ -12,10 +13,14 @@ from collections import abc
 import rich.repr
 
 
+FmtFallback: TypeAlias = abc.Callable[[object], str]
+FmtTdBase: TypeAlias = Literal["ms", "s", "HH:MM:SS"]
+
+
 class FmtKwds(TypedDict, total=False):
     """Keyword arguments matching :class:`FmtOpts` fields, all optional."""
 
-    fallback: abc.Callable[[object], str]
+    fallback: FmtFallback
     fqn: bool
     fq_builtins: bool
     fq_typing: bool
@@ -29,7 +34,7 @@ class FmtKwds(TypedDict, total=False):
     date_fmt: str
     time_fmt: str
     dt_fmt: str
-    td_base: Literal["ms", "s", "HH:MM:SS"]
+    td_base: FmtTdBase
     short_optional: bool
 
 
@@ -63,11 +68,22 @@ class FmtOpts:
     # Attributes (Options)
     # ========================================================================
 
-    fallback: abc.Callable[[object], str] = repr
+    fallback: FmtFallback = repr
     """Fallback formatter when no specific formatter applies."""
 
+    quote: bool = False
+    """
+    Add markdown-style backtick quotes around the formatted output, so as to
+    appear as `<code>` sections in renderings.
+    """
+
+    # Module/Type Options
+    # ------------------------------------------------------------------------
+
     fqn: bool = True
-    """Whether to include module names in formatted output."""
+    """
+    Whether to include module names in formatted output.
+    """
 
     fq_builtins: bool = False
     """
@@ -80,6 +96,21 @@ class FmtOpts:
     "Fully-Qualified Typing" — Whether to include the {py:mod}`typing` module
     prefix — e.g. `typing.Any` versus `Any`.
     """
+
+    type: bool = False
+    """
+    Add the type of the value being formatted as well.
+    """
+
+    short_optional: bool = True
+    """
+    Use `?` suffix for optional types.
+    """
+
+    # Limit Options
+    # ------------------------------------------------------------------------
+    #
+    # Options for limiting how much output is generated.
 
     items: int | None = None
     """
@@ -96,6 +127,9 @@ class FmtOpts:
 
     1.  {py:attr}`items`
     """
+
+    # List Options
+    # ------------------------------------------------------------------------
 
     ls_sep: str = ","
     """
@@ -115,15 +149,8 @@ class FmtOpts:
     Should {py:func}`fmt_list` use the [Oxford comma][] style?
     """
 
-    type: bool = False
-    """
-    Add formatted type.
-    """
-
-    quote: bool = False
-    """
-    Add markdown-style
-    """
+    # Date/Time Options
+    # ------------------------------------------------------------------------
 
     date_fmt: str = DEFAULT_DATE_FMT
     """Template for formatting {py:class}`datetime.date`."""
@@ -134,7 +161,7 @@ class FmtOpts:
     dt_fmt: str = DEFAULT_DT_FMT
     """Template for formatting {py:class}`datetime.datetime`."""
 
-    td_base: Literal["ms", "s", "HH:MM:SS"] = "s"
+    td_base: FmtTdBase = "s"
     """
     Base unit used when formatting {py:class}`datetime.timedelta`; by default
     the base is _seconds_ (`"s"`), so milliseconds will be formatted as
@@ -143,9 +170,6 @@ class FmtOpts:
     Changing to `"ms"` will format sub-second {py:class}`~datetime.timedelta` as
     milliseconds, like `123ms`.
     """
-
-    short_optional: bool = True
-    """Use `?` suffix for optional types."""
 
     def __rich_repr__(self) -> rich.repr.Result:
         for field in dc.fields(self):
