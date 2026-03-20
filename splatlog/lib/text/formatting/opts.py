@@ -29,6 +29,7 @@ class FmtKwds(TypedDict, total=False):
     date_fmt: str
     time_fmt: str
     dt_fmt: str
+    td_base: Literal["ms", "s", "HH:MM:SS"]
     short_optional: bool
 
 

@@ -136,7 +136,7 @@ def fmt(x: object, opts: FmtOpts) -> FmtResult:
         as well:
 
             >>> fmt_timedelta(dt.timedelta(milliseconds=12))
-            '0.012'
+            '0.012s'
 
             >>> fmt_timedelta(
             ...     dt.timedelta(days=1, hours=23, minutes=45, seconds=56)
@@ -615,7 +615,8 @@ def fmt_timedelta(td: dt.timedelta, opts: FmtOpts) -> str:
 
     ```
 
-    `ts_base` can be adjusted down to milliseconds (`"ms"`) through the options.
+    {py:attr}`~splatlog.lib.text.FmtOpts.td_base` can be set to milliseconds
+    (`"ms"`) through the options.
     This is basically for when you're working with intervals you expect to
     consistently be in the millisecond range, such as RPC requests. Once the
     number of milliseconds is over `1,000` the format will still switch to `s`.
@@ -703,7 +704,7 @@ def fmt_timedelta(td: dt.timedelta, opts: FmtOpts) -> str:
     '7d 00:05:30'
 
     >>> fmt_timedelta(dt.timedelta(days=123, milliseconds=500))
-    '1d 00:00:00.500'
+    '123d 00:00:00.500'
 
     >>> fmt_timedelta(
     ...     dt.timedelta(
@@ -747,21 +748,96 @@ def fmt_timedelta(td: dt.timedelta, opts: FmtOpts) -> str:
     ```
     """
     if td < dt.timedelta(0):
-        return "-" + fmt_timedelta(-td, opts)
+        pos = fmt_timedelta(-td, opts)
+        if pos.endswith("s"):
+            return "-" + pos[:-1]
+        return "-" + pos
 
+    base = opts.td_base
     days = td.days
     hours, rem = divmod(td.seconds, 3600)
     minutes, seconds = divmod(rem, 60)
     ms = td.microseconds // 1000
 
-    if days:
-        s = f"{days}d {hours:02d}:{minutes:02d}:{seconds:02d}.{ms:03d}"
-    elif hours:
-        s = f"{hours}:{minutes:02d}:{seconds:02d}.{ms:03d}"
-    elif minutes:
-        s = f"{minutes}:{seconds:02d}.{ms:03d}"
+    def clock_hms(
+        h: int,
+        m: int,
+        s: int,
+        sub_ms: int,
+        *,
+        always_ms: bool = False,
+        pad_hours: bool = False,
+    ) -> str:
+        """HH:MM:SS[.mmm].
+
+        When ``pad_hours`` is false (standalone clock): hours unpadded if
+        ``h > 0``, else ``00``. When true (after ``Nd``): hours zero-padded.
+
+        When ``always_ms`` is true, emit a millisecond field even if zero
+        (used when the leading clock unit is hours, excluding ``Nd`` forms).
+        """
+        if pad_hours:
+            out = f"{h:02d}:{m:02d}:{s:02d}"
+        elif h > 0:
+            out = f"{h}:{m:02d}:{s:02d}"
+        else:
+            out = f"00:{m:02d}:{s:02d}"
+        if sub_ms or always_ms:
+            out += f".{sub_ms:03d}"
+        return out
+
+    def day_suffix(h: int, m: int, s: int, sub_ms: int) -> str:
+        if h == 0 and m == 0 and s == 0 and sub_ms == 0:
+            return ""
+        always_ms = h > 0 and sub_ms == 0
+        return " " + clock_hms(
+            h, m, s, sub_ms, always_ms=always_ms, pad_hours=True
+        )
+
+    # Zero
+    if td == dt.timedelta(0):
+        if base == "ms":
+            s = "0ms"
+        elif base == "HH:MM:SS":
+            s = "00:00:00"
+        else:
+            s = "0s"
+    # Forced wall-clock (sub-day only in doctests; multi-day uses day + remainder)
+    elif base == "HH:MM:SS":
+        if days == 0:
+            s = clock_hms(
+                hours,
+                minutes,
+                seconds,
+                ms,
+                always_ms=(hours > 0 and ms == 0),
+            )
+        else:
+            s = f"{days}d" + day_suffix(hours, minutes, seconds, ms)
+    elif days > 0:
+        s = f"{days}d" + day_suffix(hours, minutes, seconds, ms)
+    elif hours > 0 or minutes > 0:
+        s = clock_hms(
+            hours,
+            minutes,
+            seconds,
+            ms,
+            always_ms=(hours > 0 and ms == 0),
+        )
+    elif base == "ms":
+        total_ms = seconds * 1000 + ms
+        if seconds == 0 and total_ms < 1000:
+            s = f"{total_ms}ms"
+        elif ms:
+            s = f"{seconds}.{ms:03d}s"
+        else:
+            s = f"{seconds}s"
     else:
-        s = f"{seconds}.{ms:03d}"
+        # td_base == "s"
+        if ms:
+            s = f"{seconds}.{ms:03d}s"
+        else:
+            s = f"{seconds}s"
 
     if opts.quote:
         return "`" + s + "`"
