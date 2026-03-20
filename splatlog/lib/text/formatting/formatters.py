@@ -261,7 +261,7 @@ def fmt_type(x: type, opts: FmtOpts) -> FmtResult:
 
     ## Examples
 
-    ```python
+    ```pycon
     >>> from collections.abc import Collection
     >>> fmt_type(Collection)
     'collections.abc.Collection'
@@ -553,7 +553,7 @@ def fmt_seq(seq: Sequence, opts: FmtOpts) -> str:
 
     ## Examples
 
-    ```python
+    ```pycon
     >>> fmt_seq([1, 2, 3])
     '[1, 2, 3]'
 
@@ -603,33 +603,67 @@ def fmt_timedelta(td: dt.timedelta, opts: FmtOpts) -> str:
 
     ## Examples
 
-    Sub-second:
+    Sub-second — the default {py:attr}`splatlog.lib.text.FmtOpts.td_base`
+    is seconds (`"s"`), so milliseconds will appear as fraction of a second:
 
-    ```python
+    ```pycon
     >>> fmt_timedelta(dt.timedelta(milliseconds=12))
-    '0.012'
+    '0.012s'
 
     >>> fmt_timedelta(dt.timedelta(milliseconds=500))
-    '0.500'
+    '0.500s'
 
     ```
 
-    Seconds:
+    `ts_base` can be adjusted down to milliseconds (`"ms"`) through the options.
+    This is basically for when you're working with intervals you expect to
+    consistently be in the millisecond range, such as RPC requests. Once the
+    number of milliseconds is over `1,000` the format will still switch to `s`.
 
-    ```python
+    ```pycon
+    >>> fmt_timedelta(dt.timedelta(milliseconds=12), td_base="ms")
+    '12ms'
+
+    >>> fmt_timedelta(dt.timedelta(milliseconds=500), td_base="ms")
+    '500ms'
+
+    >>> fmt_timedelta(dt.timedelta(milliseconds=2_500), td_base="ms")
+    '2.500s'
+
+    ```
+
+    Sub-minute seconds are displayed as the integer with an `s` unit, and
+    fractional milliseconds if present.
+
+    ```pycon
     >>> fmt_timedelta(dt.timedelta(seconds=5))
-    '5.000'
+    '5s'
 
     >>> fmt_timedelta(dt.timedelta(seconds=12, milliseconds=345))
-    '12.345'
+    '12.345s'
 
     ```
 
-    Minutes and above:
+    Lowering the base unit has no effect when large units are present:
 
-    ```python
-    >>> fmt_timedelta(dt.timedelta(minutes=5, seconds=30, milliseconds=100))
-    '5:30.100'
+    ```pycon
+    >>> fmt_timedelta(dt.timedelta(seconds=1, milliseconds=12), td_base="ms")
+    '1.012s'
+
+    >>> fmt_timedelta(dt.timedelta(seconds=1, milliseconds=500), td_base="ms")
+    '1.500s'
+
+    ```
+
+    When there are minutes and hour the `HH:MM:SS` format is used, including
+    leading zeros, without any unit designation:
+
+    ```pycon
+    >>> fmt_timedelta(dt.timedelta(minutes=5, seconds=30))
+    '00:05:30'
+
+    >>> fmt_timedelta(dt.timedelta(minutes=5, seconds=30, milliseconds=10))
+    '00:05:30.010'
 
     >>> fmt_timedelta(
     ...     dt.timedelta(hours=12, minutes=34, seconds=56, milliseconds=789)
@@ -638,9 +672,39 @@ def fmt_timedelta(td: dt.timedelta, opts: FmtOpts) -> str:
 
     ```
 
-    Days:
+    You can force this format by setting
+    {py:attr}`~splatlog.lib.text.FmtOpts.td_base` to `"HH:MM:SS"`:
 
-    ```python
+    ```pycon
+    >>> fmt_timedelta(dt.timedelta(milliseconds=12), td_base="HH:MM:SS")
+    '00:00:00.012'
+
+    >>> fmt_timedelta(
+    ...     dt.timedelta(seconds=1, milliseconds=12),
+    ...     td_base="HH:MM:SS",
+    ... )
+    '00:00:01.012'
+
+    ```
+
+    Days continue with the `HH:MM:SS` format, with fractional milliseconds when
+    hours, minutes, seconds or milliseconds are present. Basically the same as
+    the built-in {py:meth}`datetime.timedelta.__str__`, but using the shorter
+    `d` unit and defaulting to millisecond precision.
+
+    ```pycon
+    >>> fmt_timedelta(dt.timedelta(days=1))
+    '1d'
+
+    >>> fmt_timedelta(dt.timedelta(days=1, seconds=1))
+    '1d 00:00:01'
+
+    >>> fmt_timedelta(dt.timedelta(days=7, minutes=5, seconds=30))
+    '7d 00:05:30'
+
+    >>> fmt_timedelta(dt.timedelta(days=123, milliseconds=500))
+    '1d 00:00:00.500'
+
     >>> fmt_timedelta(
     ...     dt.timedelta(
     ...         days=1, hours=23, minutes=45, seconds=56, milliseconds=789
@@ -659,15 +723,21 @@ def fmt_timedelta(td: dt.timedelta, opts: FmtOpts) -> str:
 
     Zero:
 
-    ```python
+    ```pycon
     >>> fmt_timedelta(dt.timedelta())
-    '0.000'
+    '0s'
+
+    >>> fmt_timedelta(dt.timedelta(), td_base="ms")
+    '0ms'
+
+    >>> fmt_timedelta(dt.timedelta(), td_base="HH:MM:SS")
+    '00:00:00'
 
     ```
 
     Negative:
 
-    ```python
+    ```pycon
     >>> fmt_timedelta(-dt.timedelta(seconds=1, milliseconds=500))
     '-1.500'
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 import dataclasses as dc
 from typing import (
     ClassVar,
+    Literal,
     Self,
     TypedDict,
     Unpack,
@@ -131,6 +132,16 @@ class FmtOpts:
 
     dt_fmt: str = DEFAULT_DT_FMT
     """Template for formatting {py:class}`datetime.datetime`."""
+
+    td_base: Literal["ms", "s", "HH:MM:SS"] = "s"
+    """
+    Base unit used when formatting {py:class}`datetime.timedelta`; by default
+    the base is _seconds_ (`"s"`), so milliseconds will be formatted as
+    fractions of a second, like `0.123s`.
+
+    Changing to `"ms"` will format sub-second {py:class}`~datetime.timedelta` as
+    milliseconds, like `123ms`.
+    """
 
     short_optional: bool = True
     """Use `?` suffix for optional types."""
