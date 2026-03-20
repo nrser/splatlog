@@ -128,6 +128,15 @@ class FmtOpts:
     1.  {py:attr}`items`
     """
 
+    # String Options
+    # ------------------------------------------------------------------------
+
+    s_raw: bool = False
+    """
+    Don't quote {py:class}`str` as _values_, just return them as the formatted
+    string.
+    """
+
     # List Options
     # ------------------------------------------------------------------------
 

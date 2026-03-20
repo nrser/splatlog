@@ -166,6 +166,9 @@ def fmt(x: object, opts: FmtOpts) -> FmtResult:
     if isinstance(x, dt.timedelta):
         return fmt_timedelta(x, opts)
 
+    if isinstance(x, str) and opts.s_raw:
+        return x
+
     return opts.fallback(x)
 
 
