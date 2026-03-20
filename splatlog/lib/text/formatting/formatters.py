@@ -691,6 +691,35 @@ def fmt_timedelta(td: dt.timedelta, opts: FmtOpts) -> str:
 
     ```
 
+    We also support `"hms"` for "config file style" formatting... `"7d"`,
+    `"12h"`, `"1h30m"`, like people often use in configuration files to specify
+    durations. We always encode `days` that way, so this setting effects hours,
+    minutes, and seconds:
+
+    ```pycon
+    >>> fmt_timedelta(dt.timedelta(minutes=5, seconds=30), td_base="hms")
+    '5m30s'
+
+    >>> fmt_timedelta(dt.timedelta(hours=1), td_base="hms")
+    '1h'
+
+    >>> fmt_timedelta(dt.timedelta(milliseconds=12), td_base="hms")
+    '0.012s'
+
+    ```
+
+    The `"hms"` format is really meant for simple, round, "human" durations; it
+    gets kind of stupid with arbitrary durations, like you get from measuring
+    how long something took:
+
+    ```pycon
+    >>> fmt_timedelta(
+    ...     dt.timedelta(minutes=3, seconds=45, milliseconds=678)
+    ... )
+    '3m45.678s
+
+    ```
+
     Days continue with the `HH:MM:SS` format, with fractional milliseconds when
     hours, minutes, seconds or milliseconds are present. Basically the same as
     the built-in {py:meth}`datetime.timedelta.__str__`, but using the shorter
@@ -722,6 +751,14 @@ def fmt_timedelta(td: dt.timedelta, opts: FmtOpts) -> str:
     ...     )
     ... )
     '100d 05:03:02.001'
+
+    ```
+
+    They can also use the `"hms"` format:
+
+    ```pycon
+    >>> fmt_timedelta(dt.timedelta(days=7, minutes=5, seconds=30))
+    '7d5m30s'
 
     ```
 

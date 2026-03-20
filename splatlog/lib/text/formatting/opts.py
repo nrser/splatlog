@@ -14,7 +14,7 @@ import rich.repr
 
 
 FmtFallback: TypeAlias = abc.Callable[[object], str]
-FmtTdBase: TypeAlias = Literal["ms", "s", "HH:MM:SS"]
+FmtTdBase: TypeAlias = Literal["ms", "s", "HH:MM:SS", "hms"]
 
 
 class FmtKwds(TypedDict, total=False):
