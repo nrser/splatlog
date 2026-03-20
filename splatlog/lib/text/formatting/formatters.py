@@ -773,7 +773,7 @@ def fmt_timedelta(td: dt.timedelta, opts: FmtOpts) -> str:
     ) -> str:
         """HH:MM:SS[.mmm].
 
-        When ``pad_hours`` is false (standalone clock): hours unpadded if
+        When ``pad_hours`` is false (standalone clock): hours un-padded if
         ``h > 0``, else ``00``. When true (after ``Nd``): hours zero-padded.
 
         When ``always_ms`` is true, emit a millisecond field even if zero
