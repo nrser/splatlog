@@ -6,6 +6,8 @@ from collections.abc import Mapping
 import sys
 from typing import IO, Any, cast
 from rich.console import Console
+from rich.style import Style
+from rich.theme import Theme
 
 from splatlog.lib.typeguard import satisfies
 from splatlog.types import (
@@ -126,6 +128,9 @@ def to_console(
             )
         )
 
+    if isinstance(value, Theme):
+        return Console(theme=value)
+
     if is_stdio_name(value):
         return Console(file=to_stdio(value), theme=to_theme(theme))
 
@@ -133,3 +138,63 @@ def to_console(
         return Console(file=value, theme=to_theme(theme))
 
     assert_never(value, ToRichConsole)
+
+
+def to_style(
+    value: str | Style, *, console: ToRichConsole | None = None
+) -> Style:
+    """
+    Convert a `value` to a {py:class}`rich.style.Style`, resolving from the
+    styles in the given {py:class}`rich.console.Console`.
+
+    Simply resolves the `console` using {py:func}`to_console` and calls
+    {py:meth}`~rich.console.Console.get_style` with
+    {py:obj}`rich.style.Style.null` as the `default`.
+
+    Examples
+    ----------------------------------------------------------------------------
+
+    If `console` is omitted then a new instance is constructed over the
+    {py:func}`splatlog.rich.get_default_theme` to source from.
+
+    ```pycon
+    >>> to_style("report.logger.name")
+    Style(color=Color('blue', ColorType.STANDARD, number=4), bold=True)
+
+    ```
+
+    Falls back to the empty {py:obj}`rich.style.Style.null` style on missing
+    style names.
+
+    ```pycon
+    >>> to_style("non.existent")
+    Style()
+
+    ```
+
+    To customize styles, or just avoid constructing a
+    {py:class}`~rich.console.Console` on every call, include a `console` keyword
+    argument.
+
+    ```pycon
+    >>> from rich.console import Console
+    >>> from rich.theme import Theme
+    >>> from rich.style import Style
+
+    >>> console = to_console()
+
+    >>> with console.use_theme(Theme({
+    ...     "report.logger.name": Style(color="#2563eb", bold=True)
+    ... })):
+    ...     print(to_style("report.logger.name", console=console))
+    bold #2563eb
+
+    >>> with console.use_theme(Theme({
+    ...     "report.logger.name": Style(color="#047857", italic=True)
+    ... })):
+    ...     print(to_style("report.logger.name", console=console))
+    italic #047857
+
+    ```
+    """
+    return to_console(console).get_style(value, default=Style.null())

@@ -18,6 +18,7 @@ from rich.text import Text
 from rich.tree import Tree
 
 from splatlog.levels.filter import VerbosityFilter
+from splatlog.rich.console import to_style
 from splatlog.types import FilterType, Level, ReportInclude
 
 
@@ -77,10 +78,17 @@ class Report:
             case "configured":
                 return self._is_configured(logger)
 
+    def _style(self, style: str | Style) -> Style:
+        """
+        Get a {py:class}`rich.style.Style` from the {py:attr}`Report.console`,
+        falling back to the empty style if `style` is name that is not found.
+        """
+        return to_style(style, console=self.console)
+
     def _format_level(self, level: Level, *, dim: bool = False) -> Text:
         """Format a logging level as styled text."""
         name = logging.getLevelName(level)
-        style = self.console.get_style(f"logging.level.{name.lower()}")
+        style = self._style(f"logging.level.{name.lower()}")
         if style and dim:
             style = Style.chain(style, Style(dim=True))
         return Text(name, style=style)
@@ -93,7 +101,7 @@ class Report:
 
         # Effective level (if different from set level)
         if effective_level != set_level:
-            text.append(" → ", style="dim")
+            text.append(" → ", style=Style(dim=True))
             text.append_text(self._format_level(effective_level, dim=True))
 
         return text
@@ -102,31 +110,12 @@ class Report:
         self, logger: logging.Logger, parent_name: str | None = None
     ) -> Text:
         """Format a logger's label showing name, level, and effective level."""
-        # Get styles with fallbacks
-        name_style = self.console.get_style("report.logger.name")
-
-        # Style for parts of name shared with parent
-        parent_name_style = Style.chain(name_style, Style(dim=True, bold=False))
-
         # Build the label
         label = Text()
 
         # Logger name
         name = logger.name if logger.name else "root"
-
-        if parent_name:
-            parent_name_parts = parent_name.split(".")
-
-            for i, part in enumerate(name.split(".")):
-                if i > 0:
-                    label.append(".", style="report.logger.name.sep")
-
-                if i < len(parent_name_parts) and part == parent_name_parts[i]:
-                    label.append(part, style=parent_name_style)
-                else:
-                    label.append(part, style=name_style)
-        else:
-            label.append(name, style=name_style)
+        label.append(self._format_logger_name(name, parent_name))
 
         label.append(" ")
         label.append_text(
@@ -139,9 +128,35 @@ class Report:
         # Propagate (only show if False, since True is the default)
         if not logger.propagate:
             label.append(" ")
-            label.append("propagate=False", style="dim italic")
+            label.append("propagate=False", style=Style(dim=True, italic=True))
 
         return label
+
+    def _format_logger_name(
+        self, name: str, parent_name: str | None = None
+    ) -> Text:
+        name_style = self._style("report.logger.name")
+        parent_name_style = name_style + self._style(
+            "report.logger.name.parent"
+        )
+        sep_style = self._style("report.logger.name.sep")
+        text = Text()
+
+        if parent_name:
+            parent_name_parts = parent_name.split(".")
+        else:
+            parent_name_parts = []
+
+        for i, part in enumerate(name.split(".")):
+            if i > 0:
+                text.append(".", style=sep_style)
+
+            if i < len(parent_name_parts) and part == parent_name_parts[i]:
+                text.append(part, style=parent_name_style)
+            else:
+                text.append(part, style=name_style)
+
+        return text
 
     @group(fit=True)
     def _format_handler_label(
@@ -152,7 +167,7 @@ class Report:
         label = Text()
 
         # Handler type
-        label.append(" Handler ", style="report.handler")
+        label.append(" Handler ", style=self._style("report.handler"))
 
         label.append(" ")
 
@@ -177,9 +192,7 @@ class Report:
         self, filter: FilterType, parent_level: Level
     ) -> Generator[ConsoleRenderable, Any, None]:
         """Format a filter's label."""
-        yield Text(
-            " Filter ", style=self.console.get_style("report.filter"), end=" "
-        )
+        yield Text(" Filter ", style=self._style("report.filter"), end=" ")
 
         if isinstance(filter, VerbosityFilter):
             if filter.effective_level >= parent_level:
@@ -227,7 +240,7 @@ class Report:
     def render(self) -> Tree:
         """Build the complete logger tree."""
         # Create the root of the tree
-        tree = Tree("Logging System", guide_style="dim")
+        tree = Tree("Logging System", guide_style=Style(dim=True))
 
         # Collect all loggers
         loggers: list[logging.Logger] = []

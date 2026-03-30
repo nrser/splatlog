@@ -31,7 +31,7 @@ from .enrich import (
     EnrichedType as EnrichedType,
 )
 from .inline import Inline as Inline
-from .console import to_console as to_console
+from .console import to_console, to_style
 from .handler import RichHandler, TimeConfig, ToTimeConfig
 
 __all__ = [
@@ -58,6 +58,7 @@ __all__ = [
     "Inline",
     # .console
     "to_console",
+    "to_style",
     # .handler
     "RichHandler",
     "TimeConfig",
