@@ -26,6 +26,7 @@ class FmtKwds(TypedDict, total=False):
     fq_typing: bool
     items: int | None
     ellipsis: str
+    s_raw: bool
     ls_sep: str
     ls_conj: str | None
     ls_ox: bool
