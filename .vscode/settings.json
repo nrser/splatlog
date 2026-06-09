@@ -66,6 +66,11 @@
   // Format on cell execution as well
   "notebook.formatOnCellExecution": true,
 
+  // Root notebooks at the workspace (project/repo) folder, instead of where the
+  // notebooks is (usually `dev/notes`). I set this globally, but added here as
+  // well as notebooks will depend on it.
+  "jupyter.notebookFileRoot": "${workspaceFolder}",
+
   // Ruff
   // ===========================================================================
   // 

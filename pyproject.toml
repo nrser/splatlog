@@ -25,7 +25,6 @@ Documentation = "http://nrser.com/splatlog"
 
 [dependency-groups]
 dev = [
-    "doctor-testerson",
     # Linter and formatter
     "ruff>=0.15.0",
     # Task runner
@@ -36,6 +35,8 @@ dev = [
     "tox>=4.0",
     # Plugin to let `tox` work with `uv` to get the Python runtimes it wants
     "tox-uv>=1.29.0",
+    # Generate test data
+    "faker>=40.15.0",
 ]
 docs = [
     "myst-parser>=4.0.1",
@@ -60,9 +61,6 @@ default-groups = [
 ]
 no-build-isolation-package = ["pyyaml"]
 
-[tool.uv.sources]
-doctor-testerson = { git = "https://github.com/nrser/doctor-testerson.git" }
-
 # PyTest
 # ----------------------------------------------------------------------------
 
@@ -76,6 +74,9 @@ doctest_optionflags = ["NORMALIZE_WHITESPACE", "ELLIPSIS"]
 # 
 # Tasks: https://poethepoet.natn.io/tasks/options.html
 # Args: https://poethepoet.natn.io/guides/args_guide.html#task-argument-options
+
+[tool.poe]
+include_script = "splatlog.poe:tasks"
 
 ### Test ###
 
@@ -113,41 +114,6 @@ help = "Target in `docs/Makefile` to run. Use `html` target to build."
 positional = true
 multiple = true
 choices = ["help", "html", "clean", "watch"]
-
-### Report ###
-# 
-# Mainly an exercise in `poe` task configuration.
-
-[tool.poe.tasks.report]
-script = "splatlog:report"
-help = "Print a logging system report. Won't be much there, but you can do it."
-
-[[tool.poe.tasks.report.args]]
-name = "include"
-help = "Include all loggers or just those that have been configured?"
-options = ["-i", "--include"]
-choices = ["all", "configured"]
-default = "all"
-
-[[tool.poe.tasks.report.args]]
-name = "console"
-help = "Where to print, via a `rich.console.Console`."
-options = ["-c", "--console"]
-choices = ["stdout", "stderr"]
-
-[[tool.poe.tasks.report.args]]
-name = "show_placeholder_loggers"
-help = "Show `logging.PlaceHolder` entries."
-type = "boolean"
-options = ["-p", "--placeholders"]
-default = false
-
-[[tool.poe.tasks.report.args]]
-name = "show_null_handlers"
-help = "Show `logging.NullHandler` entries."
-type = "boolean"
-options = ["-n", "--nulls"]
-default = false
 
 # Pyright Tool
 # ----------------------------------------------------------------------------
@@ -190,7 +156,6 @@ include = [
 ]
 exclude = [
     "splatlog/_docs.py",
-    "splatlog/_testing.py",
 ]
 
 # Build System

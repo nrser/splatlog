@@ -4,6 +4,7 @@ dists
 Doody
 Dunder
 furo
+McGugan
 mixedcase
 posargs
 Sigstore
