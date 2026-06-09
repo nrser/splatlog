@@ -5,6 +5,7 @@ package.
 
 import logging
 import sys
+import textwrap
 from typing import Any, Optional, Union
 import ast
 import inspect
@@ -14,9 +15,86 @@ from types import ModuleType
 from splatlog.types import ExcInfo, ToLevel, to_level
 
 __all__ = [
+    "assert_text",
     "get_constant_docstrings",
     "make_log_record",
 ]
+
+
+def assert_text(
+    actual: str,
+    expected: str,
+    *,
+    leading_newlines: int | None = None,
+    trailing_newlines: int | None = None,
+) -> None:
+    """
+    Assert that two strings match after normalizing whitespace artifacts
+    from source-code embedding.
+
+    :::{tip}
+    To enable useful feedback when this assertion fails you need to add this to
+    `tests/conftest.py`:
+
+    ```py
+    pytest.register_assert_rewrite("splatlog._testing")
+    ```
+    :::
+
+    Both `actual` and `expected` are normalized by:
+
+    1.  Dedenting (removing common leading whitespace)
+    2.  Stripping trailing whitespace from each line
+    3.  Stripping leading and trailing blank lines
+
+    This allows the `expected` string to be written with natural indentation
+    inside test functions without worrying about source-level whitespace
+    artifacts.
+
+    Optional keyword arguments assert on visually-hidden properties of
+    `actual` that normalization would otherwise discard:
+
+    -   `leading_newlines` — expected count of leading ``\\n`` characters
+    -   `trailing_newlines` — expected count of trailing ``\\n`` characters
+
+    ## Examples
+
+    >>> from splatlog._testing import assert_text
+    >>> assert_text("hello\\nworld", '''
+    ...     hello
+    ...     world
+    ... ''')
+
+    >>> assert_text("hello\\n", "hello", trailing_newlines=1)
+    """
+    # Tell Pytest not to show this function as the error location
+    __tracebackhide__ = True
+
+    def _normalize(s: str) -> str:
+        s = textwrap.dedent(s)
+        lines = s.splitlines()
+        lines = [line.rstrip() for line in lines]
+        while lines and not lines[0]:
+            lines.pop(0)
+        while lines and not lines[-1]:
+            lines.pop()
+        return "\n".join(lines)
+
+    assert _normalize(actual) == _normalize(expected)
+
+    if leading_newlines is not None:
+        n = len(actual) - len(actual.lstrip("\n"))
+        if n != leading_newlines:
+            raise AssertionError(
+                f"Expected {leading_newlines} leading newline(s), got {n}"
+            )
+
+    if trailing_newlines is not None:
+        n = len(actual) - len(actual.rstrip("\n"))
+        if n != trailing_newlines:
+            raise AssertionError(
+                f"Expected {trailing_newlines} trailing newline(s), got {n}"
+            )
 
 
 def get_constant_docstrings(module: str | ModuleType):
