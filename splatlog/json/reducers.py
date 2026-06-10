@@ -11,7 +11,7 @@ specific reducers before falling back to generic ones.
 """
 
 from collections import UserDict, UserList
-import dataclasses
+import dataclasses as dc
 from collections.abc import Callable, Mapping, Collection
 from enum import Enum
 from inspect import isclass
@@ -20,7 +20,7 @@ import traceback
 from types import TracebackType
 from typing import Any, Self
 
-from splatlog.lib import fmt_type, has_method
+from splatlog.lib import fmt_name, has_method
 from splatlog.types import JSONEncodable, JSONReduceFn
 
 
@@ -28,7 +28,7 @@ from splatlog.types import JSONEncodable, JSONReduceFn
 # ============================================================================
 
 
-@dataclasses.dataclass(frozen=True, order=True)
+@dc.dataclass(frozen=True, order=True)
 class JSONReducer:
     """
     A reducer converts objects to {py:type}`splatlog.types.JSONEncodable` that
@@ -68,7 +68,7 @@ class JSONReducer:
         to `isinstance(obj, typ)`.
         """
         return cls(
-            name=fmt_type(typ),
+            name=fmt_name(typ),
             priority=priority,
             is_match=lambda obj: isinstance(obj, typ),
             reduce=reduce,
@@ -113,6 +113,9 @@ class JSONReducer:
     reduce: JSONReduceFn
     """Function that transforms the object to a JSON-encodable form."""
 
+    def __str__(self):
+        return f"{fmt_name(self.__class__, fqn=False)} {self.name!r}"
+
 
 # Reduce Functions
 # ============================================================================
@@ -131,7 +134,7 @@ def reduce_collection(obj: Collection) -> JSONEncodable:
 
     # Other collections encode the type and items
     return {
-        "__class__": fmt_type(obj.__class__),
+        "__class__": fmt_name(obj.__class__),
         "items": tuple(obj),
     }
 
@@ -145,7 +148,7 @@ def reduce_dataclass(value: Any) -> dict[str, JSONEncodable]:
     """
     # Order is preserved, so put the `__class__` first
     d = {"__class__": CLASS_REDUCER.reduce(type(value))}
-    d.update(dataclasses.asdict(value))
+    d.update(dc.asdict(value))
     return d
 
 
@@ -168,7 +171,7 @@ def reduce_exception(error: BaseException) -> dict[str, JSONEncodable]:
     A dictionary representation of the exception suitable for JSON encoding.
     """
     dct: dict[str, JSONEncodable] = dict(
-        type=fmt_type(error.__class__),
+        type=fmt_name(error.__class__),
         msg=str(error),
     )
 
@@ -195,7 +198,7 @@ CLASS_REDUCER = JSONReducer(
     name="class",
     priority=20,
     is_match=isclass,
-    reduce=fmt_type,
+    reduce=fmt_name,
 )
 """Reducer for class objects (priority 20).
 
@@ -205,7 +208,7 @@ Converts class objects to their formatted type name string.
 DATACLASS_REDUCER = JSONReducer(
     name="dataclasses.dataclass",
     priority=30,
-    is_match=dataclasses.is_dataclass,
+    is_match=dc.is_dataclass,
     reduce=reduce_dataclass,
 )
 """Reducer for {py:mod}`dataclasses` (priority 30).
@@ -242,7 +245,7 @@ True
 ENUM_REDUCER = JSONReducer.instance(
     typ=Enum,
     priority=40,
-    reduce=lambda obj: f"{fmt_type(obj.__class__)}.{obj.name}",
+    reduce=lambda obj: f"{fmt_name(obj.__class__)}.{obj.name}",
 )
 """Reducer for {py:class}`enum.Enum` members (priority 40).
 
@@ -333,7 +336,7 @@ MAPPING_REDUCER = JSONReducer.instance(
     typ=Mapping,
     priority=50,
     reduce=lambda obj: {
-        "__class__": fmt_type(obj.__class__),
+        "__class__": fmt_name(obj.__class__),
         "items": dict(obj),
     },
 )
@@ -361,7 +364,7 @@ FALLBACK_REDUCER = JSONReducer(
     priority=100,
     is_match=lambda obj: True,
     reduce=lambda obj: {
-        "__class__": fmt_type(obj.__class__),
+        "__class__": fmt_name(obj.__class__),
         "__repr__": repr(obj),
     },
 )

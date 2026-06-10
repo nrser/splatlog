@@ -14,7 +14,7 @@ from rich.measure import Measurement
 from splatlog.lib.functions import SlotCachedProperty
 
 from splatlog.lib.types import is_builtins
-from splatlog.lib.text import fmt_type
+from splatlog.lib.text import fmt_name
 
 _MODULE_STYLE = "inspect.class"
 _CLASS_STYLE = "repr.tag_name"
@@ -106,7 +106,7 @@ class EnrichedType:
 
         ```
         """
-        return f"{self.__class__.__name__}({fmt_type(self._type)})"
+        return f"{self.__class__.__name__}({fmt_name(self._type)})"
 
     def __rich_measure__(
         self, console: Console, options: ConsoleOptions

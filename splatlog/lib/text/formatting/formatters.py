@@ -14,9 +14,10 @@ function or method bodies if they can't be.
 :::
 """
 
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Iterable
 from inspect import isclass, isroutine
 import sys
+from traceback import format_exception
 import types
 from typing import (
     ForwardRef,
@@ -37,6 +38,9 @@ from splatlog.lib.types import (
 from .decorator import formatter, FmtResult
 from .opts import FmtOpts
 
+# Types
+# ============================================================================
+
 Routine = (
     types.FunctionType
     | types.LambdaType
@@ -47,6 +51,9 @@ Routine = (
     | types.MethodDescriptorType
     | types.ClassMethodDescriptorType
 )
+
+# Constants
+# ============================================================================
 
 LAMBDA_NAME = (lambda x: x).__name__
 """
@@ -60,8 +67,13 @@ FQN_SEP = "."
 Separator for fully-qualified names, for example the '.' in 'typing.Any'.
 """
 
+# Dispatcher
+# ============================================================================
+#
+# Inspects the value and dispatches to the appropriate formatter function.
 
-@formatter()
+
+@formatter(auto_quote=False)
 def fmt(x: object, opts: FmtOpts) -> FmtResult:
     """
     Format a `value` for concise, human-readable output.
@@ -80,26 +92,30 @@ def fmt(x: object, opts: FmtOpts) -> FmtResult:
 
     ## Examples
 
-    -   **Types & Type Hints** — Formats types by qualified name, and type
-        hints with concise shorthands:
+    -   **Types & Type Hints** — Formats types by qualified name, and type hints
+        with concise shorthands, clearly distinguished by enclosing angle
+        brackets (configurable):
 
-            >>> from typing import Optional
+            >>> from typing import Optional, Callable
             >>> from collections.abc import Collection
 
             >>> fmt(str)
-            'str'
+            '<str>'
 
             >>> fmt(Collection)
-            'collections.abc.Collection'
+            '<collections.abc.Collection>'
 
             >>> fmt(str | None)
-            'str?'
+            '<str?>'
 
             >>> fmt(list[int])
-            'int[]'
+            '<int[]>'
 
             >>> fmt(dict[str, int])
-            '{str: int}'
+            '<{str: int}>'
+
+            >>> fmt(Callable[[int, int], str])
+            '<(int, int) -> str>'
 
         See {py:func}`fmt_type` and {py:func}`fmt_type_hint` for more info.
 
@@ -145,6 +161,15 @@ def fmt(x: object, opts: FmtOpts) -> FmtResult:
 
         {py:func}`fmt_timedelta` has more information and examples.
     """
+    # If asked to include the type handoff to `fmt_type_value`
+    if opts.type:
+        return fmt_type_value(x, opts.replace(type=False))
+
+    # If `x` is a `str` and the option is set to pass-through raw strings simply
+    # return it
+    if isinstance(x, str) and opts.s_raw:
+        return x
+
     if isinstance(x, type):
         return fmt_type(x, opts)
 
@@ -166,10 +191,14 @@ def fmt(x: object, opts: FmtOpts) -> FmtResult:
     if isinstance(x, dt.timedelta):
         return fmt_timedelta(x, opts)
 
-    if isinstance(x, str) and opts.s_raw:
-        return x
+    if isinstance(x, Exception):
+        return fmt_err(x, opts)
 
-    return opts.fallback(x)
+    return opts.fallback(x, opts)
+
+
+# Formatters
+# ============================================================================
 
 
 @formatter
@@ -245,13 +274,16 @@ def fmt_routine(x: Routine, opts: FmtOpts) -> FmtResult:
     if name := fmt_name(x, opts):
         return name + "()"
 
-    return opts.fallback(x)
+    return opts.fallback(x, opts)
 
 
 @formatter()
 def fmt_type(x: type, opts: FmtOpts) -> FmtResult:
     """
-    Format a type for display.
+    Format a {py:class}`type` for display.
+
+    Renders the type name with {py:func}`fmt_name`, surrounded by angle brackets
+    (configurable) to distinguish it.
 
     ## Parameters
 
@@ -267,20 +299,22 @@ def fmt_type(x: type, opts: FmtOpts) -> FmtResult:
     ```pycon
     >>> from collections.abc import Collection
     >>> fmt_type(Collection)
-    'collections.abc.Collection'
+    '<collections.abc.Collection>'
 
     >>> fmt_type(Collection, fqn=False)
-    'Collection'
+    '<Collection>'
 
     >>> fmt_type(Collection, FmtOpts(fqn=False))
-    'Collection'
+    '<Collection>'
 
     >>> fmt_type(Collection, FmtOpts(fqn=False), fqn=True)
-    'collections.abc.Collection'
+    '<collections.abc.Collection>'
 
     ```
     """
-    return fmt_name(x, opts)
+    yield opts.t_start
+    yield fmt_name(x, opts)
+    yield opts.t_end
 
 
 @formatter
@@ -322,15 +356,19 @@ def fmt_type_value(x: object, opts: FmtOpts) -> FmtResult:
     --------------------------------------------------------------------------
 
         >>> fmt_type_value(123)
-        'int: 123'
+        '<int> 123'
 
         >>> fmt_type_value(123, quote=True)
-        '`int`: `123`'
+        '`<int>` `123`'
 
     """
     yield fmt_type(type(x), opts)
-    yield ": "
-    yield fmt(x, opts)
+    s_val = fmt(x, opts.replace(insert_line="s"))
+    if s_val.startswith("\n"):
+        yield ":"
+    else:
+        yield " "
+    yield s_val
 
 
 @formatter
@@ -361,39 +399,51 @@ def fmt_type_hint(x: object, opts: FmtOpts) -> FmtResult:
     -   **Optional types** — unions of {py:data}`None` with a _single_ other
         type are abbreviated with a `?` suffix:
 
-            >>> fmt_type_hint(int | None)
-            'int?'
+        ```pycon
+        >>> fmt_type_hint(int | None)
+        '<int?>'
 
-            >>> fmt_type_hint(None | int)
-            'int?'
+        >>> fmt_type_hint(None | int)
+        '<int?>'
+
+        ```
 
         This includes construction using {py:obj}`typing.Optional`:
 
-            >>> from typing import Optional
+        ```pycon
+        >>> from typing import Optional
 
-            >>> fmt_type_hint(Optional[int])
-            'int?'
+        >>> fmt_type_hint(Optional[int])
+        '<int?>'
+
+        ```
 
         We used to exclude {py:obj}`typing.Literal` from this rule, but on
         revisit favored consistency and simplicity:
 
-            >>> from typing import Literal
+        ```pycon
+        >>> from typing import Literal
 
-            >>> fmt_type_hint(Literal["some"] | None)
-            "'some'?"
+        >>> fmt_type_hint(Literal["some"] | None)
+        "<'some'?>"
 
-            >>> fmt_type_hint(Optional[Literal[123]])
-            '123?'
+        >>> fmt_type_hint(Optional[Literal[123]])
+        '<123?>'
+
+        ```
 
         You can disable this feature by setting the
-        {py:attr}`~splatlog.lib.fmt.opts.FmtOpts.short_optional` option to
+        {py:attr}`~splatlog.lib.text.FmtOpts.short_optional` option to
         {py:data}`False`:
 
-            >>> fmt_type_hint(int | None, short_optional=False)
-            'int | None'
+        ```pycon
+        >>> fmt_type_hint(int | None, short_optional=False)
+        '<int | None>'
 
-            >>> fmt_type_hint(Optional[Literal["some"]], short_optional=False)
-            "'some' | None"
+        >>> fmt_type_hint(Optional[Literal["some"]], short_optional=False)
+        "<'some' | None>"
+
+        ```
 
     """
     if x is Ellipsis:
@@ -412,7 +462,7 @@ def fmt_type_hint(x: object, opts: FmtOpts) -> FmtResult:
         # NOTE  Just gonna punt on this for now... for some reason the way
         #       Python handles generics just manages to frustrate and confuse
         #       me...
-        yield opts.fallback(x)
+        yield opts.fallback(x, opts)
         return
 
     origin = get_origin(x)
@@ -427,53 +477,74 @@ def fmt_type_hint(x: object, opts: FmtOpts) -> FmtResult:
             yield repr(origin or x)
         return
 
+    # Everything below here is a
+    inner_opts = opts.replace(t_start="", t_end="")
+
     if origin is Union or origin is types.UnionType:
         if opts.short_optional and len(args) == 2:
             match [arg for arg in args if arg is not types.NoneType]:
                 case [arg]:
-                    yield fmt_type_hint(arg, opts)
+                    yield opts.t_start
+                    yield fmt_type_hint(arg, inner_opts)
                     yield "?"
+                    yield opts.t_end
                     return
 
-        yield " | ".join(fmt_type_hint(arg, opts) for arg in args)
+        # TODO  This is not great for large unions, such as `ToConsoleHandler`.
+        #       Ideally we'd line-break like `fmt_pretty_repr` does.
+        yield opts.t_start
+        yield " | ".join(fmt_type_hint(arg, inner_opts) for arg in args)
+        yield opts.t_end
         return
 
     if origin is Literal:
-        yield " | ".join(fmt_type_hint(arg, opts) for arg in args)
+        yield opts.t_start
+        yield " | ".join(fmt_type_hint(arg, inner_opts) for arg in args)
+        yield opts.t_end
         return
 
     if origin is dict:
+        yield opts.t_start
         yield "{"
-        yield fmt_type_hint(args[0], opts)
+        yield fmt_type_hint(args[0], inner_opts)
         yield ": "
-        yield fmt_type_hint(args[1], opts)
+        yield fmt_type_hint(args[1], inner_opts)
         yield "}"
+        yield opts.t_end
         if len(args) > 2:
             warn(f"`dict` typing has more than 2 args: {args!r}")
         return
 
     if origin is list:
-        yield fmt_type_hint(args[0], opts)
+        yield opts.t_start
+        yield fmt_type_hint(args[0], inner_opts)
         yield "[]"
+        yield opts.t_end
         return
 
     if origin is tuple:
+        yield opts.t_start
         yield "("
-        yield ", ".join(fmt_type_hint(arg, opts) for arg in args)
+        yield ", ".join(fmt_type_hint(arg, inner_opts) for arg in args)
         yield ")"
+        yield opts.t_end
         return
 
     if origin is set:
+        yield opts.t_start
         yield "{"
-        yield ", ".join(fmt_type_hint(arg, opts) for arg in args)
+        yield ", ".join(fmt_type_hint(arg, inner_opts) for arg in args)
         yield "}"
+        yield opts.t_end
         return
 
     if origin is Callable:
+        yield opts.t_start
         yield "("
-        yield ", ".join(fmt_type_hint(arg, opts) for arg in args[0])
+        yield ", ".join(fmt_type_hint(arg, inner_opts) for arg in args[0])
         yield ") -> "
-        yield fmt_type_hint(args[1], opts)
+        yield fmt_type_hint(args[1], inner_opts)
+        yield opts.t_end
         return
 
     yield repr(x)
@@ -537,62 +608,6 @@ def fmt_list(items: Iterable, opts: FmtOpts) -> str:
         s += fmt(item, opts)
 
     return s
-
-
-@formatter
-def fmt_seq(seq: Sequence, opts: FmtOpts) -> str:
-    """
-    Format a sequence, respecting the {py:attr}`FmtOpts.items` limit and
-    {py:attr}`FmtOpts.ellipsis` for truncation.
-
-    ## Parameters
-
-    -   `seq`: The sequence to format (list or tuple).
-    -   `opts`: Formatting options.
-
-    ## Returns
-
-    A formatted string like `[1, 2, 3]` or `(1, 2, ...)`.
-
-    ## Examples
-
-    ```pycon
-    >>> fmt_seq([1, 2, 3])
-    '[1, 2, 3]'
-
-    >>> fmt_seq((1, 2, 3))
-    '(1, 2, 3)'
-
-    >>> fmt_seq([1, 2, 3, 4, 5], items=3)
-    '[1, 2, 3, ...]'
-
-    >>> fmt_seq((1, 2, 3, 4, 5), items=2)
-    '(1, 2, ...)'
-
-    >>> fmt_seq([1, 2, 3, 4, 5], items=3, ellipsis='…')
-    '[1, 2, 3, …]'
-
-    >>> fmt_seq([])
-    '[]'
-
-    >>> fmt_seq(())
-    '()'
-
-    >>> fmt_seq([1, 2], items=5)
-    '[1, 2]'
-
-    ```
-    """
-    is_tuple = isinstance(seq, tuple)
-    open_bracket, close_bracket = ("(", ")") if is_tuple else ("[", "]")
-
-    if opts.items is not None and len(seq) > opts.items:
-        items = [fmt(item, opts) for item in seq[: opts.items]]
-        items.append(opts.ellipsis)
-    else:
-        items = [fmt(item, opts) for item in seq]
-
-    return open_bracket + ", ".join(items) + close_bracket
 
 
 @formatter
@@ -843,14 +858,10 @@ def fmt_timedelta(td: dt.timedelta, opts: FmtOpts) -> str:
             h, m, s, sub_ms, always_ms=always_ms, pad_hours=True
         )
 
-    def fmt_td_hms(
-        d: int, h: int, m: int, s: int, sub_ms: int
-    ) -> str:
+    def fmt_td_hms(d: int, h: int, m: int, s: int, sub_ms: int) -> str:
         """Config-style compact durations: `7d5m30s`, `1h30m`, `0.012s`."""
 
-        def compact_body(
-            bh: int, bm: int, bs: int, bms: int
-        ) -> str:
+        def compact_body(bh: int, bm: int, bs: int, bms: int) -> str:
             parts: list[str] = []
             if bh > 0:
                 parts.append(f"{bh}h")
@@ -1068,3 +1079,19 @@ def fmt_time(t: dt.time, opts: FmtOpts) -> str:
     if "%3f" in fmt:
         fmt = fmt.replace("%3f", f"{t.microsecond // 1000:03d}")
     return t.strftime(fmt).strip()
+
+
+@formatter(auto_quote=False)
+def fmt_err(err: Exception, opts: FmtOpts) -> FmtResult:
+    t_err = type(err)
+    if opts.e_trace and (tb := err.__traceback__):
+        yield from format_exception(t_err, err, tb)
+    else:
+        yield fmt_name(t_err, opts)
+        yield ": "
+        yield str(err)
+        if notes := getattr(err, "__notes__", None):
+            yield "\n"
+            for note in notes:
+                yield note
+                yield "\n"

@@ -23,7 +23,7 @@ from typing import (
     overload,
 )
 
-from .opts import FmtOpts, FmtKwds
+from .opts import FmtOpts, FmtKwds, fmt_pretty_repr
 
 # ⚠️⚠️⚠️ WARNING   No cross-package `import` at top-level, see module doc. ⚠️⚠️⚠️
 
@@ -99,10 +99,16 @@ def formatter[T](
                 case itr if isinstance(itr, Iterable):
                     result = "".join(itr)
                 case other:
-                    raise TypeError(
-                        "Expected formatter to return `str | Iterable[str]`, "
-                        f"received a `{type(other)!r}`: `{other!r}`"
+                    err = TypeError(
+                        "expected formatter to return `<str | Iterable[str]>`"
                     )
+                    err.add_note(
+                        "received {} {}".format(
+                            fmt_pretty_repr(type(other), quote=True),
+                            fmt_pretty_repr(other, quote=True),
+                        )
+                    )
+                    raise err
 
             if quote_result:
                 return "`" + result + "`"

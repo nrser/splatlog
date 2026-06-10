@@ -11,15 +11,13 @@ attached to the root logger.
 
 import logging
 from pathlib import Path
-from typing import IO, Any, Literal, Union, overload
+from typing import IO, Any, Literal, overload
 from collections.abc import Callable, Mapping
 import keyword
 
 from splatlog.json import JSONFormatter
 from splatlog.levels import Filter
-from splatlog.lib import satisfies
-from splatlog.lib.collections import partition_mapping
-from splatlog.lib.text import fmt
+from splatlog.lib import satisfies, fmt, partition_mapping
 from splatlog.locking import lock
 from splatlog.rich.handler import RichHandler
 from splatlog.types import (
@@ -72,42 +70,42 @@ def check_name(name: object) -> None:
     >>> check_name("")
     Traceback (most recent call last):
         ...
-    ValueError: named handler name must be a valid Python identifier, given ''
+    ValueError: named handler name must be a valid Python identifier
+    given `''`
 
     >>> check_name("not-valid")
     Traceback (most recent call last):
         ...
-    ValueError: named handler name must be a valid Python identifier, given 'not-valid'
+    ValueError: named handler name must be a valid Python identifier
+    given `'not-valid'`
 
     >>> check_name("class")
     Traceback (most recent call last):
         ...
-    ValueError: named handler name must not be a Python keyword, given 'class'
+    ValueError: named handler name must not be a Python keyword
+    given `'class'`
 
     >>> check_name(123)
     Traceback (most recent call last):
         ...
-    TypeError: named handler names must be `str`, given int: 123
+    TypeError: named handler names must be `<str>`
+    given `<int>` `123`
 
     ```
     """
     if not isinstance(name, str):
-        raise TypeError(
-            "named handler names must be `str`, given {}: {}".format(
-                fmt(type(name)), fmt(name)
-            )
-        )
+        err = TypeError(f"named handler names must be {fmt(str, quote=True)}")
+        err.add_note(f"given {fmt(name, type=True, quote=True)}")
+        raise err
     if not name.isidentifier():
-        raise ValueError(
-            f"named handler name must be a valid Python identifier, "
-            f"given {fmt(name)}"
-        )
+        err = ValueError("named handler name must be a valid Python identifier")
+        err.add_note(f"given {fmt(name, quote=True)}")
+        raise err
 
     if keyword.iskeyword(name):
-        raise ValueError(
-            f"named handler name must not be a Python keyword, "
-            f"given {fmt(name)}"
-        )
+        err = ValueError("named handler name must not be a Python keyword")
+        err.add_note(f"given {fmt(name, quote=True)}")
+        raise err
 
 
 def put_factory(
@@ -471,18 +469,16 @@ def to_console_handler(value: ToConsoleHandler) -> logging.Handler:
         >>> to_console_handler([1, 2, 3])
         Traceback (most recent call last):
             ...
-        AssertionError:
-            Expected
-                `logging.Handler
-                | collections.abc.Mapping[str, typing.Any]
-                | True
-                | int
-                | str
-                | rich.console.Console
-                | 'stdout'
-                | 'stderr'
-                | typing.IO[str]`,
-            given `list`: `[1, 2, 3]`
+        AssertionError: expected `<logging.Handler
+            | collections.abc.Mapping[str, typing.Any]
+            | True
+            | int
+            | str
+            | rich.console.Console
+            | 'stdout'
+            | 'stderr'
+            | typing.IO[str]>`
+        given `<list>` `[1, 2, 3]`
 
         ```
     """
@@ -538,6 +534,165 @@ def to_export_handler(value: ToExportHandler) -> logging.Handler:
         without `"filename"` or `"stream"`.
 
     -   {py:class}`TypeError`: if `value` cannot be converted.
+
+    ## Examples
+
+    1.  A {py:class}`collections.abc.Mapping` with a `"stream"` key creates a
+        {py:class}`logging.StreamHandler`.
+
+        ```pycon
+        >>> from io import StringIO
+
+        >>> sio = StringIO()
+        >>> handler = to_export_handler({"stream": sio})
+
+        >>> isinstance(handler, logging.StreamHandler)
+        True
+
+        >>> handler.stream is sio
+        True
+
+        >>> isinstance(handler.formatter, JSONFormatter)
+        True
+
+        ```
+
+    2.  A {py:class}`collections.abc.Mapping` with a `"filename"` key creates a
+        {py:class}`logging.FileHandler`.
+
+        ```pycon
+        >>> import tempfile, os
+
+        >>> tmp = tempfile.NamedTemporaryFile(suffix='.jsonl', delete=False)
+        >>> tmp.close()
+
+        >>> handler = to_export_handler({"filename": tmp.name})
+
+        >>> isinstance(handler, logging.FileHandler)
+        True
+
+        >>> isinstance(handler.formatter, JSONFormatter)
+        True
+
+        >>> handler.close()
+        >>> os.unlink(tmp.name)
+
+        ```
+
+    3.  Mappings may include `"level"` and `"formatter"` keys, which are
+        extracted and applied after handler construction.
+
+        ```pycon
+        >>> sio = StringIO()
+        >>> handler = to_export_handler({
+        ...     "stream": sio,
+        ...     "level": "WARNING",
+        ... })
+
+        >>> handler.level
+        30
+
+        ```
+
+        A custom {py:class}`logging.Formatter` can be provided directly:
+
+        ```pycon
+        >>> custom_fmt = logging.Formatter("%(message)s")
+        >>> handler = to_export_handler({
+        ...     "stream": StringIO(),
+        ...     "formatter": custom_fmt,
+        ... })
+
+        >>> handler.formatter is custom_fmt
+        True
+
+        ```
+
+    4.  A {py:class}`str` or {py:class}`pathlib.Path` is shorthand for a
+        {py:class}`logging.FileHandler` with a default
+        {py:class}`~splatlog.json.JSONFormatter`.
+
+        ```pycon
+        >>> tmp = tempfile.NamedTemporaryFile(suffix='.jsonl', delete=False)
+        >>> tmp.close()
+
+        >>> handler = to_export_handler(tmp.name)
+
+        >>> isinstance(handler, logging.FileHandler)
+        True
+
+        >>> isinstance(handler.formatter, JSONFormatter)
+        True
+
+        >>> handler.close()
+        >>> os.unlink(tmp.name)
+
+        ```
+
+        The same works with a {py:class}`pathlib.Path`:
+
+        ```pycon
+        >>> from pathlib import Path
+
+        >>> tmp = tempfile.NamedTemporaryFile(suffix='.jsonl', delete=False)
+        >>> tmp.close()
+
+        >>> handler = to_export_handler(Path(tmp.name))
+
+        >>> isinstance(handler, logging.FileHandler)
+        True
+
+        >>> handler.close()
+        >>> os.unlink(tmp.name)
+
+        ```
+
+    5.  An {py:class}`typing.IO` stream creates a
+        {py:class}`logging.StreamHandler` with a default
+        {py:class}`~splatlog.json.JSONFormatter`.
+
+        ```pycon
+        >>> sio = StringIO()
+        >>> handler = to_export_handler(sio)
+
+        >>> isinstance(handler, logging.StreamHandler)
+        True
+
+        >>> handler.stream is sio
+        True
+
+        >>> isinstance(handler.formatter, JSONFormatter)
+        True
+
+        ```
+
+    6.  A {py:class}`collections.abc.Mapping` without `"filename"` or
+        `"stream"` raises a {py:class}`KeyError`.
+
+        ```pycon
+        >>> to_export_handler({"level": "DEBUG"})
+        Traceback (most recent call last):
+            ...
+        KeyError: "Mappings passed to
+            splatlog.named_handlers.to_export_handler() must contain
+            'filename' or 'stream' keys, given {'level': 'DEBUG'}"
+
+        ```
+
+    7.  Unsupported types raise a {py:class}`TypeError`.
+
+        ```pycon
+        >>> to_export_handler(123)
+        Traceback (most recent call last):
+            ...
+        TypeError: expected `<logging.Handler
+            | collections.abc.Mapping[str, typing.Any]
+            | str
+            | pathlib...Path
+            | typing.IO[str]>`
+        given `<int>` `123`
+
+        ```
     """
     if isinstance(value, Mapping):
         if "stream" in value:
@@ -583,10 +738,6 @@ def to_export_handler(value: ToExportHandler) -> logging.Handler:
         handler.formatter = JSONFormatter()
         return handler
 
-    raise TypeError(
-        "Expected {}, given {}: {!r}".format(
-            fmt(Union[None, logging.Handler, Mapping, str, Path]),
-            fmt(type(value)),
-            fmt(value),
-        )
-    )
+    err = TypeError(f"expected {fmt(ToExportHandler, quote=True)}")
+    err.add_note(f"given {fmt(value, type=True, quote=True)}")
+    raise err

@@ -11,7 +11,7 @@ from zlib import crc32
 
 import rich.repr
 
-from splatlog.lib.text import fmt_seq
+from splatlog.lib.text import fmt
 
 
 def as_hex_byte(n: float) -> str:
@@ -64,7 +64,34 @@ class ColorPallet:
 
     The {py:meth}`modulo` method provides deterministic color assignment for
     strings using a hash function.
+
+    ## Examples
+
+    ```pycon
+    >>> cp = ColorPallet()
+    >>> cp
+    <ColorPallet hsl=(i/16, 0.75, 0.75)
+        colors=('#bf3030', '#bf6630', '#bf9b30', ... +13)>
+
+    >>> cp.colors
+    ('#bf3030', '#bf6630', '#bf9b30', '#adbf30', '#78bf30', '#42bf30',
+        '#30bf54', '#30bf89', '#30bfbf', '#3089bf', '#3054bf', '#4230bf',
+        '#7830bf', '#ad30bf', '#bf309b', '#bf3066')
+
+    >>> cp.modulo("p1")
+    '#adbf30'
+
+    >>> cp.modulo("p2")
+    '#3089bf'
+
+    >>> cp.modulo("p3")
+    '#bf3066'
+
+    ```
     """
+
+    DEFAULT_SIZE = 16
+    """Default number of colors in the pallet."""
 
     DEFAULT_SATURATION = 0.75
     """Default saturation for generated colors."""
@@ -80,7 +107,7 @@ class ColorPallet:
 
     def __init__(
         self,
-        size: int = 32,
+        size: int = DEFAULT_SIZE,
         saturation: float = DEFAULT_SATURATION,
         value: float = DEFAULT_VALUE,
     ):
@@ -128,7 +155,7 @@ class ColorPallet:
         return (
             f"<{self.__class__.__name__} "
             f"hsl=(i/{self._size!r}, {self._saturation!r}, {self._value!r}) "
-            f"colors={fmt_seq(self._colors, items=3)}>"
+            f"colors={fmt(self._colors, items=3)}>"
         )
 
     def __rich_repr__(self) -> rich.repr.Result:

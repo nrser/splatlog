@@ -38,18 +38,6 @@ strings: RecursiveIterable[str] = ["hey", ["ho", ["let's", "go"]]]
 ```
 """
 
-# Constants
-# ============================================================================
-
-ERR_MSG_UNARY_EMPTY = (
-    "expected exactly one item, given empty `iterable` of type {type}: {arg}"
-)
-
-ERR_MSG_UNARY_MANY = (
-    "expected exactly one item, given `iterable` of type {type} with at least "
-    "two items: {items}"
-)
-
 # Functions
 # ============================================================================
 
@@ -220,8 +208,8 @@ def group_by[T, K](
 def unary[T](
     iterable: Iterable[T],
     *,
-    empty_msg: str = ERR_MSG_UNARY_EMPTY,
-    many_msg: str = ERR_MSG_UNARY_MANY,
+    empty_msg: str = "expected exactly one item",
+    many_msg: str = "expected exactly one item",
 ) -> T:
     """
     Return the only item from an {py:class}`~collections.abc.Iterable`, raising
@@ -264,14 +252,14 @@ def unary[T](
     >>> unary([])
     Traceback (most recent call last):
         ...
-    ValueError: expected exactly one item, given empty `iterable` of type
-        `list`: `[]`
+    ValueError: expected exactly one item
+    given `<list>` `[]`
 
     >>> unary([1, 2, 3])
     Traceback (most recent call last):
         ...
-    ValueError: expected exactly one item, given `iterable` of type `list` with
-        at least two items: `1`, `2`
+    ValueError: expected exactly one item
+    given `iterable` of type `<list>` with at least two items: `1`, `2`
 
     ```
 
@@ -283,8 +271,25 @@ def unary[T](
     >>> unary(count())
     Traceback (most recent call last):
         ...
-    ValueError: expected exactly one item, given `iterable` of type
-        `itertools.count` with at least two items: `0`, `1`
+    ValueError: expected exactly one item
+    given `iterable` of type `<itertools.count>` with at least two items: `0`, `1`
+
+    ```
+
+    You can provide custom error messages:
+
+    ```pycon
+    >>> unary([], empty_msg="not enough")
+    Traceback (most recent call last):
+        ...
+    ValueError: not enough
+    given `<list>` `[]`
+
+    >>> unary([1, 2, 3], many_msg="too many")
+    Traceback (most recent call last):
+        ...
+    ValueError: too many
+    given `iterable` of type `<list>` with at least two items: `1`, `2`
 
     ```
     """
@@ -293,24 +298,23 @@ def unary[T](
     try:
         first = next(it)
     except StopIteration:
-        raise ValueError(
-            empty_msg.format(
-                type=fmt_type_of(iterable, quote=True),
-                arg=fmt(iterable, quote=True),
-            )
-        )
+        err = ValueError(empty_msg)
+        err.add_note(f"given {fmt(iterable, quote=True, type=True)}")
+        raise err
 
     try:
         second = next(it)
     except StopIteration:
         return first
 
-    raise ValueError(
-        many_msg.format(
-            type=fmt_type_of(iterable, quote=True),
-            items=fmt_list((first, second), quote=True),
+    err = ValueError(many_msg)
+    err.add_note(
+        "given `iterable` of type {} with at least two items: {}".format(
+            fmt_type_of(iterable, quote=True),
+            fmt_list((first, second), quote=True),
         )
     )
+    raise err
 
 
 def iter_flat[T](

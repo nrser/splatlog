@@ -26,9 +26,11 @@ from typing import (
     Union,
     TYPE_CHECKING,
     runtime_checkable,
-    Never,
 )
 from collections.abc import Mapping, Callable
+
+from rich.padding import PaddingDimensions
+from rich.syntax import SyntaxTheme
 
 # TypeIs was added to stdlib typing in 3.13
 if sys.version_info >= (3, 13):
@@ -41,46 +43,12 @@ from rich.style import StyleType
 from rich.theme import Theme
 from typeguard import check_type, TypeCheckError
 
-from splatlog.lib import fmt_list, fmt_type_of, fmt_type_value
-from splatlog.lib.text import fmt
+from splatlog.lib.text import fmt_list, fmt
+from splatlog.lib.types import assert_never
 
 
 if TYPE_CHECKING:
     from splatlog.json import JSONFormatter, JSONEncoder
-
-# Helpers
-# ============================================================================
-
-
-def assert_never(arg: Never, typ: Any) -> Never:
-    """Statically assert that a line of code is unreachable.
-
-    If a type checker finds that a call to `assert_never` is reachable, it will
-    emit an error. At runtime, raises {py:class}`AssertionError`.
-
-    ## Parameters
-
-    -   `arg`: The value that should be unreachable ({py:class}`typing.Never`).
-    -   `typ`: The expected type, included in the error message for clarity.
-
-    ## Examples
-
-    ```python
-    def int_or_str(arg: int | str) -> None:
-        match arg:
-            case int():
-                print("It's an int")
-            case str():
-                print("It's a str")
-            case _:
-                assert_never(arg, int | str)
-    ```
-    """
-    raise AssertionError(
-        "Expected `{}`, given `{}`: `{}`".format(
-            fmt(typ), fmt_type_of(arg), fmt(arg)
-        )
-    )
 
 
 # Types
@@ -330,7 +298,7 @@ What we can convert to a {py:class}`rich.console.Console`. See
 {py:func}`splatlog.rich.console.to_console`.
 """
 
-ToTheme: TypeAlias = Theme | IO[str] | Mapping[str, StyleType]
+ToTheme: TypeAlias = Theme | SyntaxTheme | IO[str] | Mapping[str, StyleType]
 """
 What we can convert to a {py:class}`rich.theme.Theme`. See
 {py:func}`splatlog.rich.theme.to_theme` for details.
@@ -454,16 +422,28 @@ Something that can be converted to a JSON encoder. When parameterized as
 Use {py:data}`ToJSONEncoder`\\ [Self] in {py:meth}`splatlog.json.JSONEncoder.of`.
 """
 
-OnReducerError: TypeAlias = Literal["continue", "raise", "warn"]
+OnReducerError: TypeAlias = Literal["raise", "continue"]
 """
-Ways to handle when a {py:class}`splatlog.json.JSONReducer` raises an error
-matching or reducing an object in {py:meth}`splatlog.json.JSONEncoder.default`:
+Ways to handle when a {py:class}`splatlog.json.JSONReducer` raises an
+{py:class}`Exception` in {py:meth}`~splatlog.json.JSONReducer.is_match` or
+{py:meth}`~splatlog.json.JSONReducer.reduce` as called in
+{py:meth}`splatlog.json.JSONEncoder.default`:
 
--   `"continue"` (default) — ignore and continue with the next reducer.
--   `"raise"` — raise an error.
--   `"warn"` — issue a warning and continue with the next reducer. Uses
-    {py:func}`warnings.warn` as we're a logging library and don't want to
-    depend on logging being setup or end up circling back to the same problem.
+-   `"raise"` (default) — raise the error. {py:meth}`Exception.add_note` is used
+    to add context.
+
+    Neither {py:meth}`~splatlog.json.JSONReducer.is_match` nor
+    {py:meth}`~splatlog.json.JSONReducer.reduce` (preconditioned on `is_match`)
+    are expected to raise errors, and you typically want to know if something
+    goes wrong when encoding an object, rather than when trying to decode it
+    later.
+
+-   `"continue"` — ignore the error and continue with the next reducer.
+
+    This mode exists specifically for encoding JSON logs, where we want to be
+    able to pass any object and prefer a
+    {py:data}`splatlog.json.FALLBACK_REDUCER` encoding ({py:class}`type` and
+    {py:func}`repr`) to failure.
 """
 
 # Named Handler Types
@@ -783,6 +763,38 @@ def is_to_rich_console(value: object) -> TypeIs[ToRichConsole]:
     return True
 
 
+def is_zero_padding(padding: PaddingDimensions) -> bool:
+    """
+    Is a {py:type}`rich.padding.PaddingDimensions` any of the all-zero forms —
+    `0`, `(0, 0)`, or `(0, 0, 0, 0)`?
+
+    Used to determine when we can skip wrapping a renderable in
+    {py:class}`rich.padding.Padding` in {py:func}`format`.
+
+    ## Examples
+
+    ```pycon
+    >>> is_zero_padding(0)
+    True
+
+    >>> is_zero_padding((0, 0))
+    True
+
+    >>> is_zero_padding((0, 0, 0, 0))
+    True
+
+    >>> is_zero_padding((1, 0))
+    False
+
+    ```
+    """
+    match padding:
+        case 0 | (0, 0) | (0, 0, 0, 0):
+            return True
+        case _:
+            return False
+
+
 # JSON Tests
 # ----------------------------------------------------------------------------
 
@@ -933,7 +945,8 @@ def to_level(value: ToLevel, *, case_sensitive: bool = False) -> Level:
     >>> to_level([])
     Traceback (most recent call last):
         ...
-    AssertionError: Expected `int | str`, given `list`: `[]`
+    AssertionError: expected `<int | str>`
+    given `<list>` `[]`
 
     ```
     """
@@ -955,24 +968,22 @@ def to_level(value: ToLevel, *, case_sensitive: bool = False) -> Level:
             return mapping[value]
 
         if case_sensitive:
-            raise TypeError(
-                (
-                    "{} is not a valid level name (case-sensitive), "
-                    "valid names: {}"
-                ).format(fmt(value), fmt_list(mapping.keys()))
+            err = TypeError(
+                f"{fmt(value)} is not a valid level name (case-sensitive)"
             )
+            err.add_note(f"valid names: {fmt_list(mapping.keys())}")
+            raise err
 
-        upper_value = value.upper()
+        v_up = value.upper()
 
-        if upper_value in mapping:
-            return mapping[upper_value]
+        if v_up in mapping:
+            return mapping[v_up]
 
-        raise TypeError(
-            (
-                "Neither given value {} or upper-case version {} are valid "
-                "level names, valid names: {}"
-            ).format(fmt(value), fmt(upper_value), fmt_list(mapping.keys()))
+        err = TypeError(
+            f"Neither {fmt(value)} or upper {fmt(v_up)} are valid level names"
         )
+        err.add_note(f"valid names: {fmt_list(mapping.keys())}")
+        raise err
 
     assert_never(value, ToLevel)
 
@@ -997,7 +1008,8 @@ def to_verbosity(x: object) -> Verbosity:
     >>> to_verbosity(-1)
     Traceback (most recent call last):
         ...
-    TypeError: Expected verbosity to be non-negative integer less than 16, given int: -1
+    TypeError: expected non-negative integer less than `16`
+    given `<int>` `-1`
 
     ```
     """
@@ -1007,11 +1019,11 @@ def to_verbosity(x: object) -> Verbosity:
     if is_verbosity(x):
         return x
 
-    raise TypeError(
-        "Expected verbosity to be non-negative integer less than {}, given {}: {}".format(
-            fmt(VERBOSITY_MAX), fmt(type(x)), fmt(x)
-        )
+    err = TypeError(
+        f"expected non-negative integer less than {fmt(VERBOSITY_MAX, quote=True)}"
     )
+    err.add_note(f"given {fmt(x, type=True, quote=True)}")
+    raise err
 
 
 # Rich Conversions
@@ -1036,12 +1048,8 @@ def to_stdio(name: StdioName) -> IO[str]:
             return sys.stdout
         case "stderr":
             return sys.stderr
-        case _:
-            raise TypeError(
-                "expected {}, given {}".format(
-                    fmt(StdioName), fmt_type_value(name)
-                )
-            )
+        case name:
+            assert_never(name, StdioName)
 
 
 # Assertions
@@ -1069,18 +1077,18 @@ def assert_level(level: ToLevel, *, var_name: str = "level") -> None:
     """
     if isinstance(level, str):
         if not is_level_name(level):
-            raise ValueError(
-                "Expected `{}` to be `{}`, given `str` but {} is not a valid level name".format(
-                    var_name, fmt(ToLevel), fmt(level)
-                )
+            err = ValueError(
+                f"expected `{var_name}` to be {fmt(ToLevel, quote=True)}"
             )
+            err.add_note(f"{fmt(level, quote=True)} is not a valid level name")
+            raise err
     elif isinstance(level, int):
         if not is_level(level):
-            raise ValueError(
-                "Expected `{}` to be `{}`, given `int` but {} is not a valid level".format(
-                    var_name, fmt(ToLevel), fmt(level)
-                )
+            err = ValueError(
+                f"expected `{var_name}` to be {fmt(ToLevel, quote=True)}"
             )
+            err.add_note(f"{fmt(level, quote=True)} is not a valid level")
+            raise err
     else:
         assert_never(level, ToLevel)
 
@@ -1092,6 +1100,18 @@ Filter options for which loggers to include in the report.
 -   `"all"`: Include all loggers registered in the logging manager.
 -   `"configured"`: Include only loggers with handlers or non-NOTSET level.
 """
+
+
+# Formatting
+# ============================================================================
+
+
+def fmt_level(level: ToLevel) -> str:
+    """
+    Format a logging level, displaying both the integer value and name.
+    """
+    level = to_level(level)
+    return f"{level!r} ({to_level_name(level)})"
 
 
 # Doctests

@@ -61,6 +61,8 @@ from .text import (
     fmt_date,
     fmt_time,
     fmt_timedelta,
+    fmt_pretty_repr,
+    tabulate,
 )
 
 from .typeguard import satisfies, check
@@ -104,6 +106,8 @@ __all__ = [
     "fmt_date",
     "fmt_time",
     "fmt_timedelta",
+    "fmt_pretty_repr",
+    "tabulate",
     # .typeguard
     "satisfies",
     "check",
