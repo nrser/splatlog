@@ -5,11 +5,10 @@ A JSON encoder that handles arbitrary Python objects.
 import json
 from typing import IO, cast, Never, Self
 from collections.abc import Iterable, Callable, Mapping, Sequence
-from warnings import warn
 
 import rich.repr
 
-from splatlog.lib import fmt, fmt_type_value
+from splatlog.lib import fmt
 from splatlog.types import (
     JSONEncoderPreset,
     ToJSONEncoder,
@@ -19,10 +18,6 @@ from splatlog.types import (
 )
 
 from .reducers import ALL_REDUCERS, JSONReducer
-
-_REDUCER_ERROR_MSG = (
-    "Encoding reducer '{}' raised failed to reduce {}, error: {}"
-)
 
 
 class JSONEncoder(json.JSONEncoder):
@@ -516,7 +511,7 @@ class JSONEncoder(json.JSONEncoder):
         self,
         *,
         reducers: Iterable[JSONReducer] = ALL_REDUCERS,
-        on_reducer_error: OnReducerError = "continue",
+        on_reducer_error: OnReducerError = "raise",
         default: None = None,
         **kwds,
     ):
@@ -571,22 +566,16 @@ class JSONEncoder(json.JSONEncoder):
             try:
                 if reducer.is_match(obj):
                     return reducer.reduce(obj)
-            except Exception as error:
+            except Exception as err:
                 match self.on_reducer_error:
                     case "continue":
                         pass
                     case "raise":
-                        raise TypeError(
-                            _REDUCER_ERROR_MSG.format(
-                                fmt(reducer), fmt_type_value(obj), fmt(error)
-                            )
-                        ) from error
-                    case "warn":
-                        warn(
-                            _REDUCER_ERROR_MSG.format(
-                                fmt(reducer), fmt_type_value(obj), fmt(error)
-                            )
+                        err.add_note(f"in match|reduce of {reducer}")
+                        err.add_note(
+                            f"called with {fmt(obj, quote=True, type=True)}"
                         )
+                        raise err
                     case _:
                         assert_never(self.on_reduce_error, OnReducerError)
 
@@ -654,7 +643,7 @@ class JSONEncoder(json.JSONEncoder):
         >>> enc = JSONEncoder.compact(reducers=[])
         >>> print(repr(enc))
         JSONEncoder(reducers=[],
-            on_reducer_error='continue',
+            on_reducer_error='raise',
             indent=None, separators=(',', ':'),
             skipkeys=False, ensure_ascii=True,
             check_circular=True,
@@ -699,7 +688,7 @@ class JSONEncoder(json.JSONEncoder):
         # Class attributes
 
         yield "reducers", self.reducers, ALL_REDUCERS
-        yield "on_reducer_error", self.on_reducer_error, "continue"
+        yield "on_reducer_error", self.on_reducer_error, "raise"
 
         # Base `json.JSONEncoder` attributes (with defaults)
 

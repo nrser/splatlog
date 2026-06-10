@@ -21,6 +21,7 @@ from .reducers import (
     ENUM_REDUCER,
     EXCEPTION_REDUCER,
     MAPPING_REDUCER,
+    FALLBACK_REDUCER,
     ALL_REDUCERS,
 )
 
@@ -36,5 +37,6 @@ __all__ = [
     "ENUM_REDUCER",
     "EXCEPTION_REDUCER",
     "MAPPING_REDUCER",
+    "FALLBACK_REDUCER",
     "ALL_REDUCERS",
 ]

@@ -17,7 +17,12 @@ from rich.console import Console
 from rich.text import Text
 
 from splatlog.rich import capture_riches, to_console
-from splatlog.types import ToJSONEncoder, ToJSONFormatter, assert_never
+from splatlog.types import (
+    ToJSONEncoder,
+    ToJSONFormatter,
+    assert_never,
+    is_json_encoder_preset,
+)
 
 from .encoder import JSONEncoder
 
@@ -127,12 +132,27 @@ class JSONFormatter(logging.Formatter):
         """
         super().__init__(datefmt=datefmt)
 
-        # Allow assignment of `json.JSONEncoder` that is not a
-        # `splatlog.json.json_encoder.JSONEncoder`
-        if isinstance(encoder, json.JSONEncoder):
-            self._encoder = encoder
-        else:
-            self._encoder = JSONEncoder.of(encoder)
+        match encoder:
+            # Allow assignment of `json.JSONEncoder` that is not a
+            # `splatlog.json.json_encoder.JSONEncoder`
+            case instance if isinstance(instance, json.JSONEncoder):
+                self._encoder = instance
+            case None:
+                self._encoder = JSONEncoder(on_reducer_error="continue")
+            case preset if is_json_encoder_preset(preset):
+                self._encoder = JSONEncoder.of(preset)
+            case map if isinstance(map, Mapping):
+                self._encoder = JSONEncoder(**{
+                    "on_reducer_error": "continue",
+                    **map,
+                })
+            case other:
+                assert_never(
+                    # Assert that all the cases are covered by casting to
+                    # `Never`
+                    cast(Never, other),
+                    json.JSONEncoder | ToJSONEncoder[JSONEncoder],
+                )
 
         self._tz = tz
         self._use_Z_for_utc = use_Z_for_utc
@@ -458,7 +478,7 @@ class JSONFormatter(logging.Formatter):
         ...     encoder=JSONEncoder.compact(reducers=[]), tz=timezone.utc)
         ... )
         JSONFormatter(datefmt=None,
-            encoder=JSONEncoder(reducers=[], on_reducer_error='continue',
+            encoder=JSONEncoder(reducers=[], on_reducer_error='raise',
                 indent=None, separators=(',', ':'), skipkeys=False,
                 ensure_ascii=True, check_circular=True, allow_nan=True,
                 sort_keys=False),
