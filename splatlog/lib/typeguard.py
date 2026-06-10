@@ -3,7 +3,7 @@ Runtime type checking utilities wrapping the `typeguard` package.
 """
 
 import sys
-from typing import Any, TypeVar
+from typing import Any
 
 from typeguard import check_type, TypeCheckError
 
@@ -13,10 +13,8 @@ if sys.version_info >= (3, 13):
 else:
     from typing_extensions import TypeIs
 
-T = TypeVar("T")
 
-
-def satisfies(value: Any, expected_type: type[T]) -> TypeIs[T]:
+def satisfies[T](value: Any, expected_type: type[T]) -> TypeIs[T]:
     """
     Check if a value satisfies a type at runtime.
 
@@ -52,3 +50,11 @@ def satisfies(value: Any, expected_type: type[T]) -> TypeIs[T]:
     except TypeCheckError:
         return False
     return True
+
+
+def check[T](
+    value: Any,
+    expected_type: type[T],
+) -> T:
+    check_type(value, expected_type)
+    return value

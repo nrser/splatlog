@@ -19,6 +19,7 @@ from collections import defaultdict
 from typing import Optional, cast, overload
 from collections.abc import Callable, Iterable, Mapping, Container
 
+from splatlog.types import TypeIs
 from splatlog.lib.text import fmt, fmt_list, fmt_type_of
 
 # Types
@@ -51,6 +52,12 @@ ERR_MSG_UNARY_MANY = (
 
 # Functions
 # ============================================================================
+
+
+@overload
+def find[T, V](
+    predicate: Callable[[object], TypeIs[V]], iterable: Iterable[T]
+) -> V | None: ...
 
 
 @overload

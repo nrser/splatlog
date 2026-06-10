@@ -3,8 +3,16 @@ Library types: general, project-agnostic type hints and helpers.
 """
 
 from inspect import isclass
+import sys
 import typing
 import types
+import dataclasses as dc
+
+# TypeIs was added to stdlib typing in 3.13
+if sys.version_info >= (3, 13):
+    from typing import TypeIs
+else:
+    from typing_extensions import TypeIs
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # !!! IMPORTANT No cross-package `import` at top-level
@@ -154,3 +162,90 @@ def is_builtins(obj: object) -> bool:
     if isclass(obj):
         return obj.__module__ == BUILTINS_MODULE_NAME
     return type(obj).__module__ == BUILTINS_MODULE_NAME
+
+
+def assert_never(arg: typing.Never, typ: typing.Any) -> typing.Never:
+    """Statically assert that a line of code is unreachable.
+
+    If a type checker finds that a call to `assert_never` is reachable, it will
+    emit an error. At runtime, raises {py:class}`AssertionError`.
+
+    ## Parameters
+
+    -   `arg`: The value that should be unreachable ({py:class}`typing.Never`).
+    -   `typ`: The expected type, included in the error message for clarity.
+
+    ## Examples
+
+    ```python
+    def int_or_str(arg: int | str) -> None:
+        match arg:
+            case int():
+                print("It's an int")
+            case str():
+                print("It's a str")
+            case _:
+                assert_never(arg, int | str)
+    ```
+    """
+    # Avoid circular import
+    from splatlog.lib.text import fmt
+
+    err = AssertionError(f"expected {fmt(typ, quote=True)}")
+    err.add_note(f"given {fmt(arg, type=True, quote=True)}")
+    raise err
+
+
+@dc.dataclass(frozen=True)
+class IsType[T]:
+    """
+    Predicate that tests if {py:class}`object` are instances of {py:class}`type`
+    `T`. Uses {py:obj}`typing.TypeIs` to mark passing values as instances of
+    `T`.
+
+    Implemented as a immutable {py:func}`~dataclasses.dataclass`, storing `T` in
+    a {py:attr}`t` attribute and testing values with {py:meth}`__call__`.
+
+    ## Examples
+
+    Does what you would expect:
+
+    ```pycon
+    >>> is_int = IsType(int)
+    >>> is_int
+    IsType(t=<class 'int'>)
+
+    >>> is_int(123)
+    True
+    >>> is_int("hey")
+    False
+
+    ```
+
+    {py:class}`IsType` can be used with functions like
+    {py:func}`splatlog.lib.collections.find` that parameterize over
+    {py:obj}`typing.TypeIs` to discriminate return type.
+
+    The result of `find(IsType[T], ...)` can be safely assigned to a variable of
+    type `T`, as seen here assigning `find(IsType(int), ...)` to an
+    {py:class}`int`:
+
+    ```pycon
+    >>> from splatlog.lib.collections import find
+
+    >>> values: list[object] = ["hey", 123, "ho"]
+    >>> i: int = find(IsType(int), values)
+    >>> i
+    123
+
+    ```
+    """
+
+    t: type[T]
+    """The {py:class}`type` this {py:class}`IsType` tests for."""
+
+    def __call__(self, value: object) -> TypeIs[T]:
+        """
+        Test if `value` is an instance of {py:attr}`t`.
+        """
+        return isinstance(value, self.t)

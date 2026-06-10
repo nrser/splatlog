@@ -32,6 +32,7 @@ from .collections import (
     group_by,
     unary,
 )
+from .errors import NoErrorError, err_catch
 from .functions import (
     REQUIRABLE_PARAMETER_KINDS,
     is_required_parameter,
@@ -56,20 +57,24 @@ from .text import (
     fmt_routine,
     fmt_range,
     fmt_list,
-    fmt_seq,
     fmt_datetime,
     fmt_date,
     fmt_time,
     fmt_timedelta,
 )
 
-from .typeguard import satisfies
+from .typeguard import satisfies, check
 
 __all__ = [
+    # .collections
     "find",
     "partition_mapping",
     "group_by",
     "unary",
+    # .errors
+    "NoErrorError",
+    "err_catch",
+    # .functions
     "REQUIRABLE_PARAMETER_KINDS",
     "is_required_parameter",
     "required_arity",
@@ -94,7 +99,6 @@ __all__ = [
     "fmt_routine",
     "fmt_range",
     "fmt_list",
-    "fmt_seq",
     "fmt_datetime",
     "fmt_datetime",
     "fmt_date",
@@ -102,6 +106,7 @@ __all__ = [
     "fmt_timedelta",
     # .typeguard
     "satisfies",
+    "check",
     # .
     "has_method",
     "respond_to",
