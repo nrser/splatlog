@@ -7,8 +7,12 @@ from collections.abc import Mapping
 from typing import IO, cast
 
 from rich.color import Color, ColorType
+from rich.syntax import SyntaxTheme
 from rich.theme import Theme
 from rich.style import Style, StyleType
+from pygments.token import Comment, Keyword, Name, Number, Operator, String
+from pygments.token import Text as TextToken
+from pygments.token import Token
 
 from splatlog.lib.typeguard import satisfies
 from splatlog.types import ToTheme, assert_never
@@ -392,6 +396,13 @@ def to_theme(value: ToTheme | None = None) -> Theme:
 
         -   {py:class}`rich.theme.Theme`: returned as-is.
 
+        -   {py:class}`rich.syntax.SyntaxTheme`: converted via a copy of the
+            procedure from {py:meth}`rich.traceback.Traceback.__rich_console__`.
+
+            Used in {py:class}`splatlog.rich.EnrichedException` to convert the
+            {py:attr}`~rich.traceback.Traceback.theme` attribute from
+            {py:class}`rich.traceback.Traceback`.
+
         -   {py:class}`~collections.abc.Mapping`: layered over the default
             {py:data}`THEME`.
 
@@ -440,6 +451,36 @@ def to_theme(value: ToTheme | None = None) -> Theme:
     if isinstance(value, Theme):
         # Given a `rich.theme.Theme`, which can be used directly
         return value
+
+    if isinstance(value, SyntaxTheme):
+        # Given a `rich.syntax.SyntaxTheme` — which are mainly wrappers around
+        # `pygments` source highlighting themes — convert via the procedure
+        # embedded in `rich.traceback.Traceback.__rich_console__` (MIT license,
+        # copyright (c) 2020 Will McGugan)
+        token_style = value.get_style_for_token
+
+        return Theme(
+            {
+                "pretty": token_style(TextToken),
+                "pygments.text": token_style(Token),
+                "pygments.string": token_style(String),
+                "pygments.function": token_style(Name.Function),
+                "pygments.number": token_style(Number),
+                "repr.indent": token_style(Comment) + Style(dim=True),
+                "repr.str": token_style(String),
+                "repr.brace": token_style(TextToken) + Style(bold=True),
+                "repr.number": token_style(Number),
+                "repr.bool_true": token_style(Keyword.Constant),
+                "repr.bool_false": token_style(Keyword.Constant),
+                "repr.none": token_style(Keyword.Constant),
+                "scope.border": token_style(String.Delimiter),
+                "scope.equals": token_style(Operator),
+                "scope.key": token_style(Name),
+                "scope.key.special": token_style(Name.Constant)
+                + Style(dim=True),
+            },
+            inherit=False,
+        )
 
     if satisfies(value, IO[str]):
         # Given an open file to read the theme from

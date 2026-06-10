@@ -10,12 +10,13 @@ from inspect import isclass, isroutine
 from rich.console import RenderableType
 from rich.pretty import Pretty
 from rich.highlighter import ReprHighlighter
-from rich.text import Text
+from rich.text import Text, TextType
 
 from splatlog.lib import has_method
 from splatlog.lib.text import fmt_routine
 from splatlog.types import is_rich
 
+from .enriched_exception import EnrichedException
 from .enriched_path import EnrichedPath
 from .enriched_type import EnrichedType
 
@@ -126,10 +127,13 @@ def enrich(value, inline=False) -> RenderableType:
 
     if isroutine(value):
         # TODO  This could/should be better
-        return repr_highlight(fmt_routine(value))
+        return highlighted(fmt_routine(value))
 
     if isinstance(value, Path):
         return enrich_path(value)
+
+    if isinstance(value, BaseException):
+        return EnrichedException(value)
 
     if inline:
         return repr_highlight(value)
@@ -139,6 +143,13 @@ def enrich(value, inline=False) -> RenderableType:
 
 # Supporting Functions
 # ============================================================================
+
+
+def highlighted(text: TextType) -> Text:
+    if isinstance(text, str):
+        text = Text(text, end="")
+    REPR_HIGHLIGHTER.highlight(text)
+    return text
 
 
 def repr_highlight(value: object, *, use_ascii: bool = False) -> Text:

@@ -17,10 +17,29 @@ thinking of operating on them as collections of characters/bytes.
 from __future__ import annotations
 from collections import defaultdict
 from typing import Optional, cast, overload
-from collections.abc import Callable, Iterable, Mapping, Container
+from collections.abc import Callable, Generator, Iterable, Mapping, Container
 
 from splatlog.types import TypeIs
 from splatlog.lib.text import fmt, fmt_list, fmt_type_of
+
+# Re-Exports
+# ----------------------------------------------------------------------------
+
+from .loop import loop_first, loop_last, loop_first_last
+
+__all__ = [
+    # .loop
+    "loop_first",
+    "loop_last",
+    "loop_first_last",
+    # .
+    "RecursiveIterable",
+    "find",
+    "partition_mapping",
+    "group_by",
+    "unary",
+    "iter_flat",
+]
 
 # Types
 # ============================================================================
@@ -354,3 +373,27 @@ def iter_flat[T](
             # NOTE  Not type-sound, as `T` may itself be `Iterable`, so we need
             #       to force our invariant on the type checker with a `cast`
             yield cast(T, item)
+
+
+def map_chunks_where[T, V](
+    itr: Iterable[T], pred: Callable[[T], bool], trans: Callable[[list[T]], V]
+) -> Generator[T | V]:
+    """
+    Chunk adjacent items that satisfy `pred` into their own lists.
+
+    Added to chunk {py:class}`rich.segment.Segment` together in the output of
+    {py:}
+    """
+    chunk: list[T] = []
+
+    for x in itr:
+        if pred(x):
+            chunk.append(x)
+        else:
+            if chunk:
+                yield trans(chunk)
+                chunk = []
+            yield x
+
+    if chunk:
+        yield trans(chunk)

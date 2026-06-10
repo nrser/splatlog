@@ -13,26 +13,29 @@ from splatlog.types import ToRichConsole
 
 # Re-exports
 from .theme import (
-    ToTheme as ToTheme,
-    THEME as THEME,
+    ToTheme,
+    THEME,
     PALETTE_ANSI_DARK,
     THEME_ANSI_DARK,
-    to_theme as to_theme,
-    get_default_theme as get_default_theme,
-    set_default_theme as set_default_theme,
-    override_ansi_colors as override_ansi_colors,
+    to_theme,
+    get_default_theme,
+    set_default_theme,
+    override_ansi_colors,
 )
 from .ntv_table import NtvTable, TableSource
 from .enrich import (
-    REPR_HIGHLIGHTER as REPR_HIGHLIGHTER,
-    enrich as enrich,
-    enrich_type as enrich_type,
-    enrich_type_of as enrich_type_of,
-    EnrichedType as EnrichedType,
+    REPR_HIGHLIGHTER,
+    enrich,
+    enrich_type,
+    enrich_type_of,
+    EnrichedType,
 )
+from .enrich.enriched_exception import EnrichedException
 from .inline import Inline as Inline
 from .console import to_console, to_style
 from .handler import RichHandler, TimeConfig, ToTimeConfig
+from .section import Heading, Section
+from .framing import to_renderable_type, with_framing, frame
 
 __all__ = [
     # .theme
@@ -54,6 +57,8 @@ __all__ = [
     "enrich",
     "enrich_type",
     "enrich_type_of",
+    # .enrich.enriched_exception
+    "EnrichedException",
     # .inline
     "Inline",
     # .console
@@ -63,6 +68,13 @@ __all__ = [
     "RichHandler",
     "TimeConfig",
     "ToTimeConfig",
+    # .section
+    "Heading",
+    "Section",
+    # .framing
+    "to_renderable_type",
+    "with_framing",
+    "frame",
     # local
     "capture_riches",
 ]
