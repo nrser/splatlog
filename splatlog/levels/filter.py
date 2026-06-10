@@ -29,7 +29,7 @@ from splatlog.types import (
     VerbositySpec,
     can_be_level,
     is_verbosity_spec,
-    to_level_name,
+    fmt_level,
     to_level,
     to_verbosity,
     VERBOSITY_MAX,
@@ -108,14 +108,6 @@ def sync_verbosity_logger_levels() -> None:
             filter = Filter.get_from(logger)
             if isinstance(filter, VerbosityFilter):
                 logger.setLevel(filter.effective_level)
-
-
-def fmt_level(level: ToLevel) -> str:
-    """
-    Format a logging level, displaying both the integer value and name.
-    """
-    level = to_level(level)
-    return f"{level!r} ({to_level_name(level)})"
 
 
 class Filter(logging.Filter, metaclass=ABCMeta):
@@ -333,14 +325,12 @@ class VerbosityFilter(Filter, ConsoleRenderable):
 
         # The result ranges between sort-adjacent verbosities mapped to the
         # level value of the first verbosity/level pair
-        self.classifier = Classifier(
-            {
-                # We need a `typing.cast` here because `range` is not generic,
-                # it's always a `Sequence[int]`
-                cast(Sequence[Verbosity], range(v_1, v_2)): l_1
-                for (v_1, l_1), (v_2, _) in pairwise(pairs)
-            }
-        )
+        self.classifier = Classifier({
+            # We need a `typing.cast` here because `range` is not generic,
+            # it's always a `Sequence[int]`
+            cast(Sequence[Verbosity], range(v_1, v_2)): l_1
+            for (v_1, l_1), (v_2, _) in pairwise(pairs)
+        })
 
     def __repr__(self) -> str:
         """
