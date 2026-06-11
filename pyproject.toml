@@ -144,19 +144,14 @@ include = [
     "splatlog",
     "LICENSE",
 ]
-exclude = [
-    "splatlog/_docs.py",
-    "splatlog/_testing.py",
-]
+exclude = []
 
 [tool.hatch.build.targets.wheel]
 include = [
     "splatlog",
     "LICENSE",
 ]
-exclude = [
-    "splatlog/_docs.py",
-]
+exclude = []
 
 # Build System
 # ============================================================================

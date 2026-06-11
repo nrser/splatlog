@@ -1,5 +1,5 @@
 from faker import Faker
-from splatlog._testing import assert_text
+from splatlog.testing import assert_text
 from splatlog.lib.text import fmt
 
 

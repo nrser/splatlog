@@ -433,7 +433,7 @@ class NameMapFilter(Filter):
     descendant loggers).
 
     ```python
-    >>> from splatlog._testing import make_log_record
+    >>> from splatlog.testing import make_log_record
     >>> from splatlog.types import Verbosity
 
     >>> filter = NameMapFilter(

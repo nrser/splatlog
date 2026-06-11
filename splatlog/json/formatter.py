@@ -263,7 +263,7 @@ class JSONFormatter(logging.Formatter):
 
         ```python
         >>> from datetime import datetime, timezone
-        >>> from splatlog._testing import make_log_record
+        >>> from splatlog.testing import make_log_record
 
         >>> r_1 = make_log_record(
         ...     created=datetime(
@@ -312,7 +312,7 @@ class JSONFormatter(logging.Formatter):
 
         ```python
         >>> from datetime import datetime, timezone
-        >>> from splatlog._testing import make_log_record
+        >>> from splatlog.testing import make_log_record
 
         >>> r_3 = make_log_record(
         ...     created=datetime(
@@ -350,7 +350,7 @@ class JSONFormatter(logging.Formatter):
 
         ```python
         >>> from datetime import datetime, timezone
-        >>> from splatlog._testing import make_log_record
+        >>> from splatlog.testing import make_log_record
 
         >>> r_1 = make_log_record(
         ...     created=datetime(
@@ -367,8 +367,8 @@ class JSONFormatter(logging.Formatter):
         {
             "t": "2022-09-04T03:04:05.123456Z",
             "level": "INFO",
-            "name": "splatlog._testing",
-            "file": ".../splatlog/_testing.py",
+            "name": "splatlog.testing",
+            "file": ".../splatlog/testing.py",
             "line": 123,
             "msg": "Test message"
         }
@@ -379,7 +379,7 @@ class JSONFormatter(logging.Formatter):
 
         ```python
         >>> from datetime import datetime, timezone
-        >>> from splatlog._testing import make_log_record
+        >>> from splatlog.testing import make_log_record
 
         >>> r_2 = make_log_record(
         ...     created=datetime(
@@ -395,8 +395,8 @@ class JSONFormatter(logging.Formatter):
         {
             "t": "2022-09-04T03:04:05.123456Z",
             "level": "INFO",
-            "name": "splatlog._testing",
-            "file": ".../splatlog/_testing.py",
+            "name": "splatlog.testing",
+            "file": ".../splatlog/testing.py",
             "line": 123,
             "msg": "Test message",
             "data": {
@@ -412,7 +412,7 @@ class JSONFormatter(logging.Formatter):
         ```python
         >>> import sys
         >>> from datetime import datetime, timezone
-        >>> from splatlog._testing import make_log_record
+        >>> from splatlog.testing import make_log_record
 
         >>> try:
         ...     raise RuntimeError("Something went wrong")
@@ -427,8 +427,8 @@ class JSONFormatter(logging.Formatter):
         {
             "t": "2022-09-04T03:04:05.123456Z",
             "level": "INFO",
-            "name": "splatlog._testing",
-            "file": ".../splatlog/_testing.py",
+            "name": "splatlog.testing",
+            "file": ".../splatlog/testing.py",
             "line": 123,
             "msg": "Test message",
             "error": {

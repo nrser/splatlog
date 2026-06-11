@@ -391,6 +391,6 @@ if os.environ.get("TESTING"):
     # `doctest` doesn't automatically pickup the "following docstring" format
     # used by Sphinx/MyST to document constants, so we need to do some AST
     # parsing and stick it in a `__test__` dict, which `doctest` looks for
-    from splatlog._testing import get_constant_docstrings
+    from splatlog.testing import get_constant_docstrings
 
     __test__ = get_constant_docstrings(__name__)

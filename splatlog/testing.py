@@ -1,6 +1,8 @@
 """
-Shit just used in tests (doctest at the moment), excluded from the distributed
-package.
+Testing utilities for splatlog.
+
+Provides helpers for doctests and pytest tests, including text assertion
+utilities and log record factories.
 """
 
 import logging
@@ -37,7 +39,7 @@ def assert_text(
     `tests/conftest.py`:
 
     ```py
-    pytest.register_assert_rewrite("splatlog._testing")
+    pytest.register_assert_rewrite("splatlog.testing")
     ```
     :::
 
@@ -59,7 +61,7 @@ def assert_text(
 
     ## Examples
 
-    >>> from splatlog._testing import assert_text
+    >>> from splatlog.testing import assert_text
     >>> assert_text("hello\\nworld", '''
     ...     hello
     ...     world
@@ -118,7 +120,7 @@ def get_constant_docstrings(module: str | ModuleType):
     import os
 
     if os.environ.get("TESTING"):
-        from splatlog._testing import get_constant_docstrings
+        from splatlog.testing import get_constant_docstrings
 
         __test__ = get_constant_docstrings(sys.modules[__name__])
     ```
