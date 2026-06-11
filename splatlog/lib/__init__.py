@@ -27,10 +27,12 @@ from .types import (
     is_typing,
 )
 from .collections import (
+    RecursiveIterable,
     find,
     partition_mapping,
     group_by,
     unary,
+    iter_flat,
 )
 from .errors import NoErrorError, err_catch
 from .functions import (
@@ -69,10 +71,12 @@ from .types import satisfies, check
 
 __all__ = [
     # .collections
+    "RecursiveIterable",
     "find",
     "partition_mapping",
     "group_by",
     "unary",
+    "iter_flat",
     # .errors
     "NoErrorError",
     "err_catch",
