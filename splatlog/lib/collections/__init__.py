@@ -17,7 +17,7 @@ thinking of operating on them as collections of characters/bytes.
 from __future__ import annotations
 from collections import defaultdict
 from typing import Optional, cast, overload
-from collections.abc import Callable, Generator, Iterable, Mapping, Container
+from collections.abc import Callable, Iterable, Mapping, Container
 
 from splatlog.types import TypeIs
 from splatlog.lib.text import fmt, fmt_list, fmt_type_of
@@ -119,18 +119,18 @@ def find(predicate, iterable, *, not_found=None):
 
 
 def partition_mapping[K, V](
-    mapping: Mapping[K, V],
     by: Container | Callable[[K], bool],
+    mapping: Mapping[K, V],
 ) -> tuple[dict[K, V], dict[K, V]]:
     """
     Partition a mapping into two dicts based on key membership.
 
     ## Parameters
 
-    -   `mapping`: The {py:class}`collections.abc.Mapping` to partition.
     -   `by`: Either a {py:class}`collections.abc.Container` of keys, or a
         predicate function that returns {py:data}`True` for keys to include
         in the first dict.
+    -   `mapping`: The {py:class}`collections.abc.Mapping` to partition.
 
     ## Returns
 
@@ -146,8 +146,8 @@ def partition_mapping[K, V](
     ```python
 
     >>> partition_mapping(
+    ...     {"a", "c"},
     ...     {"a": 1, "b": 2, "c": 3, "d": 4},
-    ...     {"a", "c"}
     ... )
     ({'a': 1, 'c': 3}, {'b': 2, 'd': 4})
 
@@ -158,8 +158,8 @@ def partition_mapping[K, V](
     ```python
 
     >>> partition_mapping(
-    ...     {"a": 1, "b": 2, "c": 3, "d": 4},
     ...     lambda k: k in "back",
+    ...     {"a": 1, "b": 2, "c": 3, "d": 4},
     ... )
     ({'a': 1, 'b': 2, 'c': 3}, {'d': 4})
 
@@ -178,7 +178,7 @@ def partition_mapping[K, V](
 
 
 def group_by[T, K](
-    iterable: Iterable[T], get_key: Callable[[T], K]
+    get_key: Callable[[T], K], iterable: Iterable[T]
 ) -> dict[K, list[T]]:
     """
     Group items by a key function.
@@ -190,8 +190,8 @@ def group_by[T, K](
 
     ## Parameters
 
-    -   `iterable`: The items to group.
     -   `get_key`: A function that extracts the grouping key from each entry.
+    -   `iterable`: The items to group.
 
     ## Returns
 
@@ -201,13 +201,13 @@ def group_by[T, K](
 
     ```python
     >>> result = group_by(
+    ...     lambda dct: dct["type"],
     ...     [
     ...         {"name": "Hudie", "type": "cat"},
     ...         {"name": "Rice Card", "type": "human"},
     ...         {"name": "Oscar", "type": "cat"},
     ...         {"name": "Kid Cloud", "type": "human"},
     ...     ],
-    ...     lambda dct: dct["type"],
     ... )
     >>> sorted(result.keys())
     ['cat', 'human']
@@ -373,27 +373,3 @@ def iter_flat[T](
             # NOTE  Not type-sound, as `T` may itself be `Iterable`, so we need
             #       to force our invariant on the type checker with a `cast`
             yield cast(T, item)
-
-
-def map_chunks_where[T, V](
-    itr: Iterable[T], pred: Callable[[T], bool], trans: Callable[[list[T]], V]
-) -> Generator[T | V]:
-    """
-    Chunk adjacent items that satisfy `pred` into their own lists.
-
-    Added to chunk {py:class}`rich.segment.Segment` together in the output of
-    {py:}
-    """
-    chunk: list[T] = []
-
-    for x in itr:
-        if pred(x):
-            chunk.append(x)
-        else:
-            if chunk:
-                yield trans(chunk)
-                chunk = []
-            yield x
-
-    if chunk:
-        yield trans(chunk)

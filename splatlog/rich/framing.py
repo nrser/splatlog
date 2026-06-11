@@ -1,5 +1,5 @@
 import functools
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Generator, Iterable
 
 from rich.console import (
     ConsoleRenderable,
@@ -12,9 +12,53 @@ from rich.constrain import Constrain
 from rich.padding import Padding, PaddingDimensions
 from rich.segment import Segment, Segments
 
-from splatlog.lib.collections import map_chunks_where
-from splatlog.lib.types import IsType
 from splatlog.types import is_zero_padding
+
+
+def coalesce_segments(items: Iterable) -> Generator[Segments | object]:
+    """
+    Coalesce adjacent {py:class}`rich.segment.Segment` items into
+    {py:class}`rich.segment.Segments`.
+
+    Non-{py:class}`~rich.segment.Segment` items are yielded as-is.
+
+    ## Examples
+
+    Adjacent {py:class}`~rich.segment.Segment` items are coalesced:
+
+    ```pycon
+    >>> from rich.segment import Segment, Segments
+    >>> from rich.text import Text
+
+    >>> items = [
+    ...     Segment("a"),
+    ...     Segment("b"),
+    ...     Text("hello"),
+    ...     Segment("c"),
+    ...     Text("world"),
+    ... ]
+
+    >>> list(coalesce_segments(items))
+    [<rich.segment.Segments ...>,
+        <text 'hello' [] ''>,
+        <rich.segment.Segments ...>,
+        <text 'world' [] ''>]
+
+    ```
+    """
+    chunk: list[Segment] = []
+
+    for item in items:
+        if isinstance(item, Segment):
+            chunk.append(item)
+        else:
+            if chunk:
+                yield Segments(chunk)
+                chunk = []
+            yield item
+
+    if chunk:
+        yield Segments(chunk)
 
 
 def to_renderable_type(value: object) -> RenderableType:
@@ -48,10 +92,7 @@ def to_renderable_type(value: object) -> RenderableType:
             return to_renderable_type(i)
         case [*ls]:
             return Group(
-                *(
-                    to_renderable_type(r)
-                    for r in map_chunks_where(ls, IsType(Segment), Segments)
-                )
+                *(to_renderable_type(r) for r in coalesce_segments(ls))
             )
         case itr if isinstance(itr, Iterable):
             return to_renderable_type(list(itr))

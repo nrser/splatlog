@@ -710,7 +710,7 @@ def to_export_handler(value: ToExportHandler) -> logging.Handler:
                 )
             )
 
-        post_kwds, init_kwds = partition_mapping(value, {"level", "formatter"})
+        post_kwds, init_kwds = partition_mapping({"level", "formatter"}, value)
 
         handler = cls(**init_kwds)
 

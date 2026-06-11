@@ -326,7 +326,7 @@ class SplatLogger(logging.LoggerAdapter):
         {py:class}`logging.LogRecord`.
         """
         new_kwargs, data = partition_mapping(
-            kwargs, {"exc_info", "extra", "stack_info", "stacklevel"}
+            {"exc_info", "extra", "stack_info", "stacklevel"}, kwargs
         )
         if extra := new_kwargs.get("extra"):
             extra["_splatlog_"] = True
