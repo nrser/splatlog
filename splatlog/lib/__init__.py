@@ -102,7 +102,6 @@ __all__ = [
     "fmt_range",
     "fmt_list",
     "fmt_datetime",
-    "fmt_datetime",
     "fmt_date",
     "fmt_time",
     "fmt_timedelta",
