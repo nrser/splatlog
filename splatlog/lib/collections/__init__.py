@@ -16,10 +16,16 @@ thinking of operating on them as collections of characters/bytes.
 
 from __future__ import annotations
 from collections import defaultdict
+import sys
 from typing import Optional, cast, overload
 from collections.abc import Callable, Iterable, Mapping, Container
 
-from splatlog.types import TypeIs
+# TypeIs was added to stdlib typing in 3.13
+if sys.version_info >= (3, 13):
+    from typing import TypeIs
+else:
+    from typing_extensions import TypeIs
+
 from splatlog.lib.text import fmt, fmt_list, fmt_type_of
 
 # Re-Exports
