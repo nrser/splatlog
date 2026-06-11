@@ -1,5 +1,7 @@
 """
 Library types: general, project-agnostic type hints and helpers.
+
+Includes runtime type checking utilities wrapping the `typeguard` package.
 """
 
 from inspect import isclass
@@ -7,6 +9,8 @@ import sys
 import typing
 import types
 import dataclasses as dc
+
+from typeguard import check_type, TypeCheckError
 
 # TypeIs was added to stdlib typing in 3.13
 if sys.version_info >= (3, 13):
@@ -249,3 +253,73 @@ class IsType[T]:
         Test if `value` is an instance of {py:attr}`t`.
         """
         return isinstance(value, self.t)
+
+
+# Runtime Type Checking
+# ============================================================================
+
+
+def satisfies[T](value: typing.Any, expected_type: type[T]) -> TypeIs[T]:
+    """
+    Check if a value satisfies a type at runtime.
+
+    Uses {py:func}`typeguard.check_type` to perform the check and returns a
+    {py:obj}`~typing.TypeIs` for use in type narrowing.
+
+    ## Parameters
+
+    -   `value`: The value to check.
+    -   `expected_type`: The type to check against.
+
+    ## Returns
+
+    {py:data}`True` if `value` is of `expected_type`, {py:data}`False`
+    otherwise.
+
+    ## Examples
+
+    ```python
+    >>> satisfies(123, int)
+    True
+
+    >>> satisfies("hello", int)
+    False
+
+    >>> satisfies([1, 2, 3], list[int])
+    True
+
+    ```
+    """
+    try:
+        check_type(value, expected_type)
+    except TypeCheckError:
+        return False
+    return True
+
+
+def check[T](
+    value: typing.Any,
+    expected_type: type[T],
+) -> T:
+    """
+    Check that a value satisfies a type at runtime, returning it if so.
+
+    Uses {py:func}`typeguard.check_type` to perform the check. Raises
+    {py:class}`typeguard.TypeCheckError` if the check fails.
+
+    ## Parameters
+
+    -   `value`: The value to check.
+    -   `expected_type`: The type to check against.
+
+    ## Returns
+
+    The `value` unchanged if it satisfies `expected_type`.
+
+    ## Raises
+
+    {py:class}`typeguard.TypeCheckError`: If `value` does not satisfy
+    `expected_type`.
+    """
+    check_type(value, expected_type)
+    return value

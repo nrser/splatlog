@@ -14,7 +14,7 @@ from pygments.token import Comment, Keyword, Name, Number, Operator, String
 from pygments.token import Text as TextToken
 from pygments.token import Token
 
-from splatlog.lib.typeguard import satisfies
+from splatlog.lib.types import satisfies
 from splatlog.types import ToTheme, assert_never
 
 # Constants

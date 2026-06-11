@@ -65,7 +65,7 @@ from .text import (
     tabulate,
 )
 
-from .typeguard import satisfies, check
+from .types import satisfies, check
 
 __all__ = [
     # .collections

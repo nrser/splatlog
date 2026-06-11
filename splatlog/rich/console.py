@@ -9,7 +9,7 @@ from rich.console import Console
 from rich.style import Style
 from rich.theme import Theme
 
-from splatlog.lib.typeguard import satisfies
+from splatlog.lib.types import satisfies
 from splatlog.types import (
     ToRichConsole,
     ToTheme,
