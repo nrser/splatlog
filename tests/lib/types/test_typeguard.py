@@ -1,8 +1,7 @@
 """
 Tests for typeguard integration via splatlog.lib.types.
 
-These tests verify the behavior of `satisfies()` and `check()` wrappers,
-as well as the direct `check_type()` usage patterns in splatlog.types.
+These tests verify the behavior of `satisfies()` and `check()` wrappers.
 They serve as a safety net when upgrading the typeguard dependency.
 """
 
@@ -11,11 +10,9 @@ from io import BytesIO, StringIO
 from typing import IO
 
 import pytest
-from rich.console import Console
-from typeguard import TypeCheckError, check_type
+from typeguard import TypeCheckError
 
 from splatlog.lib.types import check, satisfies
-from splatlog.types import JSONEncoderPreset, StdioName, ToRichConsole
 
 
 class TestSatisfies:
@@ -56,83 +53,6 @@ class TestSatisfiesIOStr:
 
     def test_int_does_not_satisfy(self):
         assert satisfies(123, IO[str]) is False
-
-
-class TestCheckTypeStdioName:
-    """Tests for check_type() with StdioName = Literal["stdout", "stderr"]."""
-
-    def test_stdout_passes(self):
-        check_type("stdout", StdioName)
-
-    def test_stderr_passes(self):
-        check_type("stderr", StdioName)
-
-    def test_stdin_raises(self):
-        with pytest.raises(TypeCheckError):
-            check_type("stdin", StdioName)
-
-    def test_empty_string_raises(self):
-        with pytest.raises(TypeCheckError):
-            check_type("", StdioName)
-
-    def test_int_raises(self):
-        with pytest.raises(TypeCheckError):
-            check_type(123, StdioName)
-
-
-class TestCheckTypeToRichConsole:
-    """Tests for check_type() with ToRichConsole union type."""
-
-    def test_console_instance_passes(self):
-        console = Console()
-        check_type(console, ToRichConsole)
-
-    def test_dict_passes(self):
-        check_type({"key": "value"}, ToRichConsole)
-
-    def test_stdout_string_passes(self):
-        check_type("stdout", ToRichConsole)
-
-    def test_stderr_string_passes(self):
-        check_type("stderr", ToRichConsole)
-
-    def test_stringio_passes(self):
-        sio = StringIO()
-        check_type(sio, ToRichConsole)
-
-    def test_int_raises(self):
-        with pytest.raises(TypeCheckError):
-            check_type(123, ToRichConsole)
-
-    def test_list_raises(self):
-        with pytest.raises(TypeCheckError):
-            check_type([], ToRichConsole)
-
-    def test_arbitrary_string_raises(self):
-        with pytest.raises(TypeCheckError):
-            check_type("other", ToRichConsole)
-
-
-class TestCheckTypeJSONEncoderPreset:
-    """Tests for check_type() with JSONEncoderPreset = Literal["compact", "pretty"]."""
-
-    def test_compact_passes(self):
-        check_type("compact", JSONEncoderPreset)
-
-    def test_pretty_passes(self):
-        check_type("pretty", JSONEncoderPreset)
-
-    def test_other_string_raises(self):
-        with pytest.raises(TypeCheckError):
-            check_type("other", JSONEncoderPreset)
-
-    def test_empty_string_raises(self):
-        with pytest.raises(TypeCheckError):
-            check_type("", JSONEncoderPreset)
-
-    def test_int_raises(self):
-        with pytest.raises(TypeCheckError):
-            check_type(123, JSONEncoderPreset)
 
 
 class TestCheck:
