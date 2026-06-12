@@ -34,14 +34,10 @@ class TestSatisfies:
 class TestSatisfiesIOStr:
     """Tests for satisfies() with IO[str], the main usage in the codebase."""
 
-    def test_stringio_satisfies(self):
+    def test_io_str_satisfies(self):
         sio = StringIO()
         assert satisfies(sio, IO[str]) is True
-
-    def test_stdout_satisfies(self):
         assert satisfies(sys.stdout, IO[str]) is True
-
-    def test_stderr_satisfies(self):
         assert satisfies(sys.stderr, IO[str]) is True
 
     def test_plain_string_does_not_satisfy(self):
@@ -59,7 +55,10 @@ class TestCheck:
     """Tests for the check() wrapper function."""
 
     def test_returns_value_on_success(self):
-        result = check(123, int)
+        def f() -> object:
+            return 123
+
+        result: int = check(f(), int)
         assert result == 123
 
     def test_returns_same_object(self):
