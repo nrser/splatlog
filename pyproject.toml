@@ -76,7 +76,14 @@ doctest_optionflags = ["NORMALIZE_WHITESPACE", "ELLIPSIS"]
 # Args: https://poethepoet.natn.io/guides/args_guide.html#task-argument-options
 
 [tool.poe]
+# Load `splatlog:report` task
 include_script = "splatlog.poe:tasks"
+
+### Watch ###
+
+[tool.poe.tasks.watch]
+parallel = ["docs watch"]
+help = "Run all watch tasks in parallel"
 
 ### Test ###
 
