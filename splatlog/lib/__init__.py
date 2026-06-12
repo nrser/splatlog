@@ -12,9 +12,8 @@ gets to piggy-back on functionality that most projects can use.
 
 [^1]:   You would want to adjust cross-references in the docstrings, which
         currently start with `splatlog.` for symbols outside that same file, but
-        that won't break the code. Also, as of writing (2026-01-29), you'd need
-        to add the [typeguard][] dependency, but we're looking to get rid of
-        that.
+        that won't break the code. You'd also need to add the [typeguard][]
+        dependency for runtime type checking.
 
 [typeguard]: https://pypi.org/project/typeguard/
 """

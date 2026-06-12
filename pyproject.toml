@@ -12,7 +12,7 @@ classifiers = [
 ]
 dependencies = [
     "rich>=9",
-    "typeguard==3.0.0b2",
+    "typeguard>=4.0,<5",
     # TypeIs was added to stdlib typing in 3.13; remove when
     # requires-python >= 3.13
     "typing_extensions>=4.0; python_version < '3.13'",
