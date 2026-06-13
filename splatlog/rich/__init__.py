@@ -29,6 +29,7 @@ from .enrich import (
     enrich_type,
     enrich_type_of,
     EnrichedType,
+    highlighted,
 )
 from .enrich.enriched_exception import EnrichedException
 from .inline import Inline as Inline
@@ -57,6 +58,7 @@ __all__ = [
     "enrich",
     "enrich_type",
     "enrich_type_of",
+    "highlighted",
     # .enrich.enriched_exception
     "EnrichedException",
     # .inline
