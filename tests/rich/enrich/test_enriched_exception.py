@@ -1,39 +1,10 @@
 """Tests for splatlog.rich.enrich.enriched_exception module."""
 
-from io import StringIO
-
-from rich.console import Console, RenderableType
-from rich.segment import Segment
-from rich.style import Style
+import pytest
 from rich.text import Text
 
 from splatlog.rich.enrich.enriched_exception import EnrichedException
-
-_C = Console(file=StringIO(), width=80, no_color=True, force_terminal=False)
-
-
-def _render(enriched: RenderableType) -> list[Segment]:
-    """Render a renderable to a list of segments for inspection."""
-
-    return list(_C.render(enriched))
-
-
-def _has_style(segment: Segment, style: str | Style) -> bool:
-    """Check if a segment has a specific style."""
-
-    if not isinstance(style, Style):
-        style = _C.get_style(style)
-    return segment.style == style
-
-
-def _has_segment(
-    segments: list[Segment], text: str, *, style: str | Style | None = None
-) -> bool:
-    """Check if any segment contains the given text."""
-    for seg in segments:
-        if text in seg.text and (style is None or _has_style(seg, style)):
-            return True
-    return False
+from splatlog.testing import assert_renders_segment
 
 
 class TestToTextNone:
@@ -43,17 +14,17 @@ class TestToTextNone:
         """Backticks in exception message are preserved."""
 
         exc = ValueError("Use `foo()` instead of `bar()`")
-        segments = _render(EnrichedException(exc, with_frames=False))
-        assert _has_segment(segments, "`foo()`")
-        assert _has_segment(segments, "`bar()`")
+        enriched = EnrichedException(exc, with_frames=False)
+        assert_renders_segment(enriched, "`foo()`")
+        assert_renders_segment(enriched, "`bar()`")
 
     def test_note_preserves_asterisks(self):
         """Asterisks in exception notes are preserved."""
 
         exc = ValueError("error")
         exc.add_note("See *documentation* for details")
-        segments = _render(EnrichedException(exc, with_frames=False))
-        assert _has_segment(segments, "*documentation*")
+        enriched = EnrichedException(exc, with_frames=False)
+        assert_renders_segment(enriched, "*documentation*")
 
 
 class TestToTextMarkdown:
@@ -63,53 +34,44 @@ class TestToTextMarkdown:
         """Backticks render as inline code without backtick characters."""
 
         exc = ValueError("Use `foo()` instead of `bar()`")
-        segments = _render(
-            EnrichedException(exc, with_frames=False, to_text="md")
-        )
-        # Markdown strips backticks
-        assert not _has_segment(segments, "`")
-        # But code content is present
-        assert _has_segment(segments, "foo()", style="markdown.code")
-        assert _has_segment(segments, "bar()", style="markdown.code")
+        enriched = EnrichedException(exc, with_frames=False, to_text="md")
+        # Markdown strips backticks but content is present with code style
+        assert_renders_segment(enriched, "foo()", style="markdown.code")
+        assert_renders_segment(enriched, "bar()", style="markdown.code")
+        # Verify backticks are stripped
+        with pytest.raises(AssertionError):
+            assert_renders_segment(enriched, "`")
 
     def test_note_renders_bold(self):
         """Asterisks render as bold without asterisk characters."""
 
         exc = ValueError("error")
         exc.add_note("See **documentation** for details")
-        segments = _render(
-            EnrichedException(exc, with_frames=False, to_text="md")
-        )
-        # Markdown strips asterisks
-        assert not _has_segment(segments, "**")
+        enriched = EnrichedException(exc, with_frames=False, to_text="md")
         # Content is present and bold
-        assert _has_segment(segments, "documentation", style="bold")
+        assert_renders_segment(enriched, "documentation", style="bold")
+        # Verify asterisks are stripped
+        with pytest.raises(AssertionError):
+            assert_renders_segment(enriched, "**")
 
 
 class TestToTextPython:
     """Tests for to_text='py' (ReprHighlighter)."""
 
     def test_message_highlights_strings(self):
-        """String literals in message get styled (green for repr.str)."""
+        """String literals in message get repr.str style."""
 
         exc = ValueError("Got 'hello' but expected 'world'")
-        segments = _render(
-            EnrichedException(exc, with_frames=False, to_text="py")
-        )
-
-        assert _has_segment(segments, "'hello'", style="repr.str")
-        assert _has_segment(segments, "'world'", style="repr.str")
+        enriched = EnrichedException(exc, with_frames=False, to_text="py")
+        assert_renders_segment(enriched, "'hello'", style="repr.str")
+        assert_renders_segment(enriched, "'world'", style="repr.str")
 
     def test_message_highlights_numbers(self):
-        """
-        Numeric literals in message get styled (cyan+bold for repr.number).
-        """
+        """Numeric literals in message get repr.number style."""
 
         exc = ValueError("Expected 42 items")
-        segments = _render(
-            EnrichedException(exc, with_frames=False, to_text="py")
-        )
-        assert _has_segment(segments, "42", style="repr.number")
+        enriched = EnrichedException(exc, with_frames=False, to_text="py")
+        assert_renders_segment(enriched, "42", style="repr.number")
 
 
 class TestToTextCallable:
@@ -122,10 +84,8 @@ class TestToTextCallable:
             return Text(s.upper(), style="bold")
 
         exc = ValueError("something went wrong")
-        segments = _render(
-            EnrichedException(exc, with_frames=False, to_text=upper_transform)
-        )
-        assert _has_segment(segments, "SOMETHING WENT WRONG", style="bold")
+        enriched = EnrichedException(exc, with_frames=False, to_text=upper_transform)
+        assert_renders_segment(enriched, "SOMETHING WENT WRONG", style="bold")
 
     def test_custom_transform_applied_to_notes(self):
         """Custom callable also transforms notes."""
@@ -135,7 +95,5 @@ class TestToTextCallable:
 
         exc = ValueError("error")
         exc.add_note("important note")
-        segments = _render(
-            EnrichedException(exc, with_frames=False, to_text=bracket_transform)
-        )
-        assert _has_segment(segments, "[important note]", style="italic")
+        enriched = EnrichedException(exc, with_frames=False, to_text=bracket_transform)
+        assert_renders_segment(enriched, "[important note]", style="italic")

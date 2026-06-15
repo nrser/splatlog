@@ -5,22 +5,93 @@ Provides helpers for doctests and pytest tests, including text assertion
 utilities and log record factories.
 """
 
+from __future__ import annotations
+
 import logging
 import sys
 import textwrap
-from typing import Any, Optional, Union
+from typing import Any, Optional, Union, TYPE_CHECKING
 import ast
 import inspect
 from datetime import datetime
+from io import StringIO
 from types import ModuleType
 
 from splatlog.types import ExcInfo, ToLevel, to_level
 
+if TYPE_CHECKING:
+    from rich.console import Console, RenderableType
+    from rich.style import Style
+
 __all__ = [
+    "assert_renders_segment",
     "assert_text",
     "get_constant_docstrings",
     "make_log_record",
 ]
+
+
+def _get_default_console() -> "Console":
+    """Create a default Console for rendering tests."""
+    from rich.console import Console
+
+    return Console(file=StringIO(), width=80, no_color=True, force_terminal=False)
+
+
+def assert_renders_segment(
+    renderable: "RenderableType",
+    text: str,
+    *,
+    style: "str | Style | None" = None,
+    console: "Console | None" = None,
+) -> None:
+    """
+    Assert that rendering produces a segment containing the given text.
+
+    Renders `renderable` to segments and asserts that at least one segment
+    contains `text`. If `style` is provided, also asserts that the matching
+    segment has the specified style.
+
+    ## Parameters
+
+    -   `renderable`: Any Rich renderable object.
+    -   `text`: Text that must appear in at least one segment.
+    -   `style`: Optional style name or Style object the segment must have.
+    -   `console`: Optional Console to use for rendering. If not provided,
+        a default Console is created.
+
+    ## Examples
+
+    >>> from rich.text import Text
+    >>> from splatlog.testing import assert_renders_segment
+    >>> assert_renders_segment(Text("hello world"), "hello")
+    >>> assert_renders_segment(Text("hello", style="bold"), "hello", style="bold")
+    """
+    __tracebackhide__ = True
+
+    from rich.style import Style as RichStyle
+
+    if console is None:
+        console = _get_default_console()
+
+    resolved_style: RichStyle | None = None
+    if style is not None:
+        if isinstance(style, str):
+            resolved_style = console.get_style(style)
+        else:
+            resolved_style = style
+
+    for segment in console.render(renderable):
+        if segment.text and text in segment.text:
+            if resolved_style is None or segment.style == resolved_style:
+                return
+
+    if style is not None:
+        raise AssertionError(
+            f"No segment containing {text!r} with style {style!r} found"
+        )
+    else:
+        raise AssertionError(f"No segment containing {text!r} found")
 
 
 def assert_text(
