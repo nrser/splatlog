@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 import linecache
 import os
 from types import ModuleType
+from typing import Literal
 import dataclasses as dc
 
 from rich.columns import Columns
@@ -14,8 +15,9 @@ from rich.console import (
     RenderResult,
     Group,
 )
+from rich.markdown import Markdown
 from rich.constrain import Constrain
-from rich.highlighter import Highlighter, RegexHighlighter, ReprHighlighter
+from rich.highlighter import RegexHighlighter, ReprHighlighter
 from rich.panel import Panel
 from rich.scope import render_scope
 from rich.syntax import Syntax
@@ -127,10 +129,20 @@ class EnrichedException:
     with_notes: bool = True
     with_subs: bool = True
 
-    # Support
+    # Content Rendering Options
     # ------------------------------------------------------------------------
 
-    highlighter: Highlighter = dc.field(default_factory=ReprHighlighter)
+    to_text: Literal["md", "py"] | Callable[[str], Text] | None = None
+    """Transform exception message and notes.
+    
+    - ``"md"``: Render as markdown using ``rich.markdown.Markdown``.
+    - ``"py"``: Highlight Python literals using ``rich.highlighter.ReprHighlighter``.
+    - ``Callable[[str], Text]``: Apply a custom transformation.
+    - ``None``: No transformation (default).
+    """
+
+    # Support
+    # ------------------------------------------------------------------------
 
     frames_title: TextType = dc.field(
         default_factory=lambda: Text.from_markup(
@@ -168,6 +180,18 @@ class EnrichedException:
         )
         object.__setattr__(self, "traceback", traceback)
         object.__setattr__(self, "theme", to_theme(traceback.theme))
+
+    # Text Transformation
+    # ========================================================================
+
+    def _transform_text(self, value: str) -> Text:
+        """Apply the configured text transformation."""
+        if self.to_text == "py":
+            return ReprHighlighter()(value)
+        elif callable(self.to_text):
+            return self.to_text(value)
+        else:
+            return Text(value)
 
     # Rich Console Protocol
     # ========================================================================
@@ -270,13 +294,19 @@ class EnrichedException:
 
             yield Text.assemble(
                 (f"{stack.exc_type}: ", "traceback.exc_type"),
-                self.highlighter(stack.syntax_error.msg),
+                self._transform_text(stack.syntax_error.msg),
             )
         elif stack.exc_value:
-            yield Text.assemble(
-                (f"{stack.exc_type}: ", "traceback.exc_type"),
-                self.highlighter(stack.exc_value),
-            )
+            if self.to_text == "md":
+                yield Text.assemble(
+                    (f"{stack.exc_type}:", "traceback.exc_type"),
+                )
+                yield Markdown(stack.exc_value)
+            else:
+                yield Text.assemble(
+                    (f"{stack.exc_type}: ", "traceback.exc_type"),
+                    self._transform_text(stack.exc_value),
+                )
         else:
             yield Text.assemble((f"{stack.exc_type}", "traceback.exc_type"))
 
@@ -287,8 +317,12 @@ class EnrichedException:
 
     def render_note(self, note: str) -> Iterable[RenderableType]:
         """Render a single exception note."""
-        yield Text("[NOTE]", style="traceback.note", end=" ")
-        yield self.highlighter(note)
+        if self.to_text == "md":
+            yield Text("[NOTE]", style="traceback.note")
+            yield Markdown(note)
+        else:
+            yield Text("[NOTE]", style="traceback.note", end=" ")
+            yield self._transform_text(note)
 
     def render_frames_content(self, stack: Stack) -> Iterable[RenderableType]:
         """Render the content inside the frames panel (code snippets and locals)."""
