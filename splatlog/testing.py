@@ -17,6 +17,7 @@ from datetime import datetime
 from io import StringIO
 from types import ModuleType
 
+from splatlog.lib.text import fmt
 from splatlog.types import ExcInfo, ToLevel, to_level
 
 if TYPE_CHECKING:
@@ -35,7 +36,7 @@ def _get_default_console() -> "Console":
     """Create a default Console for rendering tests."""
     from rich.console import Console
 
-    return Console(file=StringIO(), width=80, no_color=True, force_terminal=False)
+    return Console(file=StringIO(), no_color=True, force_terminal=False)
 
 
 def assert_renders_segment(
@@ -81,17 +82,22 @@ def assert_renders_segment(
         else:
             resolved_style = style
 
-    for segment in console.render(renderable):
+    segments = list(console.render(renderable))
+
+    for segment in segments:
         if segment.text and text in segment.text:
             if resolved_style is None or segment.style == resolved_style:
                 return
 
     if style is not None:
         raise AssertionError(
-            f"No segment containing {text!r} with style {style!r} found"
+            f"No segment containing {text!r} with style {style!r} found in\n\n"
+            f"{fmt(segments, quote=True)}"
         )
     else:
-        raise AssertionError(f"No segment containing {text!r} found")
+        raise AssertionError(
+            f"No segment containing {text!r} found in\n\n{segments!r}"
+        )
 
 
 def assert_text(

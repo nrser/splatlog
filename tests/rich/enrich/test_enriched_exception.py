@@ -84,7 +84,9 @@ class TestToTextCallable:
             return Text(s.upper(), style="bold")
 
         exc = ValueError("something went wrong")
-        enriched = EnrichedException(exc, with_frames=False, to_text=upper_transform)
+        enriched = EnrichedException(
+            exc, with_frames=False, to_text=upper_transform
+        )
         assert_renders_segment(enriched, "SOMETHING WENT WRONG", style="bold")
 
     def test_custom_transform_applied_to_notes(self):
@@ -95,5 +97,7 @@ class TestToTextCallable:
 
         exc = ValueError("error")
         exc.add_note("important note")
-        enriched = EnrichedException(exc, with_frames=False, to_text=bracket_transform)
+        enriched = EnrichedException(
+            exc, with_frames=False, to_text=bracket_transform
+        )
         assert_renders_segment(enriched, "[important note]", style="italic")
