@@ -134,7 +134,7 @@ class EnrichedException:
 
     to_text: Literal["md", "py"] | Callable[[str], Text] | None = None
     """Transform exception message and notes.
-    
+
     - ``"md"``: Render as markdown using ``rich.markdown.Markdown``.
     - ``"py"``: Highlight Python literals using ``rich.highlighter.ReprHighlighter``.
     - ``Callable[[str], Text]``: Apply a custom transformation.
@@ -318,7 +318,7 @@ class EnrichedException:
     def render_note(self, note: str) -> Iterable[RenderableType]:
         """Render a single exception note."""
         if self.to_text == "md":
-            yield Text("[NOTE]", style="traceback.note")
+            yield Text("[NOTE]", style="traceback.note", end=" ")
             yield Markdown(note)
         else:
             yield Text("[NOTE]", style="traceback.note", end=" ")
