@@ -76,15 +76,15 @@ Separator for fully-qualified names, for example the '.' in 'typing.Any'.
 @formatter(auto_quote=False)
 def fmt(x: object, opts: FmtOpts) -> FmtResult:
     """
-    Format a `value` for concise, human-readable output.
+    Format a value for concise, human-readable output.
 
     Dispatches to specialized formatters based on the value's type:
     typing constructs, types, and routines each have dedicated formatters.
 
     ## Parameters
 
+    -   `x`: The value to format.
     -   `opts`: Formatting options.
-    -   `value`: The value to format.
 
     ## Returns
 
@@ -92,72 +92,109 @@ def fmt(x: object, opts: FmtOpts) -> FmtResult:
 
     ## Examples
 
-    -   **Types & Type Hints** — Formats types by qualified name, and type hints
-        with concise shorthands, clearly distinguished by enclosing angle
-        brackets (configurable):
+    -   **Types & Type Hints** — Formats {py:class}`type` by qualified name, and
+        {py:mod}`typing` hints with concise shorthands, clearly distinguished by
+        enclosing angle brackets:
 
-            >>> from typing import Optional, Callable
-            >>> from collections.abc import Collection
+        ```pycon
+        >>> from typing import Optional, Callable, Literal
+        >>> from collections.abc import Collection
 
-            >>> fmt(str)
-            '<str>'
+        >>> fmt(str)
+        '<str>'
 
-            >>> fmt(Collection)
-            '<collections.abc.Collection>'
+        >>> fmt(Collection)
+        '<collections.abc.Collection>'
 
-            >>> fmt(str | None)
-            '<str?>'
+        >>> fmt(str | None)
+        '<str?>'
 
-            >>> fmt(list[int])
-            '<int[]>'
+        >>> fmt(list[int])
+        '<int[]>'
 
-            >>> fmt(dict[str, int])
-            '<{str: int}>'
+        >>> fmt(dict[str, int])
+        '<{str: int}>'
 
-            >>> fmt(Callable[[int, int], str])
-            '<(int, int) -> str>'
+        >>> fmt(Literal["A", "B", "C"])
+        "<'A' | 'B' | 'C'>"
 
-        See {py:func}`fmt_type` and {py:func}`fmt_type_hint` for more info.
+        >>> fmt(Callable[[int, int], str])
+        '<(int, int) -> str>'
+
+        ```
+
+        Additionally, the formatted runtime {py:class}`type` can be added as a
+        prefix when formatting a value by setting the {py:attr}`FmtOpts.type`
+        option:
+
+        ```pycon
+        >>> fmt(123, type=True)
+        '<int> 123'
+
+        >>> fmt({"x": 123, "y": 456}, type=True)
+        "<dict> {'x': 123, 'y': 456}"
+
+        ```
+
+        See {py:func}`fmt_type` and {py:func}`fmt_type_hint` for options and
+        additional examples.
 
     -   **Functions & Methods** — Uses {py:func}`inspect.isroutine` to detect
         functions and methods and format them clearly and concisely:
 
-            >>> fmt(int.__add__)
-            'int.__add__()'
+        ```pycon
+        >>> fmt(int.__add__)
+        'int.__add__()'
+
+        ```
 
         Compare to what {py:class}`str` (and {py:func}`repr`) will give you:
 
-            >>> str(int.__add__)
-            "<slot wrapper '__add__' of 'int' objects>"
+        ```pycon
+        >>> str(int.__add__)
+        "<slot wrapper '__add__' of 'int' objects>"
+
+        ```
 
         See {py:func}`fmt_routine` for more info.
 
-    -   **Dates & Times** — Formats {py:class}`~datetime.datetime`, see
-        {py:func}`fmt_datetime` and {py:attr}`FmtOpts.dt_fmt`.
+    -   **Dates & Times** — Formats {py:class}`datetime.datetime` using the
+        {py:attr}`FmtOpts.dt_fmt` option:
 
-            >>> import datetime as dt
+        ```pycon
+        >>> from datetime import datetime, date, time, timedelta
 
-            >>> fmt(dt.datetime(2026, 3, 10, 14, 23, 45, 123_456))
-            '2026-03-10 14:23:45.123'
+        >>> fmt(datetime(2026, 3, 10, 14, 23, 45, 123_456))
+        '2026-03-10 14:23:45.123'
+
+        ```
+
+        Check out {py:func}`fmt_datetime` for details.
 
         Also handles {py:class}`datetime.date` and {py:class}`datetime.time`:
 
-            >>> fmt(dt.date(2026, 3, 10))
-            '2026-03-10'
+        ```pycon
+        >>> fmt(date(2026, 3, 10))
+        '2026-03-10'
 
-            >>> fmt(dt.time(14, 23, 45, 123_456))
-            '14:23:45.123'
+        >>> fmt(time(14, 23, 45, 123_456))
+        '14:23:45.123'
+
+        ```
+
+        See {py:func}`fmt_date` and {py:func}`fmt_time` for more.
 
         Produces a concise, readable rendering of {py:class}`datetime.timedelta`
         as well:
 
-            >>> fmt_timedelta(dt.timedelta(milliseconds=12))
-            '0.012s'
+        ```pycon
+        >>> fmt(timedelta(milliseconds=12))
+        '0.012s'
 
-            >>> fmt_timedelta(
-            ...     dt.timedelta(days=1, hours=23, minutes=45, seconds=56)
-            ... )
-            '1d 23:45:56.000'
+        >>> fmt(timedelta(days=1, hours=23, minutes=45, seconds=56))
+        '1d 23:45:56.000'
+
+        ```
 
         {py:func}`fmt_timedelta` has more information and examples.
     """
