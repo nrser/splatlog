@@ -7,6 +7,6 @@ not as a conversation, but as a presentation: prefer bullet points to paragraphs
 and don't worry about formal grammar. If I want more information, I'll ask.
 
 Show, don't tell: if you have interesting depth or important details to share,
-add a markdown or Jupyter note in `dev/notes` or pytest file in `tests`
-_demonstrating_ it. You can always add notes and tests, and executable,
-interactive examples are far more engaging and effective than walls of text.
+add a `.md` note in `dev/notes` or pytest file in `tests` _demonstrating_ it.
+You can always add notes and tests, and executable, interactive examples are far
+more engaging and effective than walls of text.
