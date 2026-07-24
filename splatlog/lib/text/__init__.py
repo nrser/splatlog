@@ -12,6 +12,15 @@ Imports of other {py:mod}`splatlog` modules should be avoided, and placed inside
 function or method bodies if they can't be.
 
 :::
+
+## Public API
+
+These symbols are re-exported here for convenience — {py:mod}`splatlog.lib.text`
+is the canonical import location — but are documented alongside their definitions
+in the submodules linked below.
+
+:::{splatlog-all-summary} splatlog.lib.text
+:::
 """
 
 from __future__ import annotations
@@ -22,17 +31,19 @@ from rich.console import Console
 from rich.padding import Padding, PaddingDimensions
 from rich.table import Table
 
-# NOTE  These need to be imported from the modules they're defined in, doc gen
-#       doesn't work if imported from `.formatting`
-from .formatting.decorator import formatter, Formatter, FmtResult
-from .formatting.opts import (
+from .formatter import (
     FmtOpts,
     FmtFallback,
     FmtKwds,
-    FmtTdBase,
     fmt_pretty_repr,
+    formatter,
+    Formatter,
+    FmtResult,
+    get_default_fmt_opts,
+    set_default_fmt_opts,
+    override_fmt_opts,
 )
-from .formatting.formatters import (
+from .fmt import (
     fmt,
     fmt_name,
     fmt_type,
@@ -42,25 +53,37 @@ from .formatting.formatters import (
     fmt_routine,
     fmt_range,
     fmt_list,
+)
+from .number import (
+    fmt_number,
+    Number,
+)
+from .datetime import (
     fmt_datetime,
     fmt_date,
     fmt_time,
+    iter_strftime_segments,
+    STRFTIME_COMPONENTS,
+)
+from .timedelta import (
     fmt_timedelta,
+    iter_timedelta_segments,
 )
 
 
 __all__ = [
-    # .formatting.decorator
+    # .formatter
     "formatter",
     "Formatter",
-    # .formatting.opts
     "fmt_pretty_repr",
     "FmtOpts",
     "FmtResult",
     "FmtFallback",
     "FmtKwds",
-    "FmtTdBase",
-    # .formatting.formatters
+    "get_default_fmt_opts",
+    "set_default_fmt_opts",
+    "override_fmt_opts",
+    # .fmt
     "fmt",
     "fmt_name",
     "fmt_type",
@@ -70,11 +93,18 @@ __all__ = [
     "fmt_routine",
     "fmt_range",
     "fmt_list",
-    "fmt_datetime",
+    # .number
+    "fmt_number",
+    "Number",
+    # .datetime
     "fmt_datetime",
     "fmt_date",
     "fmt_time",
+    "iter_strftime_segments",
+    "STRFTIME_COMPONENTS",
+    # .timedelta
     "fmt_timedelta",
+    "iter_timedelta_segments",
 ]
 
 

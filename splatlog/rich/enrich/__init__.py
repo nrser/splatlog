@@ -4,62 +4,95 @@ Utilities for enriching Python values with Rich formatting.
 
 from __future__ import annotations
 from pathlib import Path
-from typing import Callable, Literal, overload
-from inspect import isclass, isroutine
+from typing import Any, Callable, cast
+from inspect import isroutine
+import datetime as dt
 
 from rich.console import RenderableType
 from rich.pretty import Pretty
-from rich.highlighter import ReprHighlighter
+from rich.highlighter import Highlighter, ReprHighlighter
 from rich.text import Text, TextType
 
 from splatlog.lib import has_method
-from splatlog.lib.text import fmt_routine
+from splatlog.lib.types import is_number
 from splatlog.types import is_rich
 
-from .enriched_exception import EnrichedException
-from .enriched_path import EnrichedPath
-from .enriched_type import EnrichedType
+from .enriched import Enriched, unwrap
+from .enrichment import (
+    EnrichOpts,
+    EnrichKwds,
+    enrichment,
+    get_default_enrich_opts,
+    set_default_enrich_opts,
+    override_enrich_opts,
+)
+from .exception import EnrichedException
+from .path import EnrichedPath
+
+# NOTE  Calling this `type` breaks the `type` built-in
+from .typ import EnrichedType
+from .number import enrich_number, EnrichedId
+from .routine import enrich_routine
+from .datetime import (
+    enrich_datetime,
+    enrich_date,
+    enrich_time,
+    enrich_timedelta,
+)
+
+__all__ = [
+    "enrich_number",
+    "enrich_routine",
+    "enrich_type_of",
+    "enrich_type",
+    "enrich",
+    "Enriched",
+    "EnrichedException",
+    "EnrichedId",
+    "EnrichedType",
+    "EnrichKwds",
+    "EnrichOpts",
+    "get_default_enrich_opts",
+    "set_default_enrich_opts",
+    "override_enrich_opts",
+    "highlighted",
+    "repr_highlight",
+    "REPR_HIGHLIGHTER",
+    "unwrap",
+]
 
 
 REPR_HIGHLIGHTER = ReprHighlighter()
 """
-Shared {py:class}`rich.highlighter.ReprHighlighter` instance for repr syntax
-highlighting.
+Shared {py:class}`rich.highlighter.ReprHighlighter` instance for {py:func}`repr`
+syntax highlighting.
 """
 
 # `enrich` — General Interface / Entry Point
 # ============================================================================
 
 
-@overload
-def enrich(value: object, inline: Literal[True]) -> Text: ...
-
-
-@overload
-def enrich(value: object, inline: Literal[False]) -> RenderableType: ...
-
-
-@overload
-def enrich(value: object) -> RenderableType: ...
-
-
-def enrich(value, inline=False) -> RenderableType:
+@enrichment
+def enrich(value: object, opts: EnrichOpts) -> RenderableType:
     """
     Convert a Python value to a Rich renderable.
 
-    Handles special cases like types, routines, and strings, applying
-    appropriate formatting. Values that are already Rich renderables are
-    returned as-is (unless `inline=True` and they're not {py:class}`Text`).
+    Leaf values (numbers, dates/times) are first formatted via
+    {py:mod}`splatlog.lib.text` — honoring {py:class}`EnrichOpts` (an
+    {py:class}`~splatlog.lib.text.FmtOpts`) — and then styled for Rich display.
+    Types, routines, paths, and exceptions get their own enriched renderings,
+    and values that are already Rich renderables are returned as-is.
 
     ## Parameters
 
     -   `value`: The value to enrich.
-    -   `inline`: If {py:data}`True`, always return a {py:class}`rich.text.Text`
-        suitable for inline display.
+    -   `opts`: {py:class}`EnrichOpts` controlling formatting and enrichment.
+    -   `kwds`: {py:class}`EnrichKwds` keyword arguments, merged over `opts`
+        (see {py:meth}`EnrichOpts.replace`) — e.g. `enrich(x, i_fmt="{:_}")`.
 
     ## Returns
 
-    A Rich renderable ({py:class}`Text` if `inline=True`).
+    A Rich renderable.
 
     ## Examples
 
@@ -68,6 +101,22 @@ def enrich(value, inline=False) -> RenderableType:
     ```python
     >>> enrich("hello world")
     'hello world'
+
+    ```
+
+    Numbers are formatted (grouped by default) and styled:
+
+    ```python
+    >>> enrich(1234567).plain
+    '1,234,567'
+
+    ```
+
+    Formatting is customized through {py:class}`EnrichKwds`/{py:class}`EnrichOpts`:
+
+    ```python
+    >>> enrich(1234567, i_fmt="{:_}").plain
+    '1_234_567'
 
     ```
 
@@ -87,10 +136,8 @@ def enrich(value, inline=False) -> RenderableType:
 
     ```
 
-    Other values are wrapped for Rich rendering. With `inline=False` (default),
-    {py:class}`rich.pretty.Pretty` is used which can break over multiple lines
-    when the console is narrow. With `inline=True`, output is always single-line
-    {py:class}`rich.text.Text`.
+    Other values are wrapped in {py:class}`rich.pretty.Pretty`, which can break
+    over multiple lines when the console is narrow.
 
     ```python
     >>> import sys
@@ -104,51 +151,82 @@ def enrich(value, inline=False) -> RenderableType:
         'b': 2
     }
 
-    >>> narrow.print(enrich(data, inline=True))
-    {'a': 1, 'b': 2}
-
     ```
     """
     if has_method(value, "_enrich_"):
-        return value._enrich_(inline=inline)
+        return cast(Any, value)._enrich_()
 
-    # Does the object implement rich-rendering itself?
-    if is_rich(value) and (inline is False or isinstance(value, Text)):
-        return value
+    match value:
+        # Does the object implement rich-rendering itself?
+        case r if is_rich(r):
+            # If so, use it as-is
+            return r
 
-    if isinstance(value, str):
-        if all(c.isprintable() or c.isspace() for c in value):
-            return value
-        else:
-            return repr_highlight(value)
+        case str(s) if s.isprintable():
+            return s
 
-    if isclass(value):
-        return enrich_type(value)
+        case str(s):
+            return repr_highlight(s)
 
-    if isroutine(value):
-        # TODO  This could/should be better
-        return highlighted(fmt_routine(value))
+        case type() as t:
+            return enrich_type(t, opts)
 
-    if isinstance(value, Path):
-        return enrich_path(value)
+        case fn if isroutine(fn):
+            return enrich_routine(fn, opts)
 
-    if isinstance(value, BaseException):
-        return EnrichedException(value)
+        case Path() as p:
+            return enrich_path(p)
 
-    if inline:
-        return repr_highlight(value)
+        case BaseException() as err:
+            return EnrichedException(err)
 
-    return Pretty(value)
+        case n if is_number(n):
+            return enrich_number(n, opts)
+
+        case dt.datetime() as d:
+            return enrich_datetime(d, opts)
+
+        case dt.date() as d:
+            return enrich_date(d, opts)
+
+        case dt.time() as t:
+            return enrich_time(t, opts)
+
+        case dt.timedelta() as t:
+            return enrich_timedelta(t, opts.td_fmt)
+
+        case _:
+            return Pretty(value)
 
 
 # Supporting Functions
 # ============================================================================
 
 
-def highlighted(text: TextType) -> Text:
+def highlighted(
+    text: TextType, highlighter: Highlighter = REPR_HIGHLIGHTER
+) -> Text:
+    r"""
+    {py:meth}`~rich.highlighter.Highlighter.highlight` some `text`.
+
+    Differs from {py:meth}`~rich.highlighter.Highlighter.__call__` in
+    {py:class}`str` → {py:class}`~rich.text.Text` conversion: **_no_**
+    `"\n"`{l=py} **_appended_**. That's it.
+
+    ## Parameters
+
+    -   `text`: to highlight.
+    -   `highlighter`: By default, uses a
+        {py:class}`~rich.highlighter.ReprHighlighter`, but you can provide
+        another.
+
+    ## Returns
+
+    Highlighted {py:class}`~rich.text.Text`.
+    """
     if isinstance(text, str):
         text = Text(text, end="")
-    REPR_HIGHLIGHTER.highlight(text)
+    highlighter.highlight(text)
     return text
 
 
@@ -171,7 +249,8 @@ def repr_highlight(value: object, *, use_ascii: bool = False) -> Text:
     return text
 
 
-def enrich_type(typ: type[object], *, fqn: bool = True) -> RenderableType:
+@enrichment
+def enrich_type(typ: type[object], opts: EnrichOpts) -> RenderableType:
     """
     Create a Rich renderable for a type.
 
@@ -181,6 +260,10 @@ def enrich_type(typ: type[object], *, fqn: bool = True) -> RenderableType:
     ## Parameters
 
     -   `typ`: The type to enrich.
+    -   `opts`: {py:class}`EnrichOpts`; its {py:attr}`~splatlog.lib.text.FmtOpts.fqn`
+        controls whether the module prefix is included.
+    -   `kwds`: {py:class}`EnrichKwds` keyword arguments, merged over `opts` —
+        e.g. `enrich_type(t, fqn=False)`.
 
     ## Returns
 
@@ -191,22 +274,26 @@ def enrich_type(typ: type[object], *, fqn: bool = True) -> RenderableType:
     ):
         return rich_type()
 
-    if fqn:
+    if opts.fqn:
         return EnrichedType(typ)
 
     return Text(typ.__qualname__, style="repr.tag_name", end="")
 
 
-def enrich_type_of(value: object, *, fqn: bool = True) -> RenderableType:
+@enrichment
+def enrich_type_of(value: object, opts: EnrichOpts) -> RenderableType:
     """
     Create a Rich renderable for the type of a value.
 
-    Shorthand for `enrich_type(type(value))`.
+    Shorthand for `enrich_type(type(value))`, but {py:class}`Enriched` wrappers
+    are {py:func}`unwrap`ped first so the _underlying_ value's type is reported
+    (e.g. an {py:class}`EnrichedId` yields `int`, not `EnrichedId`).
     """
-    return enrich_type(type(value), fqn=fqn)
+    return enrich_type(type(unwrap(value)), opts)
 
 
-def enrich_path(path: Path) -> RenderableType:
+@enrichment
+def enrich_path(path: Path, opts: EnrichOpts) -> RenderableType:
     """
     Create a Rich renderable for a path.
 

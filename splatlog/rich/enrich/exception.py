@@ -34,6 +34,8 @@ from rich.traceback import (
 from splatlog.lib.collections import loop_first_last, loop_last
 from splatlog.rich.theme import to_theme
 
+from .enriched import Enriched
+
 
 # Frame Rendering Helpers
 # ============================================================================
@@ -87,7 +89,7 @@ def _constrain(renderable: RenderableType, width: int | None) -> RenderableType:
 
 
 @dc.dataclass(frozen=True)
-class EnrichedException:
+class EnrichedException(Enriched[BaseException]):
     """
     A Rich-renderable wrapper for exceptions with customizable formatting.
 
@@ -98,11 +100,6 @@ class EnrichedException:
     All rendering options are specified at construction time as dataclass
     fields.
     """
-
-    # Source Exception
-    # ------------------------------------------------------------------------
-
-    exc: BaseException
 
     # Traceback Construction Options
     # ------------------------------------------------------------------------
@@ -161,9 +158,9 @@ class EnrichedException:
 
     def __post_init__(self) -> None:
         traceback = Traceback.from_exception(
-            type(self.exc),
-            self.exc,
-            self.exc.__traceback__,
+            type(self.value),
+            self.value,
+            self.value.__traceback__,
             width=self.width,
             code_width=self.code_width,
             extra_lines=self.extra_lines,

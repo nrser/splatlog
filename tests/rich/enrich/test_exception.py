@@ -1,9 +1,9 @@
-"""Tests for splatlog.rich.enrich.enriched_exception module."""
+"""Tests for {py:mod}`splatlog.rich.enrich.exception` module."""
 
 import pytest
 from rich.text import Text
 
-from splatlog.rich.enrich.enriched_exception import EnrichedException
+from splatlog.rich.enrich.exception import EnrichedException
 from splatlog.testing import assert_renders_segment
 
 

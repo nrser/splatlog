@@ -28,7 +28,10 @@ def test_is_stdio_name():
 
 def test_is_to_rich_console():
     assert is_to_rich_console(Console()) is True
-    assert is_to_rich_console({"key": "value"}) is True
+    # A mapping of valid `ConsoleKwds` qualifies...
+    assert is_to_rich_console({"width": 80, "force_terminal": True}) is True
+    # ...but a mapping with keys outside `ConsoleKwds` does not.
+    assert is_to_rich_console({"key": "value"}) is False
     assert is_to_rich_console("stdout") is True
     assert is_to_rich_console("stderr") is True
     assert is_to_rich_console(sys.stdout) is True

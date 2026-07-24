@@ -1,18 +1,16 @@
 """
 Logging levels, verbosity, and filtering.
 
-:::{note}
+{py:mod}`splatlog.levels` re-exports its public API from its submodules, so
+users can import everything directly from here without concern for the inner
+layout, and developers are free to break up files and move things around inside.
 
-{py:mod}`splatlog.levels` is an "opaque" module, meaning that it acts like a
-single module: submodule symbols are re-exported, and the documentation
-generator is configured to reference them here[^1]. Users should not need to be
-concerned with the inner details, and developers should be free to break up
-files and move things around inside.
+## Public API
 
-[^1]:   Though some weirdness and inconsistency remains, as the re-exports
-        retain `__module__` values from where they were actually defined, and
-        setting it to `"splatlog.levels"` causes issues with doctests.
+The public API of {py:mod}`splatlog.levels`, re-exported here (the canonical
+import location) and documented where each symbol is defined.
 
+:::{splatlog-all-summary} splatlog.levels
 :::
 """
 
@@ -43,7 +41,8 @@ from .filter import (
 )
 from .verbosity import get_verbosity, set_verbosity
 
-# IMPORTANT - necessary for doc generation in "opaque" module
+# IMPORTANT   Defines `to_name` as a local symbol (rather than an import alias)
+#             so it is documented here and picked up by `splatlog-all-summary`.
 to_name = to_level_name
 
 __all__ = [

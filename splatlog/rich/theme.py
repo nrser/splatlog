@@ -10,6 +10,7 @@ from rich.color import Color, ColorType
 from rich.syntax import SyntaxTheme
 from rich.theme import Theme
 from rich.style import Style, StyleType
+from rich.default_styles import DEFAULT_STYLES  # noqa: F401
 from pygments.token import Comment, Keyword, Name, Number, Operator, String
 from pygments.token import Text as TextToken
 from pygments.token import Token
@@ -20,9 +21,13 @@ from splatlog.types import ToTheme, assert_never
 # Constants
 # ============================================================================
 THEME = Theme({
+    # Extensions
+    # ========================================================================
+    #
+    # Style namespaces we customize and extend.
     #
     # `log` — Used to print log records
-    # ====================================================================
+    # ------------------------------------------------------------------------
     #
     # Style for logging levels ("DEBUG", "INFO", etc.). Each built-in level has
     # their own style with distinct color, but `log.level` is applied to all of
@@ -36,8 +41,71 @@ THEME = Theme({
     "log.data.name": Style(color="blue", italic=True),
     "log.data.type": Style(color="#4ec9b0", italic=True),
     #
+    # `datetime` — {py:mod}`datetime` class instances
+    # ------------------------------------------------------------------------
+    #
+    # Per-component styles applied by `splatlog.rich.enrich` when rendering
+    # `datetime.date`, `datetime.time`, and `datetime.datetime` values. The
+    # suffix is the "component" from `splatlog.lib.text.STRFTIME_COMPONENTS`.
+    # Date-ish parts are blue, clock parts magenta, the zone yellow, and the
+    # literal separators are the default (foreground) color.
+    "datetime.year": Style(color="blue"),
+    "datetime.month": Style(color="blue"),
+    "datetime.day": Style(color="blue"),
+    "datetime.weekday": Style(color="blue", dim=True),
+    "datetime.ordinal": Style(color="blue"),
+    "datetime.week": Style(color="blue"),
+    "datetime.hour": Style(color="magenta"),
+    "datetime.minute": Style(color="magenta"),
+    "datetime.second": Style(color="magenta"),
+    "datetime.fraction": Style(color="magenta"),
+    "datetime.period": Style(color="magenta", dim=True),
+    "datetime.tz": Style(color="yellow"),
+    "datetime.date": Style(color="blue"),
+    "datetime.time": Style(color="magenta"),
+    "datetime.datetime": Style(color="blue"),
+    "datetime.sep": Style(color="default"),
+    #
+    # `timedelta` — {py:class}`datetime.timedelta` durations
+    # ------------------------------------------------------------------------
+    #
+    # Per-component styles applied by `splatlog.rich.enrich.enrich_timedelta`.
+    "timedelta.day": Style(color="blue"),
+    "timedelta.hour": Style(color="magenta"),
+    "timedelta.minute": Style(color="magenta"),
+    "timedelta.second": Style(color="magenta"),
+    "timedelta.fraction": Style(color="magenta"),
+    "timedelta.sign": Style(color="red"),
+    "timedelta.sep": Style(color="default"),
+    "timedelta.text": Style(color="default"),
+    "timedelta.space": Style(color="default"),
+    #
+    # `routine` — functions & methods
+    # ------------------------------------------------------------------------
+    #
+    # Per-part styles applied by `splatlog.rich.enrich.enrich_routine` when
+    # rendering functions and methods. Module path segments are blue, class
+    # names magenta, and the callable name is a cyan that varies by kind
+    # (plain/instance/class/static). The `.` separator and trailing `()` are
+    # dimmed so the name stands out.
+    "routine.module": Style(dim=True),
+    "routine.class": Style(color="magenta", bold=True),
+    "routine.function": Style(color="cyan", italic=True),
+    "routine.method": Style(color="blue", italic=True),
+    "routine.classmethod": Style(color="cyan", italic=True),
+    "routine.staticmethod": Style(color="cyan", italic=True),
+    "routine.locals": Style(dim=True, italic=True),
+    "routine.sep": Style(color="yellow"),
+    "routine.call": Style(color="yellow"),
+    "routine.icon": Style(color="yellow"),
+    #
+    # Additions
+    # ========================================================================
+    #
+    # Style namespaces we introduce.
+    #
     # `report` — Used to print logging state reports
-    # ====================================================================
+    # ------------------------------------------------------------------------
     #
     "report.logger.name": Style(color="blue", bold=True),
     "report.logger.name.sep": Style(color="bright_black"),
@@ -334,6 +402,7 @@ Basic Styles
 """
 
 PALETTE_ANSI_DARK: dict[str, str] = dict(
+    default="#dee1de",
     black="#0e0f12",
     red="#e06c75",
     bright_green="#5cb85c",
@@ -387,7 +456,7 @@ def set_default_theme(theme: ToTheme) -> None:
 # ============================================================================
 
 
-def to_theme(value: ToTheme | None = None) -> Theme:
+def to_theme(value: ToTheme | None = None, *, base: Theme = THEME) -> Theme:
     """Convert a `value` into a {py:class}`rich.theme.Theme`.
 
     ## Parameters
@@ -489,7 +558,7 @@ def to_theme(value: ToTheme | None = None) -> Theme:
     if isinstance(value, Mapping):
         # Given a `Mapping` layer it over the default `THEME` so it has our
         # custom styles (if you don't want this pass a `Theme` instance)
-        styles = cast(dict[str, StyleType], THEME.styles.copy())
+        styles = cast(dict[str, StyleType], base.styles.copy())
         styles.update(value)
         return Theme(styles, inherit=False)
 

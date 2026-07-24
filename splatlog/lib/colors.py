@@ -126,6 +126,24 @@ class ColorPallet:
         self._hues = tuple((float(i) / size) for i in range(size))
         self._colors = tuple(self.rgb_hex_for(hue) for hue in self._hues)
 
+    def __repr__(self) -> str:
+        return (
+            f"<{self.__class__.__name__} "
+            f"hsl=(i/{self._size!r}, {self._saturation!r}, {self._value!r}) "
+            f"colors={fmt(self._colors, items=3)}>"
+        )
+
+    def __rich_repr__(self) -> rich.repr.Result:
+        yield "size", self._size
+        yield "saturation", self._saturation
+        yield "value", self._value
+        yield "colors", self._colors
+
+    def __len__(self) -> int:
+        """Returns {py:attr}`size` as the length, because I expected this to
+        work when messing in the REPL."""
+        return self.size
+
     @property
     def size(self) -> int:
         """The number of colors in the palette."""
@@ -150,19 +168,6 @@ class ColorPallet:
     def colors(self) -> tuple[str, ...]:
         """The hex RGB color strings for each color in the palette."""
         return self._colors
-
-    def __repr__(self) -> str:
-        return (
-            f"<{self.__class__.__name__} "
-            f"hsl=(i/{self._size!r}, {self._saturation!r}, {self._value!r}) "
-            f"colors={fmt(self._colors, items=3)}>"
-        )
-
-    def __rich_repr__(self) -> rich.repr.Result:
-        yield "size", self._size
-        yield "saturation", self._saturation
-        yield "value", self._value
-        yield "colors", self._colors
 
     def rgb_hex_for(self, hue: float) -> str:
         """

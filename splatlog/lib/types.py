@@ -4,6 +4,8 @@ Library types: general, project-agnostic type hints and helpers.
 Includes runtime type checking utilities wrapping the `typeguard` package.
 """
 
+from decimal import Decimal
+from fractions import Fraction
 from inspect import isclass
 import sys
 import typing
@@ -44,6 +46,73 @@ The module name of the {py:mod}`typing` module.
 
 The name is `'typing'` but we read it from `typing.__name__`.
 """
+
+# Types
+# ============================================================================
+
+type Routine = (
+    types.FunctionType
+    | types.LambdaType
+    | types.MethodType
+    | types.BuiltinFunctionType
+    | types.BuiltinMethodType
+    | types.WrapperDescriptorType
+    | types.MethodDescriptorType
+    | types.ClassMethodDescriptorType
+)
+"""
+Return type of {py:mod}`inspect.isroutine`. A _routine_ is one of:
+
+1.  Function
+2.  Method
+3.  Lambda
+
+Most of which have a few variations.
+"""
+
+
+# Numbers
+# ============================================================================
+
+type Number = int | float | Decimal | Fraction | complex
+"""
+The numeric types splatlog treats as "numbers" for formatting and enrichment.
+
+Note that {py:class}`bool` — though an {py:class}`int` subclass — is
+_deliberately excluded_ by {py:func}`is_number`, so `True`/`False` fall through
+to their own handling rather than being rendered as `1`/`0`.
+"""
+
+
+def is_number(x: object) -> TypeIs[Number]:
+    """
+    Test if `x` is a {py:obj}`Number` — an {py:class}`int`, {py:class}`float`,
+    {py:class}`complex`, {py:class}`~decimal.Decimal`, or
+    {py:class}`~fractions.Fraction`.
+
+    {py:class}`bool` is an {py:class}`int` subclass but is _excluded_, so it can
+    be handled as `True`/`False` rather than a number.
+
+    ## Examples
+
+    ```pycon
+    >>> from decimal import Decimal
+    >>> from fractions import Fraction
+
+    >>> [is_number(x) for x in (1, 1.5, 1j, Decimal("1"), Fraction(1, 2))]
+    [True, True, True, True, True]
+
+    >>> is_number(True)
+    False
+
+    >>> [is_number(x) for x in ("1", None, [1])]
+    [False, False, False]
+
+    ```
+    """
+    return isinstance(
+        x, (int, float, complex, Decimal, Fraction)
+    ) and not isinstance(x, bool)
 
 
 def is_typing(x: typing.Any, *, include_type: bool = True) -> bool:
@@ -195,8 +264,8 @@ def assert_never(arg: typing.Never, typ: typing.Any) -> typing.Never:
     # Avoid circular import
     from splatlog.lib.text import fmt
 
-    err = AssertionError(f"expected {fmt(typ, quote=True)}")
-    err.add_note(f"given {fmt(arg, type=True, quote=True)}")
+    err = AssertionError(f"expected {fmt(typ, q=True)}")
+    err.add_note(f"given {fmt(arg, t=True, q=True)}")
     raise err
 
 

@@ -3,6 +3,14 @@ Helpers for working with the {py:mod}`rich` terminal formatting package.
 
 {py:mod}`rich` is what we use to produce colorful, tabular log messages in the
 terminal.
+
+## Public API
+
+The public API of {py:mod}`splatlog.rich`, re-exported here (the canonical
+import location) and documented where each symbol is defined.
+
+:::{splatlog-all-summary} splatlog.rich
+:::
 """
 
 from __future__ import annotations
@@ -24,15 +32,25 @@ from .theme import (
 )
 from .ntv_table import NtvTable, TableSource
 from .enrich import (
-    REPR_HIGHLIGHTER,
-    enrich,
-    enrich_type,
+    enrich_number,
+    enrich_routine,
     enrich_type_of,
+    enrich_type,
+    enrich,
+    Enriched,
+    EnrichedException,
+    EnrichedId,
     EnrichedType,
+    EnrichKwds,
+    EnrichOpts,
+    get_default_enrich_opts,
+    set_default_enrich_opts,
+    override_enrich_opts,
     highlighted,
+    REPR_HIGHLIGHTER,
+    repr_highlight,
+    unwrap,
 )
-from .enrich.enriched_exception import EnrichedException
-from .inline import Inline as Inline
 from .console import to_console, to_style
 from .handler import RichHandler, TimeConfig, ToTimeConfig
 from .section import Heading, Section
@@ -54,15 +72,24 @@ __all__ = [
     "NtvTable",
     "TableSource",
     # .enrich
-    "REPR_HIGHLIGHTER",
-    "enrich",
-    "enrich_type",
+    "enrich_number",
+    "enrich_routine",
     "enrich_type_of",
+    "enrich_type",
+    "enrich",
+    "Enriched",
+    "EnrichedId",
+    "EnrichKwds",
+    "EnrichOpts",
+    "get_default_enrich_opts",
+    "set_default_enrich_opts",
+    "override_enrich_opts",
     "highlighted",
-    # .enrich.enriched_exception
+    "REPR_HIGHLIGHTER",
+    "repr_highlight",
+    "unwrap",
+    # .enrich.exception
     "EnrichedException",
-    # .inline
-    "Inline",
     # .console
     "to_console",
     "to_style",

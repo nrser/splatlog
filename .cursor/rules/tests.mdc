@@ -2,14 +2,13 @@
 alwaysApply: true
 ---
 
-Execute the `tox` command to run the tests. It runs all `pytest` tests in
+Execute the `poe test` command to run the tests. It runs all `pytest` tests in
 `tests/**/test_*.py` files and all `doctest` examples in source code docstrings.
-Do _not_ change directories before running `tox`, it is unnecessary and will be
-blocked. Only commands `tox`, `head` and `tail` are allowed.
+Also type-check with `poe check` or running `pyright` directly.
 
 All functionality should have `doctest` examples demonstrating expected use and
 `pytest` tests verifying any additional cases. Focus on readability,
 conciseness, and organization when writing tests — prefer quality over quantity.
 
-Ensure you run the test suite with `tox` after making changes and resolve any
-failures.
+Ensure you run the test suite with `poe test` after making changes and resolve
+any failures.

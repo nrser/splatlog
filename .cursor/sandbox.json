@@ -1,0 +1,10 @@
+// SEE https://cursor.com/docs/reference/sandbox
+{
+  "networkPolicy": {
+    "allow": [
+        // Needed by `poe docs html|watch` because of InterSphinx
+        "docs.python.org",
+        "*.readthedocs.io"
+    ]
+  }
+}

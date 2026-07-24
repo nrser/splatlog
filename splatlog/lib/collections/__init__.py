@@ -233,8 +233,8 @@ def group_by[T, K](
 def unary[T](
     iterable: Iterable[T],
     *,
-    empty_msg: str = "expected exactly one item",
-    many_msg: str = "expected exactly one item",
+    empty_msg: str = "no items (expected exactly one)",
+    many_msg: str = "multiple items (expected exactly one)",
 ) -> T:
     """
     Return the only item from an {py:class}`~collections.abc.Iterable`, raising
@@ -277,13 +277,13 @@ def unary[T](
     >>> unary([])
     Traceback (most recent call last):
         ...
-    ValueError: expected exactly one item
+    ValueError: no items (expected exactly one)
     given `<list>` `[]`
 
     >>> unary([1, 2, 3])
     Traceback (most recent call last):
         ...
-    ValueError: expected exactly one item
+    ValueError: multiple items (expected exactly one)
     given `iterable` of type `<list>` with at least two items: `1`, `2`
 
     ```
@@ -296,7 +296,7 @@ def unary[T](
     >>> unary(count())
     Traceback (most recent call last):
         ...
-    ValueError: expected exactly one item
+    ValueError: multiple items (expected exactly one)
     given `iterable` of type `<itertools.count>` with at least two items: `0`, `1`
 
     ```
@@ -324,7 +324,9 @@ def unary[T](
         first = next(it)
     except StopIteration:
         err = ValueError(empty_msg)
-        err.add_note(f"given {fmt(iterable, quote=True, type=True)}")
+        # Don't include the `StopIteration` error, it's just noise/confusion
+        err.__suppress_context__ = True
+        err.add_note(f"given {fmt(iterable, q=True, t=True)}")
         raise err
 
     try:
@@ -335,8 +337,8 @@ def unary[T](
     err = ValueError(many_msg)
     err.add_note(
         "given `iterable` of type {} with at least two items: {}".format(
-            fmt_type_of(iterable, quote=True),
-            fmt_list((first, second), quote=True),
+            fmt_type_of(iterable, q=True),
+            fmt_list((first, second), q=True),
         )
     )
     raise err

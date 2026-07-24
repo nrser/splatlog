@@ -4,15 +4,15 @@ Console creation and coercion utilities.
 
 from collections.abc import Mapping
 import sys
-from typing import IO, Any, cast
+from typing import IO, Any, Unpack
 from rich.console import Console
 from rich.style import Style
 from rich.theme import Theme
 
 from splatlog.lib.types import satisfies
 from splatlog.types import (
+    ConsoleKwds,
     ToRichConsole,
-    ToTheme,
     assert_never,
     is_stdio_name,
     to_stdio,
@@ -22,46 +22,49 @@ from .theme import to_theme
 
 
 def to_console(
-    value: ToRichConsole | None = None, *, theme: ToTheme | None = None
+    value: ToRichConsole | None = None, **kwds: Unpack[ConsoleKwds]
 ) -> Console:
     """Convert a `value` into a {py:class}`rich.console.Console`.
 
     ## Parameters
 
-    -   `value`: Converted as follows:
+    -   `value`: The base to build from. Converted as follows:
 
-        -   {py:class}`rich.console.Console`: returned as-is.
+        -   {py:class}`~rich.console.Console`: returned as-is. Because it is
+            already a fully-constructed object, any `kwds` are _ignored_.
 
-        -   {py:class}`~collections.abc.Mapping`: used as keyword arguments to
-            {py:class}`rich.console.Console`.
+        -   {py:type}`~splatlog.types.ConsoleKwds` mapping: used as keyword
+            arguments to {py:class}`rich.console.Console`.
 
-        -   {py:type}`splatlog.types.StdioName`: write to the named standard
-            output stream (`"stdout"` or `"stderr"`).
+        -   {py:class}`rich.theme.Theme`: shorthand for a console using that
+            theme (may still be overridden by a `theme` keyword).
+
+        -   {py:type}`~splatlog.types.StdioName`: write to the named standard
+            output stream (`"stdout"`{l=py} or `"stderr"`{l=py}).
 
         -   {py:class}`typing.IO`: write to the given string I/O stream.
 
-        -   {py:data}`None`: create with library defaults (writes to
-            {py:data}`sys.stderr`).
+        -   {py:data}`None`: build from `kwds` alone (writing to
+            {py:data}`sys.stderr` unless overridden).
 
-    -   `theme`: fallback theme to use, in the case that `value` doesn't provide
-        one.
+    -   `kwds`: {py:class}`~rich.console.Console` keyword arguments (see
+        {py:type}`~splatlog.types.ConsoleKwds`). These take **priority** over
+        anything provided by `value` — if both set a key, the `kwds` value wins.
 
-        {py:class}`rich.console.Console` values never use the `theme`.
-        {py:class}`~collections.abc.Mapping` uses the `theme` when the `"theme"`
-        key is _absent_ (_any_ value, including {py:data}`None`, will be used).
-
-        Passed to {py:func}`splatlog.rich.to_theme` to convert it to a
-        {py:class}`rich.theme.Theme` instance.
+        The `theme` keyword is coerced through
+        {py:func}`~splatlog.rich.theme.to_theme`, so it accepts anything
+        {py:type}`~splatlog.types.ToTheme` allows. When `kwds` don't include a
+        `theme`, the one carried by `value` — or, failing that, the default
+        splatlog theme — applies.
 
     ## Returns
 
-    A {py:class}`rich.console.Console` instance.
+    A {py:class}`~rich.console.Console` instance.
 
     ## Examples
 
-    Create a console with library defaults — uses
-    {py:func}`splatlog.rich.get_default_theme` and writes to
-    {py:data}`sys.stderr`.
+    Create a console with library defaults — uses the default splatlog theme
+    {py:data}`~splatlog.rich.THEME` and writes to {py:data}`sys.stderr`.
 
     ```python
     >>> console = to_console()
@@ -90,54 +93,73 @@ def to_console(
 
     ```
 
-    Provide a fallback {py:class}`rich.theme.Theme` to be used when `value`
-    doesn't include one:
+    Options can also be given (or overridden) as keyword arguments:
+
+    ```python
+    >>> console = to_console({"width": 120}, width=80)
+    >>> console.width
+    80
+
+    ```
+
+    A `theme` keyword takes priority over one embedded in `value`:
 
     ```python
     >>> from rich.theme import Theme
     >>> from rich.style import Style
 
-    >>> console = to_console("stderr", theme=Theme({"info": "blue"}))
+    >>> console = to_console(
+    ...     {"theme": Theme({"info": "red"})},
+    ...     theme=Theme({"info": "blue"}),
+    ... )
     >>> console.get_style("info") == Style.parse("blue")
+    True
+
+    ```
+
+    Without a `theme` keyword, the one carried by `value` is used:
+
+    ```python
+    >>> console = to_console({"theme": Theme({"info": "red"})})
+    >>> console.get_style("info") == Style.parse("red")
     True
 
     ```
     """
 
-    if value is None:
-        return Console(file=sys.stderr, theme=to_theme(theme))
-
+    # A fully-constructed `Console` can't be reconfigured, so hand it back as-is.
     if isinstance(value, Console):
         return value
 
-    if isinstance(value, Mapping):
-        # If the mapping has a `theme` use that
-        if "theme" in value:
-            theme = value["theme"]
+    # Collect the constructor kwds contributed by `value`, defaulting the output
+    # stream to `sys.stderr`.
+    console_kwds: dict[str, Any] = {"file": sys.stderr}
 
-        return Console(
-            **cast(
-                Mapping[str, Any],
-                {
-                    # Provide a default for `file`
-                    "file": sys.stderr,
-                    **value,
-                    # Override the `theme`
-                    "theme": to_theme(theme),
-                },
-            )
-        )
+    if value is None:
+        pass
+    elif isinstance(value, Theme):
+        console_kwds["theme"] = value
+    elif isinstance(value, Mapping):
+        console_kwds.update(value)
+    elif is_stdio_name(value):
+        console_kwds["file"] = to_stdio(value)
+    elif satisfies(value, IO[str]):
+        console_kwds["file"] = value
+    else:
+        assert_never(value, ToRichConsole)
 
-    if isinstance(value, Theme):
-        return Console(theme=value)
+    # Resolve the theme before `kwds` clobber it: a `theme` in `kwds` wins;
+    # otherwise fall back to the one contributed by `value` (or the default).
+    kwd_theme = kwds.get("theme")
+    theme = kwd_theme if kwd_theme is not None else console_kwds.get("theme")
 
-    if is_stdio_name(value):
-        return Console(file=to_stdio(value), theme=to_theme(theme))
+    # `kwds` take priority over whatever `value` contributed.
+    console_kwds.update(kwds)
 
-    if satisfies(value, IO[str]):
-        return Console(file=value, theme=to_theme(theme))
+    # Always coerce to a `Theme` (`None` becomes the default splatlog theme).
+    console_kwds["theme"] = to_theme(theme)
 
-    assert_never(value, ToRichConsole)
+    return Console(**console_kwds)
 
 
 def to_style(

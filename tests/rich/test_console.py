@@ -50,28 +50,46 @@ class TestToConsole:
         assert result is original
         assert has_style(result, "test.style", "red")
 
-    def test_mapping_without_theme_uses_fallback(self):
-        """When mapping has no theme, fallback theme is used."""
-        fallback_theme = Theme({"test.style": "blue"})
-        console = to_console({"force_terminal": True}, theme=fallback_theme)
-        assert has_style(console, "test.style", "blue")
-
-    def test_mapping_with_theme_ignores_fallback(self):
-        """
-        When mapping has a theme, fallback is ignored (fallback semantics). This
-        is true even when the `"theme"` value is {py:data}`None`.
-        """
-        mapping_theme = Theme({"test.style": "red"})
-        fallback_theme = Theme({"test.style": "blue"})
-
-        console = to_console({"theme": mapping_theme}, theme=fallback_theme)
-
+    def test_mapping_theme_used_without_kwd(self):
+        """When only the mapping carries a theme, that theme is used."""
+        console = to_console({"theme": Theme({"test.style": "red"})})
         assert has_style(console, "test.style", "red")
 
-        # Explicit `None` ignores `fallback_theme`, constructs default theme
-        console = to_console({"theme": None}, theme=fallback_theme)
+    def test_theme_value(self):
+        """A bare Theme is shorthand for a console using that theme."""
+        console = to_console(Theme({"test.style": "red"}))
+        assert has_style(console, "test.style", "red")
+        assert console.file is sys.stderr
 
-        # Does not have `test.style` at all
+    def test_theme_value_overridden_by_kwd(self):
+        """A `theme` keyword still overrides a bare Theme value."""
+        console = to_console(
+            Theme({"test.style": "red"}),
+            theme=Theme({"test.style": "blue"}),
+        )
+        assert has_style(console, "test.style", "blue")
+
+    def test_kwd_theme_overrides_mapping(self):
+        """
+        The `theme` keyword takes priority over one embedded in the mapping.
+        """
+        console = to_console(
+            {"theme": Theme({"test.style": "red"})},
+            theme=Theme({"test.style": "blue"}),
+        )
+        assert has_style(console, "test.style", "blue")
+
+    def test_kwds_override_mapping_options(self):
+        """Keyword arguments take priority over the mapping's options."""
+        console = to_console({"width": 120}, width=80)
+        assert console.width == 80
+
+    def test_mapping_without_theme_uses_default(self):
+        """
+        When neither the mapping nor a keyword provides a theme, the default
+        splatlog theme is used (which has no `test.style`).
+        """
+        console = to_console({"force_terminal": True})
         with pytest.raises(MissingStyle):
             console.get_style("test.style")
 

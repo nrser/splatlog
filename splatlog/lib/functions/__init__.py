@@ -1,17 +1,21 @@
 """
 Function and decorator utilities.
 
-Provides tools for inspecting callable signatures and a slot-compatible
-cached property decorator.
+Provides tools for inspecting callable signatures.
+
+## Public API
+
+The public API of {py:mod}`splatlog.lib.functions`, re-exported here (the
+canonical import location) and documented where each symbol is defined.
+
+:::{splatlog-all-summary} splatlog.lib.functions
+:::
 """
 
 from collections.abc import Callable
 from inspect import signature, Parameter
 
-from .slot_cached_property import SlotCachedProperty
-
 __all__ = [
-    "SlotCachedProperty",
     "REQUIRABLE_PARAMETER_KINDS",
     "is_required_parameter",
     "required_arity",

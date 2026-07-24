@@ -17,7 +17,6 @@ from splatlog.levels import Filter
 from splatlog.lib import str_find_all
 from splatlog.lib.text import fmt_timedelta, fmt_datetime
 from splatlog.rich.ntv_table import NtvTable
-from splatlog.rich.theme import to_theme, ToTheme
 from splatlog.rich.enrich import enrich
 from splatlog.rich.console import to_console
 from splatlog.rich.link import (
@@ -204,7 +203,6 @@ class RichHandler(logging.Handler):
         level: LevelSpec = logging.NOTSET,
         *,
         console: ToRichConsole | None = None,
-        theme: ToTheme | None = None,
         time: ToTimeConfig = False,
         show_path: bool = False,
         link_path: bool = False,
@@ -215,8 +213,7 @@ class RichHandler(logging.Handler):
         super().__init__()
         Filter.apply(self, level)
 
-        self.theme = to_theme(theme)
-        self.console = to_console(console, theme=self.theme)
+        self.console = to_console(console)
         self.show_path = show_path
         self.link_path = link_path
         self.link_icon = link_icon

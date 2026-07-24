@@ -1,11 +1,11 @@
-"""Tests for splatlog.rich.enrich.enriched_path module."""
+"""Tests for {py:mod}`splatlog.rich.enrich.path` module."""
 
 from io import StringIO
 from pathlib import Path, PurePosixPath
 
 from rich.console import Console
 
-from splatlog.rich.enrich.enriched_path import EnrichedPath, _shorten
+from splatlog.rich.enrich.path import EnrichedPath, _shorten
 
 
 def _render(enriched: EnrichedPath, width: int = 80) -> str:
@@ -67,9 +67,7 @@ class TestEnrichedPathRendering:
         )
 
     def test_truncated_at_18(self):
-        assert _render(EnrichedPath(self.PATH), width=18) == (
-            "…/delta/echo.py"
-        )
+        assert _render(EnrichedPath(self.PATH), width=18) == ("…/delta/echo.py")
 
     def test_truncated_to_filename(self):
         assert _render(EnrichedPath(self.PATH), width=10) == "…/echo.py"
@@ -86,7 +84,6 @@ class TestEnrichedPathRendering:
 
 
 class TestMeasurement:
-
     def test_max_width_is_display_length(self):
         ep = EnrichedPath(Path("/a/b/c.txt"))
         assert ep.max_width == len(ep.display)

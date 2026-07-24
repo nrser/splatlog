@@ -10,21 +10,22 @@ from __future__ import annotations
 import logging
 import sys
 import textwrap
-from typing import Any, Optional, Union, TYPE_CHECKING
+from typing import Any, Optional, Union
 import ast
 import inspect
 from datetime import datetime
 from io import StringIO
 from types import ModuleType
 
+from rich.text import Text
+from rich.console import Console, RenderableType
+from rich.style import Style, StyleType
+
 from splatlog.lib.text import fmt
 from splatlog.types import ExcInfo, ToLevel, to_level
 
-if TYPE_CHECKING:
-    from rich.console import Console, RenderableType
-    from rich.style import Style
-
 __all__ = [
+    "assert_renders_text",
     "assert_renders_segment",
     "assert_text",
     "get_constant_docstrings",
@@ -43,8 +44,8 @@ def assert_renders_segment(
     renderable: "RenderableType",
     text: str,
     *,
-    style: "str | Style | None" = None,
-    console: "Console | None" = None,
+    style: str | Style | None = None,
+    console: Console | None = None,
 ) -> None:
     """
     Assert that rendering produces a segment containing the given text.
@@ -70,12 +71,10 @@ def assert_renders_segment(
     """
     __tracebackhide__ = True
 
-    from rich.style import Style as RichStyle
-
     if console is None:
         console = _get_default_console()
 
-    resolved_style: RichStyle | None = None
+    resolved_style: Style | None = None
     if style is not None:
         if isinstance(style, str):
             resolved_style = console.get_style(style)
@@ -92,11 +91,72 @@ def assert_renders_segment(
     if style is not None:
         raise AssertionError(
             f"No segment containing {text!r} with style {style!r} found in\n\n"
-            f"{fmt(segments, quote=True)}"
+            f"{fmt(segments, q=True)}"
         )
     else:
         raise AssertionError(
             f"No segment containing {text!r} found in\n\n{segments!r}"
+        )
+
+
+def assert_renders_text(
+    renderable: RenderableType,
+    *parts: str | Text | tuple[str, StyleType],
+    console: Console | None = None,
+) -> None:
+    """
+    Assert that `renderable` renders identically to the
+    {py:meth}`rich.text.Text.assemble` of `parts`.
+
+    > The positional arguments should be either strings, or a tuple of string +
+    > style.
+    >
+    > — {py:meth}`rich.text.Text.assemble`
+
+    Both the assembled {py:class}`~rich.text.Text` and `renderable` are passed
+    to {py:meth}`rich.console.Console.render`, and the results are compared
+    {py:class}`~rich.segment.Segment`-by-{py:class}`~rich.segment.Segment`. Both
+    are rendered with the same {py:class}`~rich.console.Console` so styles
+    resolve identically.
+
+    This is the multi-segment counterpart to {py:func}`assert_renders_segment`,
+    handy for asserting a full styled rendering (see
+    {py:func}`splatlog.rich.enrich.datetime.enrich_timedelta`).
+
+    ## Parameters
+
+    -   `renderable`: Any Rich renderable object.
+    -   `parts`: The expected pieces, each a `str`, `Text`, or `(text, style)`
+        tuple, assembled into the expected {py:class}`~rich.text.Text`.
+    -   `console`: Optional Console to use for rendering. If not provided, a
+        default Console is created.
+
+    ## Examples
+
+    >>> from rich.text import Text
+
+    >>> assert_renders_text(
+    ...     Text.assemble(("hi", "bold"), (" ", ""), ("there", "red"), end=""),
+    ...     ("hi", "bold"),
+    ...     (" ", ""),
+    ...     ("there", "red"),
+    ... )
+    """
+    __tracebackhide__ = True
+
+    if console is None:
+        console = _get_default_console()
+
+    expected = Text.assemble(*parts, end="")
+
+    actual_segments = list(console.render(renderable))
+    expected_segments = list(console.render(expected))
+
+    if actual_segments != expected_segments:
+        raise AssertionError(
+            "Rendered segments do not match expected.\n\n"
+            f"Expected:\n{fmt(expected_segments, q=True)}\n\n"
+            f"Actual:\n{fmt(actual_segments, q=True)}"
         )
 
 
@@ -138,7 +198,6 @@ def assert_text(
 
     ## Examples
 
-    >>> from splatlog.testing import assert_text
     >>> assert_text("hello\\nworld", '''
     ...     hello
     ...     world

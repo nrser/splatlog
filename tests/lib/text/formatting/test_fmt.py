@@ -27,13 +27,13 @@ def test_block_breakout():
 
     # The "little" object should be formatted inline
     assert (
-        f"given {fmt(lil, quote=True, type=True)}"
+        f"given {fmt(lil, q=True, t=True)}"
         == "given `<dict>` `{'name': 'Gary Cross'}`"
     )
 
     # The "big" object should "breakout" to its own markdown code block
     assert_text(
-        actual=f"given {fmt(big, quote=True, type=True)}",
+        actual=f"given {fmt(big, q=True, t=True)}",
         expected="""
             given `<dict>`:
 

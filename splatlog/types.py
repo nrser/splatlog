@@ -7,6 +7,7 @@ be converted to a canonical form (the `To*` convention).
 """
 
 from __future__ import annotations
+from datetime import datetime
 from inspect import isclass
 import logging
 import os
@@ -22,6 +23,7 @@ from typing import (
     Protocol,
     Type,
     TypeAlias,
+    TypedDict,
     TypeVar,
     Union,
     TYPE_CHECKING,
@@ -29,6 +31,7 @@ from typing import (
 )
 from collections.abc import Mapping, Callable
 
+from rich.emoji import EmojiVariant
 from rich.padding import PaddingDimensions
 from rich.syntax import SyntaxTheme
 
@@ -38,8 +41,14 @@ if sys.version_info >= (3, 13):
 else:
     from typing_extensions import TypeIs
 
-from rich.console import Console, ConsoleRenderable, RenderableType, RichCast
-from rich.style import StyleType
+from rich.console import (
+    Console,
+    ConsoleRenderable,
+    RenderableType,
+    RichCast,
+)
+from rich.style import Style, StyleType
+from rich.text import Text
 from rich.theme import Theme
 from typeguard import check_type, TypeCheckError
 
@@ -292,16 +301,73 @@ indicate the destination when configuring a handler (which is why `"stdin"` is
 absent).
 """
 
-ToRichConsole: TypeAlias = Console | Mapping[str, Any] | StdioName | IO[str]
-"""
-What we can convert to a {py:class}`rich.console.Console`. See
-{py:func}`splatlog.rich.console.to_console`.
-"""
-
 ToTheme: TypeAlias = Theme | SyntaxTheme | IO[str] | Mapping[str, StyleType]
 """
 What we can convert to a {py:class}`rich.theme.Theme`. See
 {py:func}`splatlog.rich.theme.to_theme` for details.
+"""
+
+
+class ConsoleKwds(TypedDict, total=False):
+    """
+    Keyword arguments accepted by the {py:class}`rich.console.Console`
+    constructor, for use with {py:func}`splatlog.rich.console.to_console`.
+
+    Mirrors the {py:class}`~rich.console.Console` signature, with two
+    adjustments:
+
+    1.  `theme` is widened to {py:type}`ToTheme` — it is coerced through
+        {py:func}`splatlog.rich.theme.to_theme` before construction.
+
+    2.  The `| None` is dropped from the {py:data}`~typing.Optional`
+        parameters. Since every entry is optional (`total=False`), simply
+        _omitting_ a key already expresses the "unset" state those `None`
+        defaults stood for.
+    """
+
+    color_system: Literal["auto", "standard", "256", "truecolor", "windows"]
+    force_terminal: bool
+    force_jupyter: bool
+    force_interactive: bool
+    soft_wrap: bool
+    theme: ToTheme
+    stderr: bool
+    file: IO[str]
+    quiet: bool
+    width: int
+    height: int
+    # `StyleType` (`str | Style`) spelled out so its `Style` forward reference
+    # resolves in this module's namespace during runtime type checks.
+    style: str | Style
+    no_color: bool
+    tab_size: int
+    record: bool
+    markup: bool
+    emoji: bool
+    emoji_variant: EmojiVariant
+    highlight: bool
+    log_time: bool
+    log_path: bool
+    # `rich`'s `FormatTimeCallable` and `HighlighterType` aliases, spelled out
+    # so their `Text` forward references resolve in this module during runtime
+    # type checks.
+    log_time_format: str | Callable[[datetime], Text]
+    highlighter: Callable[[str | Text], Text]
+    legacy_windows: bool
+    safe_box: bool
+    get_datetime: Callable[[], datetime]
+    get_time: Callable[[], float]
+
+
+ToRichConsole: TypeAlias = Console | ConsoleKwds | Theme | StdioName | IO[str]
+"""
+What we can convert to a {py:class}`rich.console.Console`. See
+{py:func}`splatlog.rich.console.to_console`.
+
+A bare {py:class}`rich.theme.Theme` is accepted as shorthand for a console using
+that theme (it is unambiguous since a {py:class}`~rich.theme.Theme` is not a
+{py:class}`~collections.abc.Mapping`, so it never collides with
+{py:type}`ConsoleKwds`).
 """
 
 
@@ -1020,9 +1086,9 @@ def to_verbosity(x: object) -> Verbosity:
         return x
 
     err = TypeError(
-        f"expected non-negative integer less than {fmt(VERBOSITY_MAX, quote=True)}"
+        f"expected non-negative integer less than {fmt(VERBOSITY_MAX, q=True)}"
     )
-    err.add_note(f"given {fmt(x, type=True, quote=True)}")
+    err.add_note(f"given {fmt(x, t=True, q=True)}")
     raise err
 
 
@@ -1078,16 +1144,16 @@ def assert_level(level: ToLevel, *, var_name: str = "level") -> None:
     if isinstance(level, str):
         if not is_level_name(level):
             err = ValueError(
-                f"expected `{var_name}` to be {fmt(ToLevel, quote=True)}"
+                f"expected `{var_name}` to be {fmt(ToLevel, q=True)}"
             )
-            err.add_note(f"{fmt(level, quote=True)} is not a valid level name")
+            err.add_note(f"{fmt(level, q=True)} is not a valid level name")
             raise err
     elif isinstance(level, int):
         if not is_level(level):
             err = ValueError(
-                f"expected `{var_name}` to be {fmt(ToLevel, quote=True)}"
+                f"expected `{var_name}` to be {fmt(ToLevel, q=True)}"
             )
-            err.add_note(f"{fmt(level, quote=True)} is not a valid level")
+            err.add_note(f"{fmt(level, q=True)} is not a valid level")
             raise err
     else:
         assert_never(level, ToLevel)

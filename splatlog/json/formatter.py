@@ -177,27 +177,23 @@ class JSONFormatter(logging.Formatter):
         if self._console is None:
             if self._msg_mode == "html":
                 self._console = to_console(
-                    dict(
-                        # Need this, as otherwise the Jupyter detection will result in `file=` not
-                        # working (WTF..?)
-                        force_jupyter=False,
-                        # Where the console should write to
-                        file=open(os.devnull, "w"),
-                        # Force terminal control codes
-                        force_terminal=True,
-                        # Boolean to enable recording of terminal output
-                        record=True,
-                    )
+                    # Need this, as otherwise the Jupyter detection will result
+                    # in `file=` not working (WTF..?)
+                    force_jupyter=False,
+                    # Where the console should write to
+                    file=open(os.devnull, "w"),
+                    # Force terminal control codes
+                    force_terminal=True,
+                    # Boolean to enable recording of terminal output
+                    record=True,
                 )
             else:
                 self._console = to_console(
-                    dict(
-                        # Need this, as otherwise the Jupyter detection will result in `file=` not
-                        # working (WTF..?)
-                        force_jupyter=False,
-                        # Force terminal control codes
-                        force_terminal=True,
-                    )
+                    # Need this, as otherwise the Jupyter detection will result
+                    # in `file=` not working (WTF..?)
+                    force_jupyter=False,
+                    # Force terminal control codes
+                    force_terminal=True,
                 )
         return self._console
 

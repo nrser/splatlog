@@ -5,6 +5,14 @@ Provides {py:class}`JSONEncoder` for converting Python objects to JSON-safe
 representations, {py:class}`JSONFormatter` for formatting log records as JSON,
 and a system of {py:class}`JSONReducer` functions for customizing how objects
 are serialized.
+
+## Public API
+
+The public API of {py:mod}`splatlog.json`, re-exported here (the canonical
+import location) and documented where each symbol is defined.
+
+:::{splatlog-all-summary} splatlog.json
+:::
 """
 
 from .encoder import JSONEncoder

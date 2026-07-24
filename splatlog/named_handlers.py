@@ -11,7 +11,7 @@ attached to the root logger.
 
 import logging
 from pathlib import Path
-from typing import IO, Any, Literal, overload
+from typing import IO, Any, Literal, cast, overload
 from collections.abc import Callable, Mapping
 import keyword
 
@@ -21,6 +21,8 @@ from splatlog.lib import satisfies, fmt, partition_mapping
 from splatlog.locking import lock
 from splatlog.rich.handler import RichHandler
 from splatlog.types import (
+    ConsoleKwds,
+    KwdMapping,
     ToConsoleHandler,
     NamedHandlerFactory,
     ToExportHandler,
@@ -29,6 +31,15 @@ from splatlog.types import (
     can_be_level,
     is_to_rich_console,
 )
+
+
+_CONSOLE_KWD_KEYS: frozenset[str] = frozenset(ConsoleKwds.__annotations__)
+"""
+Field names of {py:class}`~splatlog.types.ConsoleKwds`, used by
+{py:func}`to_console_handler` to tell a console spec apart from
+{py:class}`~splatlog.rich.RichHandler` keyword arguments (the two never share a
+key).
+"""
 
 
 _registry: dict[str, NamedHandlerFactory] = {}
@@ -94,17 +105,17 @@ def check_name(name: object) -> None:
     ```
     """
     if not isinstance(name, str):
-        err = TypeError(f"named handler names must be {fmt(str, quote=True)}")
-        err.add_note(f"given {fmt(name, type=True, quote=True)}")
+        err = TypeError(f"named handler names must be {fmt(str, q=True)}")
+        err.add_note(f"given {fmt(name, t=True, q=True)}")
         raise err
     if not name.isidentifier():
         err = ValueError("named handler name must be a valid Python identifier")
-        err.add_note(f"given {fmt(name, quote=True)}")
+        err.add_note(f"given {fmt(name, q=True)}")
         raise err
 
     if keyword.iskeyword(name):
         err = ValueError("named handler name must not be a Python keyword")
-        err.add_note(f"given {fmt(name, quote=True)}")
+        err.add_note(f"given {fmt(name, q=True)}")
         raise err
 
 
@@ -381,7 +392,7 @@ def to_console_handler(value: ToConsoleHandler) -> logging.Handler:
 
         ```
 
-    2.  Any {py:class}`collections.abc.Mapping` is used as the keyword arguments
+    2.  A {py:class}`collections.abc.Mapping` is used as the keyword arguments
         to construct a new {py:class}`~splatlog.rich.RichHandler`.
 
         ```python
@@ -408,6 +419,22 @@ def to_console_handler(value: ToConsoleHandler) -> logging.Handler:
 
         >>> len(handler.filters)
         1
+
+        ```
+
+        As a convenience, a mapping whose keys are all
+        {py:class}`~splatlog.types.ConsoleKwds` fields (which never overlap with
+        {py:class}`~splatlog.rich.RichHandler` keywords) is instead used to build
+        the handler's {py:attr}`~splatlog.rich.RichHandler.console`.
+
+        ```python
+        >>> handler = to_console_handler({"file": sys.stdout, "width": 80})
+
+        >>> handler.console.file is sys.stdout
+        True
+
+        >>> handler.console.width
+        80
 
         ```
 
@@ -475,6 +502,8 @@ def to_console_handler(value: ToConsoleHandler) -> logging.Handler:
             | int
             | str
             | rich.console.Console
+            | splatlog.types.ConsoleKwds
+            | rich.theme.Theme
             | 'stdout'
             | 'stderr'
             | typing.IO[str]>`
@@ -490,7 +519,13 @@ def to_console_handler(value: ToConsoleHandler) -> logging.Handler:
         return value
 
     if isinstance(value, Mapping):
-        return RichHandler(**value)
+        # `RichHandler.__init__` keywords and `ConsoleKwds` fields never share a
+        # key, so a non-empty mapping whose keys are all `ConsoleKwds` fields is
+        # a console spec; everything else is treated as `RichHandler` keywords
+        # (which is also the sensible default for an empty mapping).
+        if value and value.keys() <= _CONSOLE_KWD_KEYS:
+            return RichHandler(console=cast(ConsoleKwds, value))
+        return RichHandler(**cast(KwdMapping, value))
 
     if is_to_rich_console(value):
         return RichHandler(console=value)
@@ -738,6 +773,6 @@ def to_export_handler(value: ToExportHandler) -> logging.Handler:
         handler.formatter = JSONFormatter()
         return handler
 
-    err = TypeError(f"expected {fmt(ToExportHandler, quote=True)}")
-    err.add_note(f"given {fmt(value, type=True, quote=True)}")
+    err = TypeError(f"expected {fmt(ToExportHandler, q=True)}")
+    err.add_note(f"given {fmt(value, t=True, q=True)}")
     raise err

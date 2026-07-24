@@ -255,7 +255,6 @@ def report(
     include: types.ReportInclude = "all",
     *,
     console: types.ToRichConsole | None = None,
-    theme: rich.ToTheme | None = None,
     show_placeholder_loggers: bool = False,
     show_null_handlers: bool = False,
 ) -> None:
@@ -271,11 +270,9 @@ def report(
         `"configured"` (only loggers with handlers or a non-NOTSET level).
 
     -   `console`: Where to print the report. Accepts anything
-        {py:func}`splatlog.rich.to_console` understands. Defaults to
-        {py:data}`sys.stderr` with the splatlog theme.
-
-    -   `theme`: Fallback {py:class}`rich.theme.Theme` used when `console` does
-        not already provide one.
+        {py:func}`splatlog.rich.to_console` understands (including a
+        {py:type}`~splatlog.types.ConsoleKwds` mapping carrying a `theme`).
+        Defaults to {py:data}`sys.stderr` with the splatlog theme.
 
     -   `show_placeholder_loggers`: Whether to show
         {py:class}`logging.PlaceHolder` entries.
@@ -297,8 +294,7 @@ def report(
     """
     from splatlog import reporting
 
-    # Create console with splatlog theme
-    console = rich.to_console(console, theme=rich.to_theme(theme))
+    console = rich.to_console(console)
 
     report = reporting.Report(
         console=console,

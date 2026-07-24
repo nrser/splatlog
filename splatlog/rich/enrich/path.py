@@ -4,13 +4,14 @@ Rich-renderable wrapper for Path objects.
 
 from __future__ import annotations
 
+import dataclasses as dc
 from pathlib import Path, PurePath
 
 from rich.console import Console, ConsoleOptions, RenderResult
 from rich.text import Text
 from rich.measure import Measurement
 
-from splatlog.lib.functions import SlotCachedProperty
+from .enriched import Enriched
 
 _DIR_STYLE = "inspect.class"
 _NAME_STYLE = "repr.tag_name"
@@ -50,7 +51,8 @@ def _shorten(path: PurePath) -> str:
     return str(path)
 
 
-class EnrichedPath:
+@dc.dataclass(frozen=True)
+class EnrichedPath(Enriched[PurePath]):
     """
     Wraps a path in a Rich renderable that adapts to available console
     width, preserving the filename when truncation is needed.
@@ -82,27 +84,20 @@ class EnrichedPath:
     ```
     """
 
-    __slots__ = ("_path", "_display", "_min_width", "_max_width")
-
-    _path: PurePath
-
-    def __init__(self, path: PurePath):
-        self._path = path
-
-    @SlotCachedProperty
+    @property
     def display(self) -> str:
         """Shortest display string for the path."""
-        return _shorten(self._path)
+        return _shorten(self.value)
 
-    @SlotCachedProperty
+    @property
     def min_width(self) -> int:
         """Width when maximally truncated (``…/filename``)."""
-        name = self._path.name
+        name = self.value.name
         if not name:
             return len(self.display)
         return min(len(self.display), len(_ELLIPSIS) + 1 + len(name))
 
-    @SlotCachedProperty
+    @property
     def max_width(self) -> int:
         """Width of the full display string."""
         return len(self.display)
@@ -115,7 +110,7 @@ class EnrichedPath:
 
         ```
         """
-        return f"{self.__class__.__name__}({str(self._path)!r})"
+        return f"{self.__class__.__name__}({str(self.value)!r})"
 
     def __rich_measure__(
         self, console: Console, options: ConsoleOptions
@@ -174,7 +169,7 @@ class EnrichedPath:
                     yield self._styled(_ELLIPSIS + display[i:])
                     return
 
-        name = self._path.name
+        name = self.value.name
         if name and name != display:
             yield self._styled(_ELLIPSIS + "/" + name)
         else:

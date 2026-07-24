@@ -572,9 +572,7 @@ class JSONEncoder(json.JSONEncoder):
                         pass
                     case "raise":
                         err.add_note(f"in match|reduce of {reducer}")
-                        err.add_note(
-                            f"called with {fmt(obj, quote=True, type=True)}"
-                        )
+                        err.add_note(f"called with {fmt(obj, q=True, t=True)}")
                         raise err
                     case _:
                         assert_never(self.on_reduce_error, OnReducerError)

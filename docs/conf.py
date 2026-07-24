@@ -4,12 +4,16 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 from pathlib import Path
+import sys
 import datetime as dt
 
 try:
     import tomllib
 except ModuleNotFoundError:
     import tomli as tomllib  # type: ignore[import-not-found]
+
+# Make the local `_ext` Sphinx extensions importable.
+sys.path.insert(0, str(Path(__file__).resolve().parent / "_ext"))
 
 _pyproject_path = Path(__file__).resolve().parent.parent / "pyproject.toml"
 with _pyproject_path.open("rb") as f:
@@ -38,14 +42,6 @@ exclude_patterns = [
     "_build",
     "Thumbs.db",
     ".DS_Store",
-    # autodoc2 generates separate submodule pages even when their content is
-    # inlined into the parent package page via autodoc2_module_all_regexes.
-    # Exclude the orphaned pages to silence toc.not_included warnings.
-    "apidocs/splatlog/splatlog.json.*.md",
-    "apidocs/splatlog/splatlog.levels.*.md",
-    "apidocs/splatlog/splatlog.rich.*.md",
-    "apidocs/splatlog/splatlog.lib.functions.*.md",
-    "apidocs/splatlog/splatlog.lib.text.*.md",
 ]
 
 suppress_warnings = [
@@ -58,6 +54,12 @@ extensions = [
     "myst_parser",
     "autodoc2",
     "sphinx.ext.intersphinx",
+    # Local extension: `splatlog-all-summary` directive + re-export reference
+    # redirection. See `docs/_ext/splatlog_autodoc2.py`.
+    "splatlog_autodoc2",
+    # Local extension: `rich` directive that executes Python and embeds the
+    # resulting Rich console output as inline SVG. See `docs/_ext/rich_block.py`.
+    "rich_block",
 ]
 
 # TODO  Trying to get indented (non-fenced) code blocks highlighted, not
@@ -65,7 +67,19 @@ extensions = [
 #
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-highlight_language
 # https://pygments.org/docs/lexers/#pygments.lexers.python.PythonConsoleLexer
-highlight_language = "pycon"
+# highlight_language = "pycon"
+
+# Pygments (syntax highlighting) style.
+#
+# NOTE  Furo splits this in two: `pygments_style` applies only in *light* mode,
+#       while *dark* mode is controlled by Furo's own `pygments_dark_style`
+#       (default `"native"`). Setting only `pygments_style` looks like it "does
+#       nothing" when viewing in dark mode — you must set both.
+#
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-pygments_style
+# https://pradyunsg.me/furo/customisation/#pygments-styles
+pygments_style = "friendly"
+pygments_dark_style = "github-dark"
 
 # Extension Options
 # ----------------------------------------------------------------------------
@@ -75,17 +89,32 @@ highlight_language = "pycon"
 autodoc2_packages = [
     "../splatlog",
 ]
-autodoc2_render_plugin = "myst"
-autodoc2_type_aliases = True
+# Custom MyST renderer (see `docs/_ext/splatlog_autodoc2.py`) that renders PEP
+# 695 `type` aliases as `py:type` directives. It also registers an analyser
+# handler so those `type` statements are captured at all — autodoc2 0.5.0 drops
+# them otherwise.
+autodoc2_render_plugin = "splatlog_autodoc2.TypeAliasMystRenderer"
 
-# Facilitate referencing submodule re-exports at the module level. Need to also
-# define `__all__` and set `__module__`
-autodoc2_module_all_regexes = [
-    r"^splatlog\.json$",
-    r"^splatlog\.levels$",
-    r"^splatlog\.rich$",
-    r"^splatlog\.lib\.functions$",
-    r"^splatlog\.lib\.text$",
+# NOTE  Intentionally empty. Rather than making re-exporting packages "opaque"
+#       (inlining their `__all__` onto the package page and hiding submodules),
+#       every such package (`splatlog.json`, `splatlog.levels`, `splatlog.rich`,
+#       `splatlog.lib.functions`, `splatlog.lib.text`, ...) keeps its submodules
+#       in the TOC with per-definition documentation. Each package page surfaces
+#       its `__all__` via the `splatlog-all-summary` directive in its docstring,
+#       and package-level references to re-exports (e.g. `splatlog.rich.frame`)
+#       are redirected to their definitions. Both are provided by the local
+#       `splatlog_autodoc2` extension (see `docs/_ext/splatlog_autodoc2.py`).
+autodoc2_module_all_regexes = []
+
+# Hide individual attributes/members by fully-qualified name (matched via
+# `re.fullmatch`).
+#
+# `FmtKwds` mirrors `FmtOpts` field-for-field (it only exists to type
+# `**kwds: Unpack[FmtKwds]`); its class docstring already points readers at
+# `FmtOpts` for the field docs, so documenting each key — even as a bare
+# x-ref — is just noise. Hide them all while keeping the class page itself.
+autodoc2_hidden_regexes = [
+    r"splatlog\.lib\.text\.formatter\.FmtKwds\..+",
 ]
 
 ### `sphinx.ext.intersphinx` Options ###
@@ -104,6 +133,19 @@ intersphinx_mapping = {
 
 myst_enable_extensions = [
     "colon_fence",
+    # Parse `$...$` (inline) and `$$...$$` (block) as LaTeX math.
+    #
+    # Example: `$10^{-3}$`
+    #
+    # https://myst-parser.readthedocs.io/en/latest/syntax/optional.html#syntax-math-dollar
+    "dollarmath",
+    # Enable _Inline Attributes_, which allows syntax highlighting of inline
+    # code spans.
+    #
+    # Example: `"[%dd] [%H:%M:%S[.%3f]]"`{l=py}
+    #
+    # https://myst-parser.readthedocs.io/en/latest/syntax/optional.html#syntax-attributes-inline
+    "attrs_inline",
 ]
 
 # Builder Options
@@ -116,8 +158,46 @@ myst_enable_extensions = [
 #
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
+# [Furo](https://github.com/pradyunsg/furo) theme, because it has dork-mode.
+# Tried all the dark, free, and reasonable popular ones at some point, and this
+# was least ass-looking.
 html_theme = "furo"
 html_static_path = ["_static"]
+
+### Theme Customization ######################################################
+#
+# Visual tweaks are accomplished via theme options — mostly CSS variable
+# overrides — and custom CSS rules, with variable preferred.
+
+# Include custom CSS rules in `docs/_static/custom.css`.
+#
+# https://docs.readthedocs.com/platform/stable/guides/adding-custom-css.html
+html_css_files = ["custom.css"]
+
+# [Furo](https://github.com/pradyunsg/furo) theme customization options.
+#
+# Furo uses CSS variables for much of the styling we're interested in — font
+# sizes, colors, etc. Prefer overriding variables to adding CSS rules when
+# possible.
+#
+# https://pradyunsg.me/furo/customisation/
+#
+# There doesn't seem to be comprehensive documentation of the variables, but
+# you can look at the source:
+#
+# https://github.com/pradyunsg/furo/tree/main/src/furo/assets/styles/variables
+
+# Vars for both light and dark mode
+_shared_css_vars = {
+    "color-link--hover": "var(--color-brand-visited)",
+    "color-link--visited": "var(--color-link)",
+    "color-link--visited--hover": "var(--color-link--hover)",
+}
+
+html_theme_options = {
+    "light_css_variables": {**_shared_css_vars},
+    "dark_css_variables": {**_shared_css_vars},
+}
 
 # Domain Options
 # ============================================================================
