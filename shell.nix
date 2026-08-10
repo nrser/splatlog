@@ -1,10 +1,5 @@
 { pkgs ? import <nixpkgs> {} }:
 
-# Literal shell snippet so we can embed ${FPATH:+:$FPATH} in shellHook without Nix parsing ${...}
-# In Nix double-quoted strings, "\${" yields literal ${ in the result.
-let
-  fpathSuffix = "\${FPATH:+:\$FPATH}";
-in
 pkgs.mkShell {
   buildInputs = with pkgs; [
     # Python version and package management
