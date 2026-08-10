@@ -143,8 +143,8 @@ _site/
 dev/run/
 dev/log/
 
-# `zsh` droppings
-.zcompdump
-
 # Generated `zsh` completion for `poe`
 /dev/sh/.zfunc/_poe
+
+# `direnv` init file; `echo "use nix" > .envrc` to use direnv+nix-shell
+.envrc
