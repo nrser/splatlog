@@ -89,5 +89,8 @@
 
   "terminal.integrated.defaultProfile.osx": "zsh",
 
-  "python.terminal.activateEnvironment": false
+  "python.terminal.activateEnvironment": false,
+  // This is needed to keep the `ms-python.vscode-python-envs` ext from screwing
+  // everything by setting the user-level value on startup to the system Python
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python"
 }
