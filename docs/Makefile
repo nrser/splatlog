@@ -44,6 +44,13 @@ clean:
 watch:
 	@$(SPHINX_AUTOBUILD) --watch .. --port "$(SPHINX_PORT)" "$(SOURCE_DIR)" "$(BUILD_DIR)" $(SPHINX_OPTS) $(O)
 
+# Publishing to GitHub Pages is intentionally *not* a Makefile target: it must
+# build a release git ref, not the dirty working tree. Use:
+#
+#   poe docs:publish --ref v0.5.3
+#
+# See `dev/bin/publish-docs` and `dev/notes/2026-08-09.github-pages.md`.
+
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINX_OPTS).
 %: Makefile

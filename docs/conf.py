@@ -6,11 +6,7 @@
 from pathlib import Path
 import sys
 import datetime as dt
-
-try:
-    import tomllib
-except ModuleNotFoundError:
-    import tomli as tomllib  # type: ignore[import-not-found]
+import tomllib
 
 # Make the local `_ext` Sphinx extensions importable.
 sys.path.insert(0, str(Path(__file__).resolve().parent / "_ext"))
@@ -90,7 +86,7 @@ autodoc2_packages = [
     "../splatlog",
 ]
 # Custom MyST renderer (see `docs/_ext/splatlog_autodoc2.py`) that renders PEP
-# 695 `type` aliases as `py:type` directives. It also registers an analyser
+# 695 `type` aliases as `py:type` directives. It also registers an analyzer
 # handler so those `type` statements are captured at all — autodoc2 0.5.0 drops
 # them otherwise.
 autodoc2_render_plugin = "splatlog_autodoc2.TypeAliasMystRenderer"
@@ -163,6 +159,10 @@ myst_enable_extensions = [
 # was least ass-looking.
 html_theme = "furo"
 html_static_path = ["_static"]
+
+# `html_baseurl` intentionally unset for local `poe docs html|watch` builds
+# (no `<link rel="canonical">`). Release publishes inject it via
+# `dev/bin/publish-docs` (`-D html_baseurl=http://nrser.com/splatlog/`).
 
 ### Theme Customization ######################################################
 #

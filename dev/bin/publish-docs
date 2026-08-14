@@ -1,123 +1,341 @@
 #!/usr/bin/env python3
+"""Publish Sphinx HTML for a git ref to the orphan `gh-pages` branch.
 
-from os import environ, chdir
-from pathlib import Path
-from subprocess import run
-from shutil import rmtree, copytree, copy2
+Builds from a `git archive` of `--ref` (never the dirty working tree),
+rejects non-final PEP 440 versions unless `--force`, then force-pushes an
+orphan commit of the HTML tree (plus `.nojekyll`) with plain `git`
+plumbing — no `ghp-import`, no third-party Actions.
+
+Example::
+
+    python dev/bin/publish-docs --ref v0.5.3
+    poe docs:publish --ref v0.5.3
+"""
+
+from __future__ import annotations
+
+import argparse
+import os
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
 import tomllib
-from argparse import ArgumentParser
-from urllib.parse import urlparse
+from pathlib import Path
 
-GH_HOME = Path(environ["GITHUB_HOME"])
-WT_HOME = GH_HOME / "_worktrees"
+
 BRANCH = "gh-pages"
-PATH = "docs/_site"
+HTML_BASEURL = "http://nrser.com/splatlog/"
+DOC_URL = HTML_BASEURL
 
-parser = ArgumentParser(description="Publish docs to GitHub pages")
-parser.add_argument(
-    "-m", "--message", help="optional message to add to git commit"
-)
-parser.add_argument(
-    "--no-commit",
-    action="store_true",
-    help="don't commit/push the changes, useful for local testing",
-)
-args = parser.parse_args()
 
-assert GH_HOME.is_dir(), f"$GITHUB_HOME is not a directory: {GH_HOME}"
-assert (
-    WT_HOME.is_dir()
-), f"$GITHUB_HOME/_worktrees is not a directory: {WT_HOME}"
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        description=(
+            "Build Sphinx docs for a git ref and force-push to gh-pages. "
+            "Release/final versions only unless --force."
+        ),
+    )
+    parser.add_argument(
+        "--ref",
+        required=True,
+        help="Git tag, branch, or commit to build (e.g. v0.5.3)",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Allow publishing non-final versions (a/b/rc/dev/local)",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Build and create the orphan commit locally; do not push",
+    )
+    parser.add_argument(
+        "--remote",
+        default="origin",
+        help="Git remote to push to (default: origin)",
+    )
+    args = parser.parse_args(argv)
 
-repo_root = Path(
-    run(
-        ["git", "rev-parse", "--show-toplevel"],
-        check=True,
-        text=True,
-        capture_output=True,
+    repo_root = Path(
+        _run(
+            ["git", "rev-parse", "--show-toplevel"],
+            capture=True,
+        ).stdout.strip()
+    )
+    os.chdir(repo_root)
+
+    sha = _run(
+        ["git", "rev-parse", "--verify", f"{args.ref}^{{commit}}"],
+        capture=True,
     ).stdout.strip()
+    version = _version_at(sha)
+    print(f"# ref={args.ref!r} sha={sha[:12]} version={version}")
+
+    if not _is_final_version(version) and not args.force:
+        print(
+            f"Refusing to publish non-final version {version!r} "
+            f"(use --force to override).",
+            file=sys.stderr,
+        )
+        return 1
+
+    src_dir = repo_root / "tmp" / f"docs-publish-src-{sha[:12]}"
+    if src_dir.exists():
+        shutil.rmtree(src_dir)
+    src_dir.mkdir(parents=True)
+    venv_dir: Path | None = None
+
+    try:
+        print(f"# archive {args.ref} → {src_dir}")
+        _git_archive(sha, src_dir)
+
+        # Isolate the project env so we don't touch the caller's .venv and
+        # so nested .venv creation under tmp/ is not required.
+        venv_dir = Path(tempfile.mkdtemp(prefix="splatlog-docs-venv-"))
+        uv_env = {**os.environ, "UV_PROJECT_ENVIRONMENT": str(venv_dir)}
+
+        print(f"# uv sync (docs + dev) → {venv_dir}")
+        _run(
+            ["uv", "sync", "--group", "docs", "--group", "dev"],
+            cwd=src_dir,
+            env=uv_env,
+        )
+
+        print("# sphinx html")
+        # Call make directly so older tagged trees don't need publish wiring.
+        # Inject html_baseurl for tags that predate the conf.py setting.
+        _run(
+            [
+                "uv",
+                "run",
+                "make",
+                "html",
+                f"O=-D html_baseurl={HTML_BASEURL}",
+            ],
+            cwd=src_dir / "docs",
+            env=uv_env,
+        )
+
+        html_dir = src_dir / "docs" / "_build" / "html"
+        if not (html_dir / "index.html").is_file():
+            print(f"Missing {html_dir / 'index.html'}", file=sys.stderr)
+            return 1
+
+        for name in (".buildinfo", ".buildinfo.bak"):
+            p = html_dir / name
+            if p.exists():
+                p.unlink()
+        (html_dir / ".nojekyll").touch()
+
+        msg = f"Deploy docs v{version} ({args.ref} @ {sha[:12]})"
+        commit = _orphan_commit_tree(html_dir, msg)
+        print(f"# orphan commit {commit[:12]}")
+
+        if args.dry_run:
+            print(
+                f"# dry-run: would push {commit[:12]} → {args.remote}/{BRANCH}"
+            )
+            print(f"# dry-run: site URL {DOC_URL}")
+            return 0
+
+        print(f"# push -f {args.remote} {commit[:12]}:refs/heads/{BRANCH}")
+        _run(
+            [
+                "git",
+                "push",
+                "-f",
+                args.remote,
+                f"{commit}:refs/heads/{BRANCH}",
+            ],
+        )
+    finally:
+        shutil.rmtree(src_dir, ignore_errors=True)
+        if venv_dir is not None:
+            shutil.rmtree(venv_dir, ignore_errors=True)
+
+    print("# Done.")
+    print(f"# Docs: {DOC_URL}")
+    return 0
+
+
+# Paths required to build Sphinx docs for a tagged tree (keep the archive
+# small and avoid extracting editor/sandbox-only paths).
+_ARCHIVE_PATHS = (
+    "splatlog",
+    "docs",
+    "pyproject.toml",
+    "uv.lock",
+    "README.md",
+    "LICENSE",
 )
 
-with (repo_root / "pyproject.toml").open("rb") as fp:
-    project = tomllib.load(fp)
-    version = project["tool"]["poetry"]["version"]
-    doc_url = project["tool"]["poetry"]["documentation"]
 
-src_path = repo_root / PATH
-repo_rel = repo_root.relative_to(GH_HOME)
-repo_name = repo_rel.name
-wt_path = WT_HOME / repo_rel / BRANCH
+def _git_archive(sha: str, dest: Path) -> None:
+    # Only paths that exist at `sha` (older tags may lack uv.lock, etc.).
+    ls = _run(
+        ["git", "ls-tree", "--name-only", "-r", "--full-tree", sha],
+        capture=True,
+    ).stdout.splitlines()
+    top_names = {line.split("/", 1)[0] for line in ls}
+    paths = [
+        p
+        for p in _ARCHIVE_PATHS
+        if p in top_names
+        or any(line == p or line.startswith(f"{p}/") for line in ls)
+    ]
+    if "docs" not in top_names and not any(
+        line.startswith("docs/") for line in ls
+    ):
+        raise SystemExit("ref has no docs/ tree; cannot publish")
+    if "splatlog" not in top_names:
+        raise SystemExit("ref has no splatlog/ package; cannot publish")
 
-if not wt_path.is_dir():
-    print(f"# Creating worktree {wt_path}")
-    run(
-        ["git", "worktree", "add", str(wt_path), BRANCH],
-        check=True,
-        cwd=repo_root,
+    archive = subprocess.Popen(
+        ["git", "archive", sha, *paths],
+        stdout=subprocess.PIPE,
+    )
+    try:
+        subprocess.run(
+            ["tar", "-x", "-C", str(dest)],
+            stdin=archive.stdout,
+            check=True,
+        )
+    finally:
+        if archive.stdout:
+            archive.stdout.close()
+        if archive.wait() != 0:
+            raise subprocess.CalledProcessError(
+                archive.returncode, archive.args
+            )
+
+
+def _orphan_commit_tree(html_dir: Path, message: str) -> str:
+    """Create an orphan commit whose tree is `html_dir` (repo object store)."""
+    index_path = Path("tmp") / "docs-publish.index"
+    index_path.parent.mkdir(parents=True, exist_ok=True)
+    if index_path.exists():
+        index_path.unlink()
+
+    env = os.environ.copy()
+    env["GIT_INDEX_FILE"] = str(index_path.resolve())
+
+    try:
+        for path in sorted(html_dir.rglob("*")):
+            if not path.is_file():
+                continue
+            rel = path.relative_to(html_dir).as_posix()
+            blob = _run(
+                ["git", "hash-object", "-w", str(path)],
+                capture=True,
+            ).stdout.strip()
+            mode = "120000" if path.is_symlink() else "100644"
+            _run(
+                [
+                    "git",
+                    "update-index",
+                    "--add",
+                    "--cacheinfo",
+                    f"{mode},{blob},{rel}",
+                ],
+                env=env,
+            )
+
+        tree = _run(
+            ["git", "write-tree"],
+            capture=True,
+            env=env,
+        ).stdout.strip()
+
+        id_env = _git_identity_env()
+        commit = _run(
+            ["git", "commit-tree", tree, "-m", message],
+            capture=True,
+            env=id_env,
+        ).stdout.strip()
+        return commit
+    finally:
+        index_path.unlink(missing_ok=True)
+
+
+def _version_at(sha: str) -> str:
+    raw = _run(
+        ["git", "show", f"{sha}:pyproject.toml"],
+        capture=True,
+    ).stdout
+    data = tomllib.loads(raw)
+    return data["project"]["version"]
+
+
+def _is_final_version(version: str) -> bool:
+    try:
+        from packaging.version import Version
+
+        v = Version(version)
+        return not v.is_prerelease and v.local is None
+    except Exception:
+        # Fallback: digits + dots, optional .postN only.
+        return re.fullmatch(r"\d+(?:\.\d+)*(?:\.post\d+)?", version) is not None
+
+
+def _git_identity_env() -> dict[str, str]:
+    """Author/committer env for commits; fall back for bare CI runners."""
+    env = os.environ.copy()
+    name = env.get("GIT_AUTHOR_NAME") or env.get("GIT_COMMITTER_NAME")
+    email = env.get("GIT_AUTHOR_EMAIL") or env.get("GIT_COMMITTER_EMAIL")
+    if not name or not email:
+        got_name = _run(
+            ["git", "config", "--get", "user.name"],
+            capture=True,
+            check=False,
+        )
+        got_email = _run(
+            ["git", "config", "--get", "user.email"],
+            capture=True,
+            check=False,
+        )
+        name = name or (
+            got_name.stdout.strip() if got_name.returncode == 0 else ""
+        )
+        email = email or (
+            got_email.stdout.strip() if got_email.returncode == 0 else ""
+        )
+    if not name:
+        name = "github-actions[bot]"
+    if not email:
+        email = "41898282+github-actions[bot]@users.noreply.github.com"
+    env.setdefault("GIT_AUTHOR_NAME", name)
+    env.setdefault("GIT_AUTHOR_EMAIL", email)
+    env.setdefault("GIT_COMMITTER_NAME", name)
+    env.setdefault("GIT_COMMITTER_EMAIL", email)
+    return env
+
+
+def _run(
+    cmd: list[str],
+    *,
+    cwd: Path | None = None,
+    capture: bool = False,
+    check: bool = True,
+    env: dict[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
+    # hash-object / update-index spam the log for every HTML file.
+    quiet = cmd[:2] in (["git", "hash-object"], ["git", "update-index"]) or (
+        len(cmd) >= 2 and cmd[0] == "git" and cmd[1] in {"config"}
+    )
+    if not quiet:
+        print("+", " ".join(cmd))
+    return subprocess.run(
+        cmd,
+        cwd=cwd,
+        check=check,
+        text=True,
+        capture_output=capture,
+        env=env,
     )
 
-if src_path.exists():
-    print(f"# Removing existing {PATH}")
-    rmtree(str(src_path))
 
-doc_url_parse = urlparse(doc_url)
-base_url = None
-if doc_url_parse.path:
-    base_url = doc_url_parse.path.lstrip("/")
-    if not base_url.endswith("/"):
-        base_url += "/"
-
-novella_args = [
-    "poetry",
-    "run",
-    "novella",
-    "-d",
-    "./docs",
-    "--site-url",
-    project["tool"]["poetry"]["documentation"],
-]
-
-if base_url:
-    novella_args += ["--base-url", base_url]
-
-print("# Building docs")
-run(novella_args, check=True, cwd=repo_root)
-
-print("# Cleaning worktree contents")
-for p in wt_path.glob("*"):
-    if p.name != ".git":
-        if p.is_dir():
-            rmtree(str(p))
-        else:
-            p.unlink()
-
-print(f"# Copying {PATH} to {wt_path}")
-for p in src_path.glob("*"):
-    dst = wt_path / p.name
-    if p.is_dir():
-        copytree(src=p, dst=dst)
-    else:
-        copy2(src=p, dst=dst)
-
-if not args.no_commit:
-    chdir(wt_path)
-
-    print("# Updating repo")
-
-    msg = f"publish v{version}"
-    if hasattr(args, "message"):
-        msg = f"{msg}: {args.message}"
-
-    run(["git", "add", "."], check=True)
-    run(["git", "commit", "-m", msg], check=True)
-    run(["git", "push", "origin", BRANCH], check=True)
-
-print("# Done.")
-print("#")
-print(f"# Docs will be published at {doc_url}")
-print("#")
-print(
-    "# You can check the build progress at "
-    f"https://github.com/{repo_rel}/actions\n"
-)
-print("#")
+if __name__ == "__main__":
+    sys.exit(main())

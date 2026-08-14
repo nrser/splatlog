@@ -20,3 +20,4 @@ splatlog
 testpypi
 toctree
 typehints
+nojekyll

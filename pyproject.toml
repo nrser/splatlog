@@ -137,6 +137,36 @@ positional = true
 multiple = true
 choices = ["help", "html", "clean", "watch"]
 
+# Build Sphinx for a release git ref and force-push orphan `gh-pages`.
+# Never publishes the dirty working tree — see `dev/bin/publish-docs`.
+[tool.poe.tasks."docs:publish"]
+cmd = "python dev/bin/publish-docs"
+help = "Publish docs for a git ref to GitHub Pages (gh-pages)"
+
+[[tool.poe.tasks."docs:publish".args]]
+name = "ref"
+options = ["--ref"]
+required = true
+help = "Git tag/commit to build (e.g. v0.5.3)"
+
+[[tool.poe.tasks."docs:publish".args]]
+name = "force"
+options = ["--force"]
+type = "boolean"
+help = "Allow non-final versions (a/b/rc/dev)"
+
+[[tool.poe.tasks."docs:publish".args]]
+name = "dry_run"
+options = ["--dry-run"]
+type = "boolean"
+help = "Build + commit locally but do not push"
+
+[[tool.poe.tasks."docs:publish".args]]
+name = "remote"
+options = ["--remote"]
+default = "origin"
+help = "Git remote to push (default: origin)"
+
 # Pyright Tool
 # ----------------------------------------------------------------------------
 # 

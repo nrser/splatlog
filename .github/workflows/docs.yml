@@ -1,0 +1,49 @@
+name: Deploy docs to GitHub Pages
+
+# Release docs only — same tag gate as PyPI. Deploy logic is our script
+# (`dev/bin/publish-docs`); no third-party gh-pages Actions.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Git tag to build and publish (e.g. v0.5.3)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve publish ref
+        id: ref
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "ref=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "ref=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Full history so the publish script can archive any release ref.
+      # On workflow_dispatch: select main (so this workflow/script exist).
+      # On tag push: checkout is the tagged commit (must include this script).
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Set up Python
+        run: uv python install 3.13
+
+      - name: Publish docs for ref
+        run: python dev/bin/publish-docs --ref "${{ steps.ref.outputs.ref }}"
