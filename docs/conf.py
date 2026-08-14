@@ -160,6 +160,14 @@ myst_enable_extensions = [
 html_theme = "furo"
 html_static_path = ["_static"]
 
+# Skip copying sources into `_sources/*.txt` and hide the theme "View page
+# source" link. Not needed to serve the site; keeps `gh-pages` smaller.
+#
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-html_copy_source
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-html_show_sourcelink
+html_copy_source = False
+html_show_sourcelink = False
+
 # `html_baseurl` intentionally unset for local `poe docs html|watch` builds
 # (no `<link rel="canonical">`). Release publishes inject it via
 # `dev/bin/publish-docs` (`-D html_baseurl=http://nrser.com/splatlog/`).

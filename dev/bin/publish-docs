@@ -106,14 +106,19 @@ def main(argv: list[str] | None = None) -> int:
 
         print("# sphinx html")
         # Call make directly so older tagged trees don't need publish wiring.
-        # Inject html_baseurl for tags that predate the conf.py setting.
+        # Inject html_baseurl + skip `_sources/` for tags that predate those
+        # conf.py settings.
         _run(
             [
                 "uv",
                 "run",
                 "make",
                 "html",
-                f"O=-D html_baseurl={HTML_BASEURL}",
+                (
+                    f"O=-D html_baseurl={HTML_BASEURL}"
+                    " -D html_copy_source=0"
+                    " -D html_show_sourcelink=0"
+                ),
             ],
             cwd=src_dir / "docs",
             env=uv_env,
