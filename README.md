@@ -25,33 +25,34 @@ Development
 Setup the [nix][] package manager on your machine and run:
 
     nix-shell
+    uv sync
+    source .venv/bin/activate
+
+Breakdown:
+
+1.  `nix-shell`
+    
+    Executes [`shell.nix`](./shell.nix) to install [uv][], as well as other
+    system dependencies like `make`.
+
+2.  `uv sync`
+    
+    1.  Installs a compatible [Python][].
+    2.  Creates the [venv][] at [`.venv`](./.venv).
+    3.  Installs package deps from [`pyproject.toml`](./pyproject.toml).
+
+3.  `source .venv/bin/activate`
+    
+    Makes the Python dependency packages and commands available in your shell.
 
 [nix]: https://nixos.org/download/
-
-That's it, you should be in a shell session with `uv`, `python`, `dr.t`,
-`make`, `sphinx-build`, and everything else you'll need available.
-
-What `nix-shell` did:
-
-1.  Install [uv][] and enter a shell session with it (and other system
-    dependencies) available
-2.  Run `uv sync` to
-    1.  Install a compatible [Python][] version
-    2.  Create a new [Python Virtual Environment (`venv`)][venv]
-    3.  Install package dependencies specified in `pyproject.toml` from [PyPi][]
-        into the [venv][]
-3.  Run `source .venv/bin/activate` to _activate_ the [venv][], making the
-    Python packages and executables available
-
-These steps are specified in the `shell.nix` file.
-
 [uv]: https://docs.astral.sh/uv/
 [Python]: https://www.python.org/
 [PyPi]: https://pypi.org/
 [venv]: https://peps.python.org/pep-0405/
 
-> ⁉️ If you **do not want to use [nix][]** for whatever reason, you should be fine
-> getting [uv][] from your OS package manager or the
+> ⁉️ If you **do not want to use [nix][]** for whatever reason, you should be
+> fine getting [uv][] from your OS package manager or the
 > [online installer](https://docs.astral.sh/uv/getting-started/installation/).
 > Just run `uv sync` and `source .venv/bin/activate` and you should be good.
 
