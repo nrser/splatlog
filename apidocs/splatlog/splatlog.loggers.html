@@ -1,0 +1,916 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html"><link rel="next" title="splatlog.poe" href="splatlog.poe.html"><link rel="prev" title="splatlog.levels.filter" href="splatlog.levels.filter.html">
+        <link rel="canonical" href="http://nrser.com/splatlog/apidocs/splatlog/splatlog.loggers.html">
+
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+        <title>splatlog.loggers - splatlog 0.5.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d75fae25" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=dcea4711" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f0f0f0;
+  --color-code-foreground: black;
+  --color-link--hover: var(--color-brand-visited);
+  --color-link--visited: var(--color-link);
+  --color-link--visited--hover: var(--color-link--hover);
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #0d1117;
+  --color-code-foreground: #e6edf3;
+  --color-link--hover: var(--color-brand-visited);
+  --color-link--visited: var(--color-link);
+  --color-link--visited--hover: var(--color-link--hover);
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #0d1117;
+  --color-code-foreground: #e6edf3;
+  --color-link--hover: var(--color-brand-visited);
+  --color-link--visited: var(--color-link);
+  --color-link--visited--hover: var(--color-link--hover);
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../index.html"><div class="brand">splatlog 0.5.3 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
+  
+  <span class="sidebar-brand-text">splatlog 0.5.3 documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../content/basic-usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/features/named-handlers.html">Named Handlers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/features/verbosity.html">Verbosity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/features/formatting-type-hints.html">Formatting Type Hints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/features/rich-rendering.html">Rich Rendering</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 current has-children"><a class="reference internal" href="splatlog.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog</span></code></a><input aria-label="Toggle navigation of splatlog" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l3 has-children"><a class="reference internal" href="splatlog.json.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.json</span></code></a><input aria-label="Toggle navigation of splatlog.json" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.json.formatter.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.json.formatter</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.json.reducers.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.json.reducers</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.json.encoder.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.json.encoder</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="splatlog.rich.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich</span></code></a><input aria-label="Toggle navigation of splatlog.rich" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="splatlog.rich.enrich.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.enrich</span></code></a><input aria-label="Toggle navigation of splatlog.rich.enrich" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.rich.enrich.enrichment.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.enrich.enrichment</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.rich.enrich.exception.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.enrich.exception</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.rich.enrich.number.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.enrich.number</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.rich.enrich.routine.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.enrich.routine</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.rich.enrich.typ.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.enrich.typ</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.rich.enrich.enriched.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.enrich.enriched</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.rich.enrich.datetime.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.enrich.datetime</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.rich.enrich.path.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.enrich.path</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.rich.link.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.link</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.rich.console.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.console</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.rich.handler.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.handler</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.rich.theme.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.theme</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.rich.section.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.section</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.rich.ntv_table.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.ntv_table</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.rich.framing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.framing</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="splatlog.lib.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib</span></code></a><input aria-label="Toggle navigation of splatlog.lib" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.lib.functions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.functions</span></code></a></li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="splatlog.lib.text.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.text</span></code></a><input aria-label="Toggle navigation of splatlog.lib.text" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.lib.text.fmt.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.text.fmt</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.lib.text.formatter.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.text.formatter</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.lib.text.number.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.text.number</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.lib.text.timedelta.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.text.timedelta</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.lib.text.datetime.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.text.datetime</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="splatlog.lib.collections.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.collections</span></code></a><input aria-label="Toggle navigation of splatlog.lib.collections" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.lib.collections.classifier.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.collections.classifier</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.lib.collections.loop.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.collections.loop</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.lib.types.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.types</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.lib.errors.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.errors</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.lib.colors.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.colors</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="splatlog.levels.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.levels</span></code></a><input aria-label="Toggle navigation of splatlog.levels" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.levels.verbosity.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.levels.verbosity</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.levels.filter.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.levels.filter</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 current current-page"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.loggers</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="splatlog.poe.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.poe</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="splatlog.types.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.types</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="splatlog.locking.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.locking</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="splatlog.named_handlers.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.named_handlers</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="splatlog.testing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.testing</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="splatlog.reporting.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.reporting</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          
+
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section class="tex2jax_ignore mathjax_ignore" id="module-splatlog.loggers">
+<span id="splatlog-loggers"></span><h1><a class="reference internal" href="#module-splatlog.loggers" title="splatlog.loggers"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.loggers</span></code></a><a class="headerlink" href="#module-splatlog.loggers" title="Link to this heading">¶</a></h1>
+<p>Defines <a class="reference internal" href="#splatlog.loggers.SplatLogger" title="splatlog.loggers.SplatLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">SplatLogger</span></code></a> and associated classes (<a class="reference internal" href="#splatlog.loggers.ClassLogger" title="splatlog.loggers.ClassLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClassLogger</span></code></a>,
+<a class="reference internal" href="#splatlog.loggers.SelfLogger" title="splatlog.loggers.SelfLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">SelfLogger</span></code></a>, <a class="reference internal" href="#splatlog.loggers.LoggerProperty" title="splatlog.loggers.LoggerProperty"><code class="xref py py-class docutils literal notranslate"><span class="pre">LoggerProperty</span></code></a>), as well as the global
+factory functions <a class="reference internal" href="#splatlog.loggers.get" title="splatlog.loggers.get"><code class="xref py py-func docutils literal notranslate"><span class="pre">get()</span></code></a> and <a class="reference internal" href="#splatlog.loggers.get_for" title="splatlog.loggers.get_for"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_for()</span></code></a>.</p>
+<p>These are co-located in a single module because of circular dependencies between
+the logger classes and the factory functions.</p>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h3>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-left">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#splatlog.loggers.LoggerProperty" title="splatlog.loggers.LoggerProperty"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LoggerProperty</span></code></a></p></td>
+<td><p>A property that resolves to a <a class="reference internal" href="#splatlog.loggers.ClassLogger" title="splatlog.loggers.ClassLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClassLogger</span></code></a> when accessed through
+the class object and a <a class="reference internal" href="#splatlog.loggers.SelfLogger" title="splatlog.loggers.SelfLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">SelfLogger</span></code></a> when accessed through
+instances.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#splatlog.loggers.SplatLogger" title="splatlog.loggers.SplatLogger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SplatLogger</span></code></a></p></td>
+<td><p>A <a class="reference external" href="https://docs.python.org/3/library/logging.html#logging.LoggerAdapter" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">logging.LoggerAdapter</span></code></a> that treats double-splat keyword
+arguments as a map of names to values to be logged.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#splatlog.loggers.ClassLogger" title="splatlog.loggers.ClassLogger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ClassLogger</span></code></a></p></td>
+<td><p>A <a class="reference internal" href="#splatlog.loggers.SplatLogger" title="splatlog.loggers.SplatLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">SplatLogger</span></code></a> for a specific class, wrapping the
+<a class="reference external" href="https://docs.python.org/3/library/logging.html#logging.Logger" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">logging.Logger</span></code></a> for the fully-qualified class name
+(<code class="docutils literal notranslate"><span class="pre">{__module__}.{__qualname__}</span></code>).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#splatlog.loggers.SelfLogger" title="splatlog.loggers.SelfLogger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SelfLogger</span></code></a></p></td>
+<td><p>A <a class="reference internal" href="#splatlog.loggers.ClassLogger" title="splatlog.loggers.ClassLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClassLogger</span></code></a> for a specific <em>instance</em>, adding a <code class="docutils literal notranslate"><span class="pre">self</span></code>
+attribute to each <a class="reference external" href="https://docs.python.org/3/library/logging.html#logging.LogRecord" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">logging.LogRecord</span></code></a> to identify the instance.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h3>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-left">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#splatlog.loggers.get" title="splatlog.loggers.get"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get</span></code></a></p></td>
+<td><p>Get a <a class="reference internal" href="#splatlog.loggers.SplatLogger" title="splatlog.loggers.SplatLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">SplatLogger</span></code></a> by name.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#splatlog.loggers.get_for" title="splatlog.loggers.get_for"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_for</span></code></a></p></td>
+<td><p>Get a <a class="reference internal" href="#splatlog.loggers.SplatLogger" title="splatlog.loggers.SplatLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">SplatLogger</span></code></a> that is associated with an object.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="data">
+<h3>Data<a class="headerlink" href="#data" title="Link to this heading">¶</a></h3>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-left">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#splatlog.loggers._NOT_FOUND" title="splatlog.loggers._NOT_FOUND"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_NOT_FOUND</span></code></a></p></td>
+<td><p>Unique sentinel used by <a class="reference internal" href="#splatlog.loggers.LoggerProperty" title="splatlog.loggers.LoggerProperty"><code class="xref py py-class docutils literal notranslate"><span class="pre">LoggerProperty</span></code></a> to detect when a cached
+logger has not ye been set.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="api">
+<h3>API<a class="headerlink" href="#api" title="Link to this heading">¶</a></h3>
+<dl class="py data">
+<dt class="sig sig-object py" id="splatlog.loggers._NOT_FOUND">
+<span class="sig-prename descclassname"><span class="pre">splatlog.loggers.</span></span><span class="sig-name descname"><span class="pre">_NOT_FOUND</span></span><a class="headerlink" href="#splatlog.loggers._NOT_FOUND" title="Link to this definition">¶</a></dt>
+<dd><p>‘object(…)’</p>
+<p>Unique sentinel used by <a class="reference internal" href="#splatlog.loggers.LoggerProperty" title="splatlog.loggers.LoggerProperty"><code class="xref py py-class docutils literal notranslate"><span class="pre">LoggerProperty</span></code></a> to detect when a cached
+logger has not ye been set.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="splatlog.loggers.get">
+<span class="sig-prename descclassname"><span class="pre">splatlog.loggers.</span></span><span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#splatlog.loggers.SplatLogger" title="splatlog.loggers.SplatLogger"><span class="pre">SplatLogger</span></a></span></span><a class="headerlink" href="#splatlog.loggers.get" title="Link to this definition">¶</a></dt>
+<dd><p>Get a <a class="reference internal" href="#splatlog.loggers.SplatLogger" title="splatlog.loggers.SplatLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">SplatLogger</span></code></a> by name.</p>
+<p>Calls <a class="reference external" href="https://docs.python.org/3/library/logging.html#logging.getLogger" title="(in Python v3.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">logging.getLogger()</span></code></a> and wraps it in a <a class="reference internal" href="#splatlog.loggers.SplatLogger" title="splatlog.loggers.SplatLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">SplatLogger</span></code></a>
+adapter. Results are cached via <a class="reference external" href="https://docs.python.org/3/library/functools.html#functools.cache" title="(in Python v3.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">functools.cache()</span></code></a>.</p>
+<p class="rubric" id="id4">Parameters</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code>: The logger name (typically a module name like <code class="docutils literal notranslate"><span class="pre">__name__</span></code>).</p></li>
+</ul>
+<p class="rubric" id="id5">Returns</p>
+<p>A <a class="reference internal" href="#splatlog.loggers.SplatLogger" title="splatlog.loggers.SplatLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">SplatLogger</span></code></a> wrapping the underlying
+<a class="reference external" href="https://docs.python.org/3/library/logging.html#logging.Logger" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">logging.Logger</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="splatlog.loggers.get_for">
+<span class="sig-prename descclassname"><span class="pre">splatlog.loggers.</span></span><span class="sig-name descname"><span class="pre">get_for</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><span class="pre">object</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#splatlog.loggers.SplatLogger" title="splatlog.loggers.SplatLogger"><span class="pre">SplatLogger</span></a></span></span><a class="headerlink" href="#splatlog.loggers.get_for" title="Link to this definition">¶</a></dt>
+<dd><p>Get a <a class="reference internal" href="#splatlog.loggers.SplatLogger" title="splatlog.loggers.SplatLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">SplatLogger</span></code></a> that is associated with an object.</p>
+<p class="rubric" id="id6">Parameters</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">obj</span></code>: The object to get a logger for. The type determines the logger
+kind:</p>
+<ol class="arabic">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>: a regular <em>named logger</em> is returned, same as
+calling <a class="reference internal" href="#splatlog.loggers.get" title="splatlog.loggers.get"><code class="xref py py-func docutils literal notranslate"><span class="pre">get()</span></code></a>. These are cached globally.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">type</span></code></a>: a <a class="reference internal" href="#splatlog.loggers.ClassLogger" title="splatlog.loggers.ClassLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClassLogger</span></code></a> is returned, named
+<code class="docutils literal notranslate"><span class="pre">{__module__}.{__qualname__}</span></code>.</p></li>
+<li><p>Anything else: a <a class="reference internal" href="#splatlog.loggers.SelfLogger" title="splatlog.loggers.SelfLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">SelfLogger</span></code></a> is returned. The type of
+<code class="docutils literal notranslate"><span class="pre">obj</span></code> initializes <a class="reference internal" href="#splatlog.loggers.ClassLogger" title="splatlog.loggers.ClassLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClassLogger</span></code></a>, and a <code class="docutils literal notranslate"><span class="pre">self</span></code> attribute
+is added to processed <a class="reference external" href="https://docs.python.org/3/library/logging.html#logging.LogRecord" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">logging.LogRecord</span></code></a> to identify
+<code class="docutils literal notranslate"><span class="pre">obj</span></code> as the record source. See <a class="reference internal" href="#splatlog.loggers.SelfLogger" title="splatlog.loggers.SelfLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">SelfLogger</span></code></a> for details
+on how to hook into that.</p>
+<p><a class="reference internal" href="#splatlog.loggers.SelfLogger" title="splatlog.loggers.SelfLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">SelfLogger</span></code></a> instances are <em>not</em> cached; store a
+reference on the class for repeated use (see
+<a class="reference internal" href="#splatlog.loggers.LoggerProperty" title="splatlog.loggers.LoggerProperty"><code class="xref py py-class docutils literal notranslate"><span class="pre">LoggerProperty</span></code></a>).</p>
+</li>
+</ol>
+</li>
+</ul>
+<p class="rubric" id="id7">Examples</p>
+<p>First, we’ll create a “module logger” in the usual way.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">module_logger</span> <span class="o">=</span> <span class="n">get_for</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">module_logger</span><span class="p">,</span> <span class="n">SplatLogger</span><span class="p">)</span>
+<span class="go">True</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">module_logger</span><span class="p">,</span> <span class="p">(</span><span class="n">ClassLogger</span><span class="p">,</span> <span class="n">SelfLogger</span><span class="p">))</span>
+<span class="go">False</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">module_logger</span><span class="o">.</span><span class="n">name</span>
+<span class="go">&#39;splatlog.loggers&#39;</span>
+
+</pre></div>
+</div>
+<p>Next we define a minimal class to associate loggers with. Instances have
+names and the <code class="docutils literal notranslate"><span class="pre">_splatlog_self_</span></code> property returns a dictionary with the name.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">MyClass</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="nd">@property</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">_splatlog_self_</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+</pre></div>
+</div>
+<p>Now we can check out class and instance loggers for it.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">class_logger</span> <span class="o">=</span> <span class="n">get_for</span><span class="p">(</span><span class="n">MyClass</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">class_logger</span><span class="p">,</span> <span class="n">SplatLogger</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">class_logger</span><span class="p">,</span> <span class="n">ClassLogger</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">class_logger</span><span class="p">,</span> <span class="n">SelfLogger</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">class_logger</span><span class="o">.</span><span class="n">name</span>
+<span class="go">&#39;splatlog.loggers.MyClass&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">class_logger</span><span class="o">.</span><span class="n">class_name</span>
+<span class="go">&#39;MyClass&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">instance</span> <span class="o">=</span> <span class="n">MyClass</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;xyz&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">instance_logger</span> <span class="o">=</span> <span class="n">get_for</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">instance_logger</span><span class="p">,</span> <span class="n">SelfLogger</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">instance_logger</span><span class="o">.</span><span class="n">name</span>
+<span class="go">&#39;splatlog.loggers.MyClass&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">instance_logger</span><span class="o">.</span><span class="n">class_name</span>
+<span class="go">&#39;MyClass&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">instance_logger</span><span class="o">.</span><span class="n">get_identity</span><span class="p">()</span>
+<span class="go">{&#39;name&#39;: &#39;xyz&#39;}</span>
+
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="splatlog.loggers.LoggerProperty">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">splatlog.loggers.</span></span><span class="sig-name descname"><span class="pre">LoggerProperty</span></span><a class="headerlink" href="#splatlog.loggers.LoggerProperty" title="Link to this definition">¶</a></dt>
+<dd><p>A property that resolves to a <a class="reference internal" href="#splatlog.loggers.ClassLogger" title="splatlog.loggers.ClassLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClassLogger</span></code></a> when accessed through
+the class object and a <a class="reference internal" href="#splatlog.loggers.SelfLogger" title="splatlog.loggers.SelfLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">SelfLogger</span></code></a> when accessed through
+instances.</p>
+<p>The <a class="reference internal" href="#splatlog.loggers.ClassLogger" title="splatlog.loggers.ClassLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClassLogger</span></code></a> is cached in an attribute on the class’
+<code class="docutils literal notranslate"><span class="pre">__dict__</span></code> and each <a class="reference internal" href="#splatlog.loggers.SelfLogger" title="splatlog.loggers.SelfLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">SelfLogger</span></code></a> is cached on the instance.</p>
+<p class="rubric" id="id8">Examples</p>
+<p>A “standard” class.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">AnotherClass</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">_log</span> <span class="o">=</span> <span class="n">LoggerProperty</span><span class="p">()</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="nd">@property</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">_splatlog_self_</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">AnotherClass</span><span class="o">.</span><span class="n">_log</span><span class="p">,</span> <span class="n">ClassLogger</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">AnotherClass</span><span class="o">.</span><span class="n">_log</span><span class="o">.</span><span class="n">class_name</span>
+<span class="go">&#39;AnotherClass&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">instance</span> <span class="o">=</span> <span class="n">AnotherClass</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;blah&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">instance</span><span class="o">.</span><span class="n">_log</span><span class="p">,</span> <span class="n">SelfLogger</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">instance</span><span class="o">.</span><span class="n">_log</span><span class="o">.</span><span class="n">class_name</span>
+<span class="go">&#39;AnotherClass&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">instance</span><span class="o">.</span><span class="n">_log</span><span class="o">.</span><span class="n">get_identity</span><span class="p">()</span>
+<span class="go">{&#39;name&#39;: &#39;blah&#39;}</span>
+
+</pre></div>
+</div>
+<p>A frozen dataclass, which has different set semantics.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">class</span><span class="w"> </span><span class="nc">Chiller</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">_log</span> <span class="o">=</span> <span class="n">LoggerProperty</span><span class="p">()</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="nd">@property</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">_splatlog_self_</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">Chiller</span><span class="o">.</span><span class="n">_log</span><span class="p">,</span> <span class="n">ClassLogger</span><span class="p">)</span>
+<span class="go">True</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Chiller</span><span class="o">.</span><span class="n">_log</span><span class="o">.</span><span class="n">class_name</span>
+<span class="go">&#39;Chiller&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cold_one</span> <span class="o">=</span> <span class="n">Chiller</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;brrrr!&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">cold_one</span><span class="o">.</span><span class="n">_log</span><span class="p">,</span> <span class="n">SelfLogger</span><span class="p">)</span>
+<span class="go">True</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cold_one</span><span class="o">.</span><span class="n">_log</span><span class="o">.</span><span class="n">class_name</span>
+<span class="go">&#39;Chiller&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cold_one</span><span class="o">.</span><span class="n">_log</span><span class="o">.</span><span class="n">get_identity</span><span class="p">()</span>
+<span class="go">{&#39;name&#39;: &#39;brrrr!&#39;}</span>
+
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.loggers.LoggerProperty._attr_name">
+<span class="sig-name descname"><span class="pre">_attr_name</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#splatlog.loggers.LoggerProperty._attr_name" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+<p>Internal storage name derived from the descriptor name.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="splatlog.loggers.LoggerProperty.attr_name">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">attr_name</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#splatlog.loggers.LoggerProperty.attr_name" title="Link to this definition">¶</a></dt>
+<dd><p>The attribute name used to cache loggers, or <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">None</span></code></a> if
+<a class="reference internal" href="#splatlog.loggers.LoggerProperty.__set_name__" title="splatlog.loggers.LoggerProperty.__set_name__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__set_name__()</span></code></a> has not been called.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatlog.loggers.LoggerProperty.__set_name__">
+<span class="sig-name descname"><span class="pre">__set_name__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">owner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><span class="pre">object</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#splatlog.loggers.LoggerProperty.__set_name__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatlog.loggers.LoggerProperty.__get__">
+<span class="sig-name descname"><span class="pre">__get__</span></span><span class="sig-paren">(</span>
+
+<dl>
+<dd><em class="sig-param"><span class="n"><span class="pre">instance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><span class="pre">object</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>,</dd>
+<dd><em class="sig-param"><span class="n"><span class="pre">owner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><span class="pre">object</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>,</dd>
+</dl>
+
+<span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#splatlog.loggers.SplatLogger" title="splatlog.loggers.SplatLogger"><span class="pre">SplatLogger</span></a></span></span><a class="headerlink" href="#splatlog.loggers.LoggerProperty.__get__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.loggers.LoggerProperty.__class_getitem__">
+<span class="sig-name descname"><span class="pre">__class_getitem__</span></span><a class="headerlink" href="#splatlog.loggers.LoggerProperty.__class_getitem__" title="Link to this definition">¶</a></dt>
+<dd><p>‘classmethod(…)’</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatlog.loggers.LoggerProperty.get_logger_from">
+<span class="sig-name descname"><span class="pre">get_logger_from</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><span class="pre">object</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#splatlog.loggers.SplatLogger" title="splatlog.loggers.SplatLogger"><span class="pre">SplatLogger</span></a></span></span><a class="headerlink" href="#splatlog.loggers.LoggerProperty.get_logger_from" title="Link to this definition">¶</a></dt>
+<dd><p>Retrieve or create a cached logger for <code class="docutils literal notranslate"><span class="pre">obj</span></code>.</p>
+<p class="rubric" id="id9">Parameters</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">obj</span></code>: A class or instance to get a logger for.</p></li>
+</ul>
+<p class="rubric" id="id10">Returns</p>
+<p>A <a class="reference internal" href="#splatlog.loggers.ClassLogger" title="splatlog.loggers.ClassLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClassLogger</span></code></a> (if <code class="docutils literal notranslate"><span class="pre">obj</span></code> is a class) or a
+<a class="reference internal" href="#splatlog.loggers.SelfLogger" title="splatlog.loggers.SelfLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">SelfLogger</span></code></a> (if <code class="docutils literal notranslate"><span class="pre">obj</span></code> is an instance).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="splatlog.loggers.SplatLogger">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">splatlog.loggers.</span></span><span class="sig-name descname"><span class="pre">SplatLogger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">merge_extra</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#splatlog.loggers.SplatLogger" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/logging.html#logging.LoggerAdapter" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logging.LoggerAdapter</span></code></a></p>
+<p>A <a class="reference external" href="https://docs.python.org/3/library/logging.html#logging.LoggerAdapter" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">logging.LoggerAdapter</span></code></a> that treats double-splat keyword
+arguments as a map of names to values to be logged.</p>
+<p>This map is added as <code class="docutils literal notranslate"><span class="pre">&quot;data&quot;</span></code> to the <code class="docutils literal notranslate"><span class="pre">extra</span></code> mapping that is part of the
+log method API, where it eventually is assigned as a <code class="docutils literal notranslate"><span class="pre">data</span></code> attribute on
+the emitted <a class="reference external" href="https://docs.python.org/3/library/logging.html#logging.LogRecord" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">logging.LogRecord</span></code></a>.</p>
+<p>This allows logging invocations like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+    <span class="s2">&quot;Check this out!&quot;</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s2">&quot;hey&quot;</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s2">&quot;ho&quot;</span><span class="p">,</span>
+    <span class="n">z</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;lets&quot;</span><span class="p">:</span> <span class="s2">&quot;go&quot;</span><span class="p">},</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p class="rubric">Initialization</p>
+<p>Initialize the adapter with a logger and an optional dict-like object
+which provides contextual information. This constructor signature
+allows easy stacking of LoggerAdapters, if so desired.</p>
+<p>You can effectively pass keyword arguments as shown in the
+following example:</p>
+<p>adapter = LoggerAdapter(someLogger, dict(p1=v1, p2=”v2”))</p>
+<p>By default, LoggerAdapter objects will drop the “extra” argument
+passed on the individual log calls to use its own instead.</p>
+<p>Initializing it with merge_extra=True will instead merge both
+maps when logging, the individual call extra taking precedence
+over the LoggerAdapter instance extra</p>
+<p>.. versionchanged:: 3.13
+The <em>merge_extra</em> argument was added.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="splatlog.loggers.SplatLogger.process">
+<span class="sig-name descname"><span class="pre">process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#splatlog.loggers.SplatLogger.process" title="Link to this definition">¶</a></dt>
+<dd><p>Override <a class="reference external" href="https://docs.python.org/3/library/logging.html#logging.LoggerAdapter.process" title="(in Python v3.14)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">logging.LoggerAdapter.process()</span></code></a> to extract
+non-standard keyword arguments into a <code class="docutils literal notranslate"><span class="pre">data</span></code> dict attached to the
+<a class="reference external" href="https://docs.python.org/3/library/logging.html#logging.LogRecord" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">logging.LogRecord</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatlog.loggers.SplatLogger.iter_handlers">
+<span class="sig-name descname"><span class="pre">iter_handlers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Generator" title="(in Python v3.14)"><span class="pre">Generator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/logging.html#logging.Handler" title="(in Python v3.14)"><span class="pre">Handler</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#splatlog.loggers.SplatLogger.iter_handlers" title="Link to this definition">¶</a></dt>
+<dd><p>Iterate through the applicable <a class="reference external" href="https://docs.python.org/3/library/logging.html#logging.Handler" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">logging.Handler</span></code></a>.</p>
+<p>Always yields from <a class="reference external" href="https://docs.python.org/3/library/logging.html#logging.Logger.handlers" title="(in Python v3.14)"><code class="xref py py-attr docutils literal notranslate"><span class="pre">logging.Logger.handlers</span></code></a> of the
+<a class="reference external" href="https://docs.python.org/3/library/logging.html#logging.Logger" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">logging.Logger</span></code></a> that this adapter wraps. If that logger is
+set to <a class="reference external" href="https://docs.python.org/3/library/logging.html#logging.Logger.propagate" title="(in Python v3.14)"><code class="xref py py-attr docutils literal notranslate"><span class="pre">logging.Logger.propagate</span></code></a> then continues walking up the
+<a class="reference external" href="https://docs.python.org/3/library/logging.html#logging.Logger.parent" title="(in Python v3.14)"><code class="xref py py-attr docutils literal notranslate"><span class="pre">logging.Logger.parent</span></code></a> chain, yielding the ancestor handlers
+as well.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatlog.loggers.SplatLogger.addHandler">
+<span class="sig-name descname"><span class="pre">addHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hdlr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/logging.html#logging.Handler" title="(in Python v3.14)"><span class="pre">Handler</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#splatlog.loggers.SplatLogger.addHandler" title="Link to this definition">¶</a></dt>
+<dd><p>Delegate to the underlying logger.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatlog.loggers.SplatLogger.removeHandler">
+<span class="sig-name descname"><span class="pre">removeHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hdlr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/logging.html#logging.Handler" title="(in Python v3.14)"><span class="pre">Handler</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#splatlog.loggers.SplatLogger.removeHandler" title="Link to this definition">¶</a></dt>
+<dd><p>Delegate to the underlying logger.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="splatlog.loggers.SplatLogger.level">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">level</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="splatlog.types.html#splatlog.types.Level" title="splatlog.types.Level"><span class="pre">Level</span></a></span><a class="headerlink" href="#splatlog.loggers.SplatLogger.level" title="Link to this definition">¶</a></dt>
+<dd><p>The logging level of the underlying <a class="reference external" href="https://docs.python.org/3/library/logging.html#logging.Logger" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">logging.Logger</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatlog.loggers.SplatLogger.setLevel">
+<span class="sig-name descname"><span class="pre">setLevel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="splatlog.types.html#splatlog.types.ToLevel" title="splatlog.types.ToLevel"><span class="pre">ToLevel</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#splatlog.loggers.SplatLogger.setLevel" title="Link to this definition">¶</a></dt>
+<dd><p>Set the logging level, accepting names or integers.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatlog.loggers.SplatLogger.getChild">
+<span class="sig-name descname"><span class="pre">getChild</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">suffix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#splatlog.loggers.SplatLogger" title="splatlog.loggers.SplatLogger"><span class="pre">SplatLogger</span></a></span></span><a class="headerlink" href="#splatlog.loggers.SplatLogger.getChild" title="Link to this definition">¶</a></dt>
+<dd><p>Get a child logger with the given suffix appended to this logger’s
+name.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatlog.loggers.SplatLogger.inject">
+<span class="sig-name descname"><span class="pre">inject</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a></span></span><a class="headerlink" href="#splatlog.loggers.SplatLogger.inject" title="Link to this definition">¶</a></dt>
+<dd><p>Decorator that injects a child logger as a <code class="docutils literal notranslate"><span class="pre">log</span></code> keyword argument.</p>
+<p>If the wrapped function is called without a <code class="docutils literal notranslate"><span class="pre">log</span></code> kwarg, a child
+logger named after the function is automatically provided.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatlog.loggers.SplatLogger.__rich_repr__">
+<span class="sig-name descname"><span class="pre">__rich_repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">rich.repr.Result</span></span></span><a class="headerlink" href="#splatlog.loggers.SplatLogger.__rich_repr__" title="Link to this definition">¶</a></dt>
+<dd><p>Custom rich representation, consisting of the logger name, level, and
+lists of attached handlers and filters.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="splatlog.loggers.ClassLogger">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">splatlog.loggers.</span></span><span class="sig-name descname"><span class="pre">ClassLogger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><span class="pre">object</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#splatlog.loggers.ClassLogger" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#splatlog.loggers.SplatLogger" title="splatlog.loggers.SplatLogger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">splatlog.loggers.SplatLogger</span></code></a></p>
+<p>A <a class="reference internal" href="#splatlog.loggers.SplatLogger" title="splatlog.loggers.SplatLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">SplatLogger</span></code></a> for a specific class, wrapping the
+<a class="reference external" href="https://docs.python.org/3/library/logging.html#logging.Logger" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">logging.Logger</span></code></a> for the fully-qualified class name
+(<code class="docutils literal notranslate"><span class="pre">{__module__}.{__qualname__}</span></code>).</p>
+<p>Adds the qualified name of the class to each
+<a class="reference external" href="https://docs.python.org/3/library/logging.html#logging.LogRecord" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">logging.LogRecord</span></code></a> it processes as a <code class="docutils literal notranslate"><span class="pre">class_name</span></code> attribute.</p>
+<p class="rubric" id="id11">Examples</p>
+<p>Use through the <a class="reference internal" href="#splatlog.loggers.LoggerProperty" title="splatlog.loggers.LoggerProperty"><code class="xref py py-class docutils literal notranslate"><span class="pre">LoggerProperty</span></code></a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">SomeClass</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">_log</span> <span class="o">=</span> <span class="n">LoggerProperty</span><span class="p">()</span>
+<span class="gp">...</span>
+<span class="gp">... </span>    <span class="nd">@classmethod</span>
+<span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">do_something</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="bp">cls</span><span class="o">.</span><span class="n">_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;doing something!&quot;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">isinstance</span><span class="p">(</span><span class="n">SomeClass</span><span class="o">.</span><span class="n">_log</span><span class="p">,</span> <span class="n">ClassLogger</span><span class="p">)</span>
+<span class="go">True</span>
+
+</pre></div>
+</div>
+<p class="rubric">Initialization</p>
+<p class="rubric" id="id12">Parameters</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">cls</span></code>: The class to create a logger for.</p></li>
+</ul>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.loggers.ClassLogger._class_name">
+<span class="sig-name descname"><span class="pre">_class_name</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#splatlog.loggers.ClassLogger._class_name" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+<p>The qualified name of the class this logger is for.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="splatlog.loggers.ClassLogger.class_name">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">class_name</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#splatlog.loggers.ClassLogger.class_name" title="Link to this definition">¶</a></dt>
+<dd><p>The qualified name of the class.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatlog.loggers.ClassLogger.process">
+<span class="sig-name descname"><span class="pre">process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#splatlog.loggers.ClassLogger.process" title="Link to this definition">¶</a></dt>
+<dd><p>Add <code class="docutils literal notranslate"><span class="pre">class_name</span></code> to the record’s extra data.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="splatlog.loggers.SelfLogger">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">splatlog.loggers.</span></span><span class="sig-name descname"><span class="pre">SelfLogger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><span class="pre">object</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#splatlog.loggers.SelfLogger" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#splatlog.loggers.ClassLogger" title="splatlog.loggers.ClassLogger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">splatlog.loggers.ClassLogger</span></code></a></p>
+<p>A <a class="reference internal" href="#splatlog.loggers.ClassLogger" title="splatlog.loggers.ClassLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClassLogger</span></code></a> for a specific <em>instance</em>, adding a <code class="docutils literal notranslate"><span class="pre">self</span></code>
+attribute to each <a class="reference external" href="https://docs.python.org/3/library/logging.html#logging.LogRecord" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">logging.LogRecord</span></code></a> to identify the instance.</p>
+<p>Only use this when you need to know <em>which</em> instance a log record was
+emitted from.</p>
+<p class="rubric" id="id13">The <code class="docutils literal notranslate"><span class="pre">self</span></code> Identifier</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">self</span></code> attribute is added to each log record emitted by <code class="docutils literal notranslate"><span class="pre">SelfLogger</span></code>,
+which will be displayed by <a class="reference internal" href="splatlog.rich.handler.html#splatlog.rich.handler.RichHandler" title="splatlog.rich.handler.RichHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">splatlog.rich.RichHandler</span></code></a>. At
+construction, <code class="docutils literal notranslate"><span class="pre">SelfLogger</span></code> checks the target <code class="docutils literal notranslate"><span class="pre">obj</span></code> for an attribute named
+<code class="docutils literal notranslate"><span class="pre">_splatlog_self_</span></code>.</p>
+<p>If that attribute is a <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a>, it will be
+called with zero arguments <strong>each and every time</strong> a record is processed to
+get the value for <code class="docutils literal notranslate"><span class="pre">self</span></code>. Otherwise the attribute value itself will be used
+as <code class="docutils literal notranslate"><span class="pre">self</span></code>.</p>
+<p>If no <code class="docutils literal notranslate"><span class="pre">_splatlog_self_</span></code> attribute is present on <code class="docutils literal notranslate"><span class="pre">obj</span></code> then
+<code class="docutils literal notranslate"><span class="pre">hex(id(obj))</span></code> is used.</p>
+<p class="rubric">Initialization</p>
+<p>Construct a <a class="reference internal" href="#splatlog.loggers.SelfLogger" title="splatlog.loggers.SelfLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">SelfLogger</span></code></a> for a particular object <code class="docutils literal notranslate"><span class="pre">obj</span></code>.</p>
+<p class="rubric" id="id14">Parameters</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">obj</span></code>: The instance to create a logger for.</p></li>
+</ul>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.loggers.SelfLogger.get_identity">
+<span class="sig-name descname"><span class="pre">get_identity</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><span class="pre">object</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#splatlog.loggers.SelfLogger.get_identity" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+<p>Callable that returns the identity value for this instance.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatlog.loggers.SelfLogger.set_identity">
+<span class="sig-name descname"><span class="pre">set_identity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">identity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><span class="pre">object</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#splatlog.loggers.SelfLogger.set_identity" title="Link to this definition">¶</a></dt>
+<dd><p>Set the identity source. If <code class="docutils literal notranslate"><span class="pre">identity</span></code> is callable it will be invoked
+on each log record; otherwise the value is captured.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatlog.loggers.SelfLogger.process">
+<span class="sig-name descname"><span class="pre">process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#splatlog.loggers.SelfLogger.process" title="Link to this definition">¶</a></dt>
+<dd><p>Add <code class="docutils literal notranslate"><span class="pre">self</span></code> identity to the record’s extra data.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="splatlog.poe.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.poe</span></code></div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="splatlog.levels.filter.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.levels.filter</span></code></div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 1980, nrser
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.loggers</span></code></a><ul>
+<li><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li><a class="reference internal" href="#classes">Classes</a></li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+<li><a class="reference internal" href="#data">Data</a></li>
+<li><a class="reference internal" href="#api">API</a><ul>
+<li><a class="reference internal" href="#splatlog.loggers._NOT_FOUND"><code class="docutils literal notranslate"><span class="pre">_NOT_FOUND</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.loggers.get"><code class="docutils literal notranslate"><span class="pre">get()</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.loggers.get_for"><code class="docutils literal notranslate"><span class="pre">get_for()</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.loggers.LoggerProperty"><code class="docutils literal notranslate"><span class="pre">LoggerProperty</span></code></a><ul>
+<li><a class="reference internal" href="#splatlog.loggers.LoggerProperty._attr_name"><code class="docutils literal notranslate"><span class="pre">LoggerProperty._attr_name</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.loggers.LoggerProperty.attr_name"><code class="docutils literal notranslate"><span class="pre">LoggerProperty.attr_name</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.loggers.LoggerProperty.__set_name__"><code class="docutils literal notranslate"><span class="pre">LoggerProperty.__set_name__()</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.loggers.LoggerProperty.__get__"><code class="docutils literal notranslate"><span class="pre">LoggerProperty.__get__()</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.loggers.LoggerProperty.__class_getitem__"><code class="docutils literal notranslate"><span class="pre">LoggerProperty.__class_getitem__</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.loggers.LoggerProperty.get_logger_from"><code class="docutils literal notranslate"><span class="pre">LoggerProperty.get_logger_from()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#splatlog.loggers.SplatLogger"><code class="docutils literal notranslate"><span class="pre">SplatLogger</span></code></a><ul>
+<li><a class="reference internal" href="#splatlog.loggers.SplatLogger.process"><code class="docutils literal notranslate"><span class="pre">SplatLogger.process()</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.loggers.SplatLogger.iter_handlers"><code class="docutils literal notranslate"><span class="pre">SplatLogger.iter_handlers()</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.loggers.SplatLogger.addHandler"><code class="docutils literal notranslate"><span class="pre">SplatLogger.addHandler()</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.loggers.SplatLogger.removeHandler"><code class="docutils literal notranslate"><span class="pre">SplatLogger.removeHandler()</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.loggers.SplatLogger.level"><code class="docutils literal notranslate"><span class="pre">SplatLogger.level</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.loggers.SplatLogger.setLevel"><code class="docutils literal notranslate"><span class="pre">SplatLogger.setLevel()</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.loggers.SplatLogger.getChild"><code class="docutils literal notranslate"><span class="pre">SplatLogger.getChild()</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.loggers.SplatLogger.inject"><code class="docutils literal notranslate"><span class="pre">SplatLogger.inject()</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.loggers.SplatLogger.__rich_repr__"><code class="docutils literal notranslate"><span class="pre">SplatLogger.__rich_repr__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#splatlog.loggers.ClassLogger"><code class="docutils literal notranslate"><span class="pre">ClassLogger</span></code></a><ul>
+<li><a class="reference internal" href="#splatlog.loggers.ClassLogger._class_name"><code class="docutils literal notranslate"><span class="pre">ClassLogger._class_name</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.loggers.ClassLogger.class_name"><code class="docutils literal notranslate"><span class="pre">ClassLogger.class_name</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.loggers.ClassLogger.process"><code class="docutils literal notranslate"><span class="pre">ClassLogger.process()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#splatlog.loggers.SelfLogger"><code class="docutils literal notranslate"><span class="pre">SelfLogger</span></code></a><ul>
+<li><a class="reference internal" href="#splatlog.loggers.SelfLogger.get_identity"><code class="docutils literal notranslate"><span class="pre">SelfLogger.get_identity</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.loggers.SelfLogger.set_identity"><code class="docutils literal notranslate"><span class="pre">SelfLogger.set_identity()</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.loggers.SelfLogger.process"><code class="docutils literal notranslate"><span class="pre">SelfLogger.process()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../../_static/documentation_options.js?v=cae21d13"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
+    </body>
+</html>

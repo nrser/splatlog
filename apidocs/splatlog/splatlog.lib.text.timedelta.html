@@ -1,0 +1,1022 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html"><link rel="next" title="splatlog.lib.text.datetime" href="splatlog.lib.text.datetime.html"><link rel="prev" title="splatlog.lib.text.number" href="splatlog.lib.text.number.html">
+        <link rel="canonical" href="http://nrser.com/splatlog/apidocs/splatlog/splatlog.lib.text.timedelta.html">
+
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+        <title>splatlog.lib.text.timedelta - splatlog 0.5.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d75fae25" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=dcea4711" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f0f0f0;
+  --color-code-foreground: black;
+  --color-link--hover: var(--color-brand-visited);
+  --color-link--visited: var(--color-link);
+  --color-link--visited--hover: var(--color-link--hover);
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #0d1117;
+  --color-code-foreground: #e6edf3;
+  --color-link--hover: var(--color-brand-visited);
+  --color-link--visited: var(--color-link);
+  --color-link--visited--hover: var(--color-link--hover);
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #0d1117;
+  --color-code-foreground: #e6edf3;
+  --color-link--hover: var(--color-brand-visited);
+  --color-link--visited: var(--color-link);
+  --color-link--visited--hover: var(--color-link--hover);
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../index.html"><div class="brand">splatlog 0.5.3 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
+  
+  <span class="sidebar-brand-text">splatlog 0.5.3 documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../content/basic-usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/features/named-handlers.html">Named Handlers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/features/verbosity.html">Verbosity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/features/formatting-type-hints.html">Formatting Type Hints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/features/rich-rendering.html">Rich Rendering</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 current has-children"><a class="reference internal" href="splatlog.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog</span></code></a><input aria-label="Toggle navigation of splatlog" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l3 has-children"><a class="reference internal" href="splatlog.json.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.json</span></code></a><input aria-label="Toggle navigation of splatlog.json" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.json.formatter.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.json.formatter</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.json.reducers.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.json.reducers</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.json.encoder.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.json.encoder</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="splatlog.rich.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich</span></code></a><input aria-label="Toggle navigation of splatlog.rich" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="splatlog.rich.enrich.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.enrich</span></code></a><input aria-label="Toggle navigation of splatlog.rich.enrich" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.rich.enrich.enrichment.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.enrich.enrichment</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.rich.enrich.exception.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.enrich.exception</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.rich.enrich.number.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.enrich.number</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.rich.enrich.routine.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.enrich.routine</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.rich.enrich.typ.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.enrich.typ</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.rich.enrich.enriched.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.enrich.enriched</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.rich.enrich.datetime.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.enrich.datetime</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.rich.enrich.path.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.enrich.path</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.rich.link.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.link</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.rich.console.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.console</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.rich.handler.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.handler</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.rich.theme.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.theme</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.rich.section.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.section</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.rich.ntv_table.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.ntv_table</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.rich.framing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.framing</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 current has-children"><a class="reference internal" href="splatlog.lib.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib</span></code></a><input aria-label="Toggle navigation of splatlog.lib" checked="" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="splatlog.lib.functions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.functions</span></code></a></li>
+<li class="toctree-l4 current has-children"><a class="reference internal" href="splatlog.lib.text.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.text</span></code></a><input aria-label="Toggle navigation of splatlog.lib.text" checked="" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l5"><a class="reference internal" href="splatlog.lib.text.fmt.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.text.fmt</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.lib.text.formatter.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.text.formatter</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.lib.text.number.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.text.number</span></code></a></li>
+<li class="toctree-l5 current current-page"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.text.timedelta</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.lib.text.datetime.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.text.datetime</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="splatlog.lib.collections.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.collections</span></code></a><input aria-label="Toggle navigation of splatlog.lib.collections" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.lib.collections.classifier.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.collections.classifier</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.lib.collections.loop.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.collections.loop</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.lib.types.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.types</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.lib.errors.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.errors</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.lib.colors.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.colors</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="splatlog.levels.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.levels</span></code></a><input aria-label="Toggle navigation of splatlog.levels" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.levels.verbosity.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.levels.verbosity</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.levels.filter.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.levels.filter</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="splatlog.loggers.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.loggers</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="splatlog.poe.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.poe</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="splatlog.types.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.types</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="splatlog.locking.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.locking</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="splatlog.named_handlers.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.named_handlers</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="splatlog.testing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.testing</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="splatlog.reporting.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.reporting</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          
+
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section class="tex2jax_ignore mathjax_ignore" id="module-splatlog.lib.text.timedelta">
+<span id="splatlog-lib-text-timedelta"></span><h1><a class="reference internal" href="#module-splatlog.lib.text.timedelta" title="splatlog.lib.text.timedelta"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.text.timedelta</span></code></a><a class="headerlink" href="#module-splatlog.lib.text.timedelta" title="Link to this heading">¶</a></h1>
+<p><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">datetime.timedelta</span></code></a> formatting — <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">timedelta</span></code></a>
+has no <a class="reference external" href="https://docs.python.org/3/library/datetime.html#strftime-and-strptime-behavior"><code class="docutils literal notranslate"><span class="pre">strftime</span></code></a>, so we define a small format language for it.</p>
+<p>It reuses the <code class="docutils literal notranslate"><span class="pre">%H</span></code>/<code class="docutils literal notranslate"><span class="pre">%M</span></code>/<code class="docutils literal notranslate"><span class="pre">%S</span></code> directives (plus <code class="docutils literal notranslate"><span class="pre">%d</span></code> for days) and adds fraction
+directives <code class="docutils literal notranslate"><span class="pre">%3f</span></code> (milliseconds), <code class="docutils literal notranslate"><span class="pre">%6f</span></code> (microsecond remainder), and <code class="docutils literal notranslate"><span class="pre">%f</span></code> (whole
+sub-second microseconds), but adds two things <code class="docutils literal notranslate"><span class="pre">strftime</span></code> lacks — both aimed at
+rendering durations whose magnitude isn’t known ahead of time:</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">[...]</span></code> optional groups: omitted unless they contain an “in-range” unit,
+where a unit is in-range when it sits between the smallest and largest
+non-zero unit. So a middle zero (the minutes in <code class="docutils literal notranslate"><span class="pre">1h</span> <span class="pre">0m</span> <span class="pre">45s</span></code>) shows, while
+leading/trailing zeros drop out.</p></li>
+<li><p>A <code class="docutils literal notranslate"><span class="pre">-</span></code> flag (<code class="docutils literal notranslate"><span class="pre">%-S</span></code>): minimal-width rendering. Without it, whole units are
+zero-padded to their natural width (<code class="docutils literal notranslate"><span class="pre">%H</span></code>/<code class="docutils literal notranslate"><span class="pre">%M</span></code>/<code class="docutils literal notranslate"><span class="pre">%S</span></code> → 2, <code class="docutils literal notranslate"><span class="pre">%3f</span></code> → 3). The
+most-significant unit <em>present</em> absorbs everything larger than it, is never
+truncated, and is grouped with thousands separators (<code class="docutils literal notranslate"><span class="pre">1,234,567h</span></code>).</p></li>
+</ol>
+<p>The units form a single ladder — days, hours, minutes, seconds, milliseconds,
+microseconds — decomposed greedily over the units <em>present</em> in the template.
+So <code class="docutils literal notranslate"><span class="pre">%3f</span></code> and <code class="docutils literal notranslate"><span class="pre">%6f</span></code> together split the sub-second remainder hierarchically
+(<code class="docutils literal notranslate"><span class="pre">789ms</span></code> + <code class="docutils literal notranslate"><span class="pre">0µs</span></code>, or <code class="docutils literal notranslate"><span class="pre">0ms</span></code> + <code class="docutils literal notranslate"><span class="pre">12µs</span></code>), while <code class="docutils literal notranslate"><span class="pre">%f</span></code> holds the whole sub-second in
+microseconds (<code class="docutils literal notranslate"><span class="pre">789000</span></code>).</p>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
+<section id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h3>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-left">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#splatlog.lib.text.timedelta._parse_td_template" title="splatlog.lib.text.timedelta._parse_td_template"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_parse_td_template</span></code></a></p></td>
+<td><p>Parse a timedelta template into a tree of <a class="reference internal" href="#splatlog.lib.text.timedelta._TdNode" title="splatlog.lib.text.timedelta._TdNode"><code class="xref py py-data docutils literal notranslate"><span class="pre">_TdNode</span></code></a>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#splatlog.lib.text.timedelta._td_directive_key" title="splatlog.lib.text.timedelta._td_directive_key"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_td_directive_key</span></code></a></p></td>
+<td><p>The unit key of a directive token (<code class="docutils literal notranslate"><span class="pre">&quot;%-3f&quot;</span></code> → <code class="docutils literal notranslate"><span class="pre">&quot;3f&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;%H&quot;</span></code> → <code class="docutils literal notranslate"><span class="pre">&quot;H&quot;</span></code>).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#splatlog.lib.text.timedelta._iter_td_directives" title="splatlog.lib.text.timedelta._iter_td_directives"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_iter_td_directives</span></code></a></p></td>
+<td><p>Yield every directive token in <code class="docutils literal notranslate"><span class="pre">nodes</span></code>, descending into <code class="docutils literal notranslate"><span class="pre">opt</span></code> groups.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#splatlog.lib.text.timedelta._td_decompose" title="splatlog.lib.text.timedelta._td_decompose"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_td_decompose</span></code></a></p></td>
+<td><p>Resolve <code class="docutils literal notranslate"><span class="pre">td</span></code> against the units present in <code class="docutils literal notranslate"><span class="pre">nodes</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#splatlog.lib.text.timedelta._render_td_directive" title="splatlog.lib.text.timedelta._render_td_directive"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_render_td_directive</span></code></a></p></td>
+<td><p>Render a single directive <code class="docutils literal notranslate"><span class="pre">token</span></code> from pre-computed <code class="docutils literal notranslate"><span class="pre">values</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#splatlog.lib.text.timedelta._td_group_shown" title="splatlog.lib.text.timedelta._td_group_shown"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_td_group_shown</span></code></a></p></td>
+<td><p>Whether an <code class="docutils literal notranslate"><span class="pre">opt</span></code> group renders — i.e. holds an in-range directive.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#splatlog.lib.text.timedelta._td_literal_component" title="splatlog.lib.text.timedelta._td_literal_component"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_td_literal_component</span></code></a></p></td>
+<td><p>Classify a single literal <code class="docutils literal notranslate"><span class="pre">char</span></code> as <code class="docutils literal notranslate"><span class="pre">&quot;sep&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;space&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;text&quot;</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#splatlog.lib.text.timedelta._iter_td_literal_runs" title="splatlog.lib.text.timedelta._iter_td_literal_runs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_iter_td_literal_runs</span></code></a></p></td>
+<td><p>Split a literal run into maximal <code class="docutils literal notranslate"><span class="pre">(text,</span> <span class="pre">component)</span></code> sub-runs — tagging
+separators (<code class="docutils literal notranslate"><span class="pre">:</span></code>/<code class="docutils literal notranslate"><span class="pre">.</span></code>) <code class="docutils literal notranslate"><span class="pre">&quot;sep&quot;</span></code>, whitespace <code class="docutils literal notranslate"><span class="pre">&quot;space&quot;</span></code>, and the rest (unit
+designations and other free text) <code class="docutils literal notranslate"><span class="pre">&quot;text&quot;</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#splatlog.lib.text.timedelta._emit_td_nodes" title="splatlog.lib.text.timedelta._emit_td_nodes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_emit_td_nodes</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#splatlog.lib.text.timedelta.iter_timedelta_segments" title="splatlog.lib.text.timedelta.iter_timedelta_segments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">iter_timedelta_segments</span></code></a></p></td>
+<td><p>Tokenize a timedelta template <code class="docutils literal notranslate"><span class="pre">fmt</span></code> against <code class="docutils literal notranslate"><span class="pre">td</span></code>, yielding
+<code class="docutils literal notranslate"><span class="pre">(text,</span> <span class="pre">component)</span></code> pairs (the counterpart to
+<code class="xref py py-func docutils literal notranslate"><span class="pre">iter_strftime_segments()</span></code>, resolving <code class="docutils literal notranslate"><span class="pre">[...]</span></code> groups and the sign).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#splatlog.lib.text.timedelta.fmt_timedelta" title="splatlog.lib.text.timedelta.fmt_timedelta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fmt_timedelta</span></code></a></p></td>
+<td><p>Format a <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">datetime.timedelta</span></code></a> using the
+<a class="reference internal" href="splatlog.lib.text.formatter.html#splatlog.lib.text.formatter.FmtOpts.td_fmt" title="splatlog.lib.text.formatter.FmtOpts.td_fmt"><code class="xref py py-attr docutils literal notranslate"><span class="pre">splatlog.lib.text.FmtOpts.td_fmt</span></code></a> template, default:
+<code class="code docutils literal highlight highlight-py"><span class="s2">&quot;[</span><span class="si">%d</span><span class="s2">d] [%H:%M:%S[.</span><span class="si">%3f</span><span class="s2">]]&quot;</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="data">
+<h3>Data<a class="headerlink" href="#data" title="Link to this heading">¶</a></h3>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-left">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#splatlog.lib.text.timedelta._TdNode" title="splatlog.lib.text.timedelta._TdNode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_TdNode</span></code></a></p></td>
+<td><p>A parsed template node: <code class="docutils literal notranslate"><span class="pre">(&quot;lit&quot;,</span> <span class="pre">str)</span></code>, <code class="docutils literal notranslate"><span class="pre">(&quot;dir&quot;,</span> <span class="pre">token)</span></code>, or
+<code class="docutils literal notranslate"><span class="pre">(&quot;opt&quot;,</span> <span class="pre">[nodes])</span></code> for a <code class="docutils literal notranslate"><span class="pre">[...]</span></code> group.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#splatlog.lib.text.timedelta._TD_WHOLE_UNITS" title="splatlog.lib.text.timedelta._TD_WHOLE_UNITS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_TD_WHOLE_UNITS</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#splatlog.lib.text.timedelta._TD_FRACTIONS" title="splatlog.lib.text.timedelta._TD_FRACTIONS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_TD_FRACTIONS</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#splatlog.lib.text.timedelta._TD_WHOLE_WIDTHS" title="splatlog.lib.text.timedelta._TD_WHOLE_WIDTHS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_TD_WHOLE_WIDTHS</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#splatlog.lib.text.timedelta._TD_TOKEN_RE" title="splatlog.lib.text.timedelta._TD_TOKEN_RE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_TD_TOKEN_RE</span></code></a></p></td>
+<td><p>Matches a timedelta directive, an escaped <code class="docutils literal notranslate"><span class="pre">%%</span></code>, or a <code class="docutils literal notranslate"><span class="pre">[</span></code>/<code class="docutils literal notranslate"><span class="pre">]</span></code> group bound.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#splatlog.lib.text.timedelta._TD_SEP_CHARS" title="splatlog.lib.text.timedelta._TD_SEP_CHARS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_TD_SEP_CHARS</span></code></a></p></td>
+<td><p>Literal characters tagged as separators (<code class="docutils literal notranslate"><span class="pre">&quot;sep&quot;</span></code>). Everything else in a
+literal run is whitespace (<code class="docutils literal notranslate"><span class="pre">&quot;space&quot;</span></code>) or free text (<code class="docutils literal notranslate"><span class="pre">&quot;text&quot;</span></code>).</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="api">
+<h3>API<a class="headerlink" href="#api" title="Link to this heading">¶</a></h3>
+<dl class="py type">
+<dt class="sig sig-object py" id="splatlog.lib.text.timedelta._TdNode">
+<span class="property"><span class="k"><span class="pre">type</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">splatlog.lib.text.timedelta.</span></span><span class="sig-name descname"><span class="pre">_TdNode</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#splatlog.lib.text.timedelta._TdNode" title="splatlog.lib.text.timedelta._TdNode"><span class="pre">_TdNode</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#splatlog.lib.text.timedelta._TdNode" title="Link to this definition">¶</a></dt>
+<dd><p>A parsed template node: <code class="docutils literal notranslate"><span class="pre">(&quot;lit&quot;,</span> <span class="pre">str)</span></code>, <code class="docutils literal notranslate"><span class="pre">(&quot;dir&quot;,</span> <span class="pre">token)</span></code>, or
+<code class="docutils literal notranslate"><span class="pre">(&quot;opt&quot;,</span> <span class="pre">[nodes])</span></code> for a <code class="docutils literal notranslate"><span class="pre">[...]</span></code> group.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="splatlog.lib.text.timedelta._TD_WHOLE_UNITS">
+<span class="sig-prename descclassname"><span class="pre">splatlog.lib.text.timedelta.</span></span><span class="sig-name descname"><span class="pre">_TD_WHOLE_UNITS</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#splatlog.lib.text.timedelta._TD_WHOLE_UNITS" title="Link to this definition">¶</a></dt>
+<dd><p>((‘d’, 86400000000, 0), (‘H’, 3600000000, 2), (‘M’, 60000000, 2), (‘S’, 1000000, 2))</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="splatlog.lib.text.timedelta._TD_FRACTIONS">
+<span class="sig-prename descclassname"><span class="pre">splatlog.lib.text.timedelta.</span></span><span class="sig-name descname"><span class="pre">_TD_FRACTIONS</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#splatlog.lib.text.timedelta._TD_FRACTIONS" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="splatlog.lib.text.timedelta._TD_WHOLE_WIDTHS">
+<span class="sig-prename descclassname"><span class="pre">splatlog.lib.text.timedelta.</span></span><span class="sig-name descname"><span class="pre">_TD_WHOLE_WIDTHS</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#splatlog.lib.text.timedelta._TD_WHOLE_WIDTHS" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="splatlog.lib.text.timedelta._TD_TOKEN_RE">
+<span class="sig-prename descclassname"><span class="pre">splatlog.lib.text.timedelta.</span></span><span class="sig-name descname"><span class="pre">_TD_TOKEN_RE</span></span><a class="headerlink" href="#splatlog.lib.text.timedelta._TD_TOKEN_RE" title="Link to this definition">¶</a></dt>
+<dd><p>‘compile(…)’</p>
+<p>Matches a timedelta directive, an escaped <code class="docutils literal notranslate"><span class="pre">%%</span></code>, or a <code class="docutils literal notranslate"><span class="pre">[</span></code>/<code class="docutils literal notranslate"><span class="pre">]</span></code> group bound.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="splatlog.lib.text.timedelta._parse_td_template">
+<span class="sig-prename descclassname"><span class="pre">splatlog.lib.text.timedelta.</span></span><span class="sig-name descname"><span class="pre">_parse_td_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#splatlog.lib.text.timedelta._TdNode" title="splatlog.lib.text.timedelta._TdNode"><span class="pre">_TdNode</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#splatlog.lib.text.timedelta._parse_td_template" title="Link to this definition">¶</a></dt>
+<dd><p>Parse a timedelta template into a tree of <a class="reference internal" href="#splatlog.lib.text.timedelta._TdNode" title="splatlog.lib.text.timedelta._TdNode"><code class="xref py py-data docutils literal notranslate"><span class="pre">_TdNode</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="splatlog.lib.text.timedelta._td_directive_key">
+<span class="sig-prename descclassname"><span class="pre">splatlog.lib.text.timedelta.</span></span><span class="sig-name descname"><span class="pre">_td_directive_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#splatlog.lib.text.timedelta._td_directive_key" title="Link to this definition">¶</a></dt>
+<dd><p>The unit key of a directive token (<code class="docutils literal notranslate"><span class="pre">&quot;%-3f&quot;</span></code> → <code class="docutils literal notranslate"><span class="pre">&quot;3f&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;%H&quot;</span></code> → <code class="docutils literal notranslate"><span class="pre">&quot;H&quot;</span></code>).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="splatlog.lib.text.timedelta._iter_td_directives">
+<span class="sig-prename descclassname"><span class="pre">splatlog.lib.text.timedelta.</span></span><span class="sig-name descname"><span class="pre">_iter_td_directives</span></span><span class="sig-paren">(</span>
+
+<dl>
+<dd><em class="sig-param"><span class="n"><span class="pre">nodes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#splatlog.lib.text.timedelta._TdNode" title="splatlog.lib.text.timedelta._TdNode"><span class="pre">_TdNode</span></a><span class="p"><span class="pre">]</span></span></span></em>,</dd>
+</dl>
+
+<span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator" title="(in Python v3.14)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#splatlog.lib.text.timedelta._iter_td_directives" title="Link to this definition">¶</a></dt>
+<dd><p>Yield every directive token in <code class="docutils literal notranslate"><span class="pre">nodes</span></code>, descending into <code class="docutils literal notranslate"><span class="pre">opt</span></code> groups.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="splatlog.lib.text.timedelta._td_decompose">
+<span class="sig-prename descclassname"><span class="pre">splatlog.lib.text.timedelta.</span></span><span class="sig-name descname"><span class="pre">_td_decompose</span></span><span class="sig-paren">(</span>
+
+<dl>
+<dd><em class="sig-param"><span class="n"><span class="pre">td</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.14)"><span class="pre">timedelta</span></a></span></em>,</dd>
+<dd><em class="sig-param"><span class="n"><span class="pre">nodes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#splatlog.lib.text.timedelta._TdNode" title="splatlog.lib.text.timedelta._TdNode"><span class="pre">_TdNode</span></a><span class="p"><span class="pre">]</span></span></span></em>,</dd>
+</dl>
+
+<span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.14)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#splatlog.lib.text.timedelta._td_decompose" title="Link to this definition">¶</a></dt>
+<dd><p>Resolve <code class="docutils literal notranslate"><span class="pre">td</span></code> against the units present in <code class="docutils literal notranslate"><span class="pre">nodes</span></code>.</p>
+<p>Returns <code class="docutils literal notranslate"><span class="pre">(values,</span> <span class="pre">in_range,</span> <span class="pre">negative)</span></code> where <code class="docutils literal notranslate"><span class="pre">values</span></code> maps each present unit
+key to its rendered integer, <code class="docutils literal notranslate"><span class="pre">in_range</span></code> is the set of unit keys between the
+smallest and largest non-zero unit, and <code class="docutils literal notranslate"><span class="pre">negative</span></code> is the sign.</p>
+<p>Two special cases when nothing renders non-zero:</p>
+<ul class="simple">
+<li><p>A <em>true</em> zero (<code class="docutils literal notranslate"><span class="pre">total</span> <span class="pre">==</span> <span class="pre">0</span></code>) yields its least-significant <em>whole</em> unit,
+for a clean <code class="docutils literal notranslate"><span class="pre">00:00:00</span></code> / <code class="docutils literal notranslate"><span class="pre">0s</span></code> with no sub-second <code class="docutils literal notranslate"><span class="pre">.000</span></code>.</p></li>
+<li><p>A non-zero delta that merely rounds to all-zero (e.g. sub-millisecond)
+yields its least-significant unit — the fraction, if present — so the
+<code class="docutils literal notranslate"><span class="pre">.000</span></code> reveals that <em>something</em> is there.</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="splatlog.lib.text.timedelta._render_td_directive">
+<span class="sig-prename descclassname"><span class="pre">splatlog.lib.text.timedelta.</span></span><span class="sig-name descname"><span class="pre">_render_td_directive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#splatlog.lib.text.timedelta._render_td_directive" title="Link to this definition">¶</a></dt>
+<dd><p>Render a single directive <code class="docutils literal notranslate"><span class="pre">token</span></code> from pre-computed <code class="docutils literal notranslate"><span class="pre">values</span></code>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="splatlog.lib.text.timedelta._td_group_shown">
+<span class="sig-prename descclassname"><span class="pre">splatlog.lib.text.timedelta.</span></span><span class="sig-name descname"><span class="pre">_td_group_shown</span></span><span class="sig-paren">(</span>
+
+<dl>
+<dd><em class="sig-param"><span class="n"><span class="pre">nodes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#splatlog.lib.text.timedelta._TdNode" title="splatlog.lib.text.timedelta._TdNode"><span class="pre">_TdNode</span></a><span class="p"><span class="pre">]</span></span></span></em>,</dd>
+<dd><em class="sig-param"><span class="n"><span class="pre">in_range</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.14)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>,</dd>
+</dl>
+
+<span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#splatlog.lib.text.timedelta._td_group_shown" title="Link to this definition">¶</a></dt>
+<dd><p>Whether an <code class="docutils literal notranslate"><span class="pre">opt</span></code> group renders — i.e. holds an in-range directive.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="splatlog.lib.text.timedelta._TD_SEP_CHARS">
+<span class="sig-prename descclassname"><span class="pre">splatlog.lib.text.timedelta.</span></span><span class="sig-name descname"><span class="pre">_TD_SEP_CHARS</span></span><a class="headerlink" href="#splatlog.lib.text.timedelta._TD_SEP_CHARS" title="Link to this definition">¶</a></dt>
+<dd><p>‘frozenset(…)’</p>
+<p>Literal characters tagged as separators (<code class="docutils literal notranslate"><span class="pre">&quot;sep&quot;</span></code>). Everything else in a
+literal run is whitespace (<code class="docutils literal notranslate"><span class="pre">&quot;space&quot;</span></code>) or free text (<code class="docutils literal notranslate"><span class="pre">&quot;text&quot;</span></code>).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="splatlog.lib.text.timedelta._td_literal_component">
+<span class="sig-prename descclassname"><span class="pre">splatlog.lib.text.timedelta.</span></span><span class="sig-name descname"><span class="pre">_td_literal_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">char</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#splatlog.lib.text.timedelta._td_literal_component" title="Link to this definition">¶</a></dt>
+<dd><p>Classify a single literal <code class="docutils literal notranslate"><span class="pre">char</span></code> as <code class="docutils literal notranslate"><span class="pre">&quot;sep&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;space&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;text&quot;</span></code>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="splatlog.lib.text.timedelta._iter_td_literal_runs">
+<span class="sig-prename descclassname"><span class="pre">splatlog.lib.text.timedelta.</span></span><span class="sig-name descname"><span class="pre">_iter_td_literal_runs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator" title="(in Python v3.14)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#splatlog.lib.text.timedelta._iter_td_literal_runs" title="Link to this definition">¶</a></dt>
+<dd><p>Split a literal run into maximal <code class="docutils literal notranslate"><span class="pre">(text,</span> <span class="pre">component)</span></code> sub-runs — tagging
+separators (<code class="docutils literal notranslate"><span class="pre">:</span></code>/<code class="docutils literal notranslate"><span class="pre">.</span></code>) <code class="docutils literal notranslate"><span class="pre">&quot;sep&quot;</span></code>, whitespace <code class="docutils literal notranslate"><span class="pre">&quot;space&quot;</span></code>, and the rest (unit
+designations and other free text) <code class="docutils literal notranslate"><span class="pre">&quot;text&quot;</span></code>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="splatlog.lib.text.timedelta._emit_td_nodes">
+<span class="sig-prename descclassname"><span class="pre">splatlog.lib.text.timedelta.</span></span><span class="sig-name descname"><span class="pre">_emit_td_nodes</span></span><span class="sig-paren">(</span>
+
+<dl>
+<dd><em class="sig-param"><span class="n"><span class="pre">nodes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#splatlog.lib.text.timedelta._TdNode" title="splatlog.lib.text.timedelta._TdNode"><span class="pre">_TdNode</span></a><span class="p"><span class="pre">]</span></span></span></em>,</dd>
+<dd><em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></em>,</dd>
+<dd><em class="sig-param"><span class="n"><span class="pre">in_range</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.14)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>,</dd>
+</dl>
+
+<span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator" title="(in Python v3.14)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#splatlog.lib.text.timedelta._emit_td_nodes" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="splatlog.lib.text.timedelta.iter_timedelta_segments">
+<span class="sig-prename descclassname"><span class="pre">splatlog.lib.text.timedelta.</span></span><span class="sig-name descname"><span class="pre">iter_timedelta_segments</span></span><span class="sig-paren">(</span>
+
+<dl>
+<dd><em class="sig-param"><span class="n"><span class="pre">td</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.14)"><span class="pre">timedelta</span></a></span></em>,</dd>
+<dd><em class="sig-param"><span class="n"><span class="pre">fmt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>,</dd>
+</dl>
+
+<span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator" title="(in Python v3.14)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#splatlog.lib.text.timedelta.iter_timedelta_segments" title="Link to this definition">¶</a></dt>
+<dd><p>Tokenize a timedelta template <code class="docutils literal notranslate"><span class="pre">fmt</span></code> against <code class="docutils literal notranslate"><span class="pre">td</span></code>, yielding
+<code class="docutils literal notranslate"><span class="pre">(text,</span> <span class="pre">component)</span></code> pairs (the counterpart to
+<code class="xref py py-func docutils literal notranslate"><span class="pre">iter_strftime_segments()</span></code>, resolving <code class="docutils literal notranslate"><span class="pre">[...]</span></code> groups and the sign).</p>
+<p class="rubric" id="id1">Examples</p>
+<p>In-range logic keeps a middle zero but drops the leading/trailing ones:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dt</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">iter_timedelta_segments</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">seconds</span><span class="o">=</span><span class="mi">45</span><span class="p">),</span> <span class="s2">&quot;[%-Hh] [%-Mm] [%-Ss] [</span><span class="si">%-3f</span><span class="s2">ms]&quot;</span>
+<span class="gp">... </span><span class="p">))</span>
+<span class="go">[(&#39;1&#39;, &#39;hour&#39;), (&#39;h&#39;, &#39;text&#39;), (&#39; &#39;, &#39;space&#39;), (&#39;0&#39;, &#39;minute&#39;), (&#39;m&#39;, &#39;text&#39;), (&#39; &#39;, &#39;space&#39;), (&#39;45&#39;, &#39;second&#39;), (&#39;s&#39;, &#39;text&#39;), (&#39; &#39;, &#39;space&#39;)]</span>
+
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="splatlog.lib.text.timedelta.fmt_timedelta">
+<span class="sig-prename descclassname"><span class="pre">splatlog.lib.text.timedelta.</span></span><span class="sig-name descname"><span class="pre">fmt_timedelta</span></span><span class="sig-paren">(</span>
+
+<dl>
+<dd><em class="sig-param"><span class="n"><span class="pre">td</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.14)"><span class="pre">timedelta</span></a></span></em>,</dd>
+<dd><em class="sig-param"><span class="n"><span class="pre">opts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="splatlog.lib.text.formatter.html#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><span class="pre">FmtOpts</span></a></span></em>,</dd>
+</dl>
+
+<span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#splatlog.lib.text.timedelta.fmt_timedelta" title="Link to this definition">¶</a></dt>
+<dd><p>Format a <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">datetime.timedelta</span></code></a> using the
+<a class="reference internal" href="splatlog.lib.text.formatter.html#splatlog.lib.text.formatter.FmtOpts.td_fmt" title="splatlog.lib.text.formatter.FmtOpts.td_fmt"><code class="xref py py-attr docutils literal notranslate"><span class="pre">splatlog.lib.text.FmtOpts.td_fmt</span></code></a> template, default:
+<code class="code docutils literal highlight highlight-py"><span class="s2">&quot;[</span><span class="si">%d</span><span class="s2">d] [%H:%M:%S[.</span><span class="si">%3f</span><span class="s2">]]&quot;</span></code>.</p>
+<p class="rubric" id="id2">Template Language</p>
+<p>The <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">timedelta</span></code></a> template language was created to
+compliment the C/Python <a class="reference external" href="https://docs.python.org/3/library/datetime.html#strftime-and-strptime-behavior"><code class="docutils literal notranslate"><span class="pre">strftime</span></code></a> language used in
+<a class="reference internal" href="splatlog.lib.text.datetime.html#splatlog.lib.text.datetime.fmt_datetime" title="splatlog.lib.text.datetime.fmt_datetime"><code class="xref py py-func docutils literal notranslate"><span class="pre">fmt_datetime()</span></code></a>,
+<a class="reference internal" href="splatlog.lib.text.datetime.html#splatlog.lib.text.datetime.fmt_date" title="splatlog.lib.text.datetime.fmt_date"><code class="xref py py-func docutils literal notranslate"><span class="pre">fmt_date()</span></code></a>, and
+<a class="reference internal" href="splatlog.lib.text.datetime.html#splatlog.lib.text.datetime.fmt_time" title="splatlog.lib.text.datetime.fmt_time"><code class="xref py py-func docutils literal notranslate"><span class="pre">fmt_time()</span></code></a>. It strives for similarity with
+<a class="reference external" href="https://docs.python.org/3/library/datetime.html#strftime-and-strptime-behavior"><code class="docutils literal notranslate"><span class="pre">strftime</span></code></a> templates, while introducing features well-suited for
+producing familiar <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">timedelta</span></code></a> formats.</p>
+<p>The <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">timedelta</span></code></a> template language consists of:</p>
+<ol class="arabic simple">
+<li><p><em>Directives</em> — <code class="docutils literal notranslate"><span class="pre">%</span></code>-codes that are replaced with
+<a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">timedelta</span></code></a> terms; see following table.</p></li>
+<li><p><em>Optional Groups</em> — square-bracket <code class="docutils literal notranslate"><span class="pre">[...]</span></code> spans that are omitted
+unless they contain a directive with non-zero or captive zero (between
+non-zero terms) evaluation.</p></li>
+<li><p><em>Whitespace</em> — leading and trailing spaces are trimmed and repeated
+internal spaces are collapsed to a single space.</p></li>
+<li><p><em>Literal Text</em> — anything else is copied verbatim to the output.</p></li>
+</ol>
+<p class="rubric" id="id3">Format Codes</p>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Directive</p></th>
+<th class="head"><p>Meaning</p></th>
+<th class="head"><p>Example</p></th>
+<th class="head"><p>Notes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">%d</span></code></p></td>
+<td><p>Days</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">0</span></code>, <code class="docutils literal notranslate"><span class="pre">1,234</span></code></p></td>
+<td><p>(1)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">%H</span></code></p></td>
+<td><p>Hours</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">00</span></code>, <code class="docutils literal notranslate"><span class="pre">12</span></code>, <code class="docutils literal notranslate"><span class="pre">1,234</span></code></p></td>
+<td><p>(1)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">%M</span></code></p></td>
+<td><p>Minutes</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">00</span></code>, <code class="docutils literal notranslate"><span class="pre">12</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">%S</span></code></p></td>
+<td><p>Seconds</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">00</span></code>, <code class="docutils literal notranslate"><span class="pre">12</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">%3f</span></code></p></td>
+<td><p>Milliseconds</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">000</span></code>, <code class="docutils literal notranslate"><span class="pre">123</span></code></p></td>
+<td><p>(2)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">%6f</span></code></p></td>
+<td><p>Microseconds</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">000</span></code>, <code class="docutils literal notranslate"><span class="pre">123</span></code></p></td>
+<td><p>(2)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">%f</span></code></p></td>
+<td><p>Sub-seconds (milli+micro)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">000000</span></code>, <code class="docutils literal notranslate"><span class="pre">123456</span></code></p></td>
+<td><p>(2)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">%-...</span></code></p></td>
+<td><p>Minimal-width modifier</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">%-Ss</span></code> → <code class="docutils literal notranslate"><span class="pre">1s</span></code></p></td>
+<td><p>(3)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">[...]</span></code></p></td>
+<td><p>Optional group</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">[%dd]</span></code> → <code class="docutils literal notranslate"><span class="pre">1d</span></code></p></td>
+<td><p>(4)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">%%</span></code></p></td>
+<td><p>Literal <code class="docutils literal notranslate"><span class="pre">%</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">%</span></code></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric" id="id4">Notes</p>
+<ol class="arabic">
+<li><p>Larger units are never truncated, so the largest unit present in the
+template will absorb any large units.</p>
+<p>Formatting a multi-day <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">timedelta</span></code></a> with a <code class="docutils literal notranslate"><span class="pre">%d</span></code>
+directive shows them as days:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">td_fmt</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">d %Hh %Mm %Ss&quot;</span><span class="p">)</span>
+<span class="go">&#39;12d 00h 00m 00s&#39;</span>
+
+</pre></div>
+</div>
+<p>If we omit the <code class="docutils literal notranslate"><span class="pre">%d</span></code> directive those days will be displayed as a large
+amount of hours:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">td_fmt</span><span class="o">=</span><span class="s2">&quot;%Hh %Mm %Ss&quot;</span><span class="p">)</span>
+<span class="go">&#39;288h 00m 00s&#39;</span>
+
+</pre></div>
+</div>
+<p>Removing the <code class="docutils literal notranslate"><span class="pre">%H</span></code> directive shoves the days down into minutes, and
+so-forth:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">td_fmt</span><span class="o">=</span><span class="s2">&quot;%Mm %Ss&quot;</span><span class="p">)</span>
+<span class="go">&#39;17,280m 00s&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">td_fmt</span><span class="o">=</span><span class="s2">&quot;%Ss&quot;</span><span class="p">)</span>
+<span class="go">&#39;1,036,800s&#39;</span>
+
+</pre></div>
+</div>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">%3f</span></code> and <code class="docutils literal notranslate"><span class="pre">%6f</span></code> are directive we introduced to target the millisecond
+(<code class="docutils literal notranslate"><span class="pre">ms</span></code>) and microsecond (<code class="docutils literal notranslate"><span class="pre">µm</span></code>) sections of the sub-second regime
+(<a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">timedelta</span></code></a> is limited to microsecond resolution).</p>
+<p>This allows formats that treat <code class="docutils literal notranslate"><span class="pre">ms</span></code> and <code class="docutils literal notranslate"><span class="pre">µs</span></code> separately, as well as
+formats that limit precision to <code class="docutils literal notranslate"><span class="pre">ms</span></code> — in which case <code class="docutils literal notranslate"><span class="pre">µs</span></code> are truncated:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">milliseconds</span><span class="o">=</span><span class="mi">123</span><span class="p">,</span> <span class="n">microseconds</span><span class="o">=</span><span class="mi">456</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">td_fmt</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%3f</span><span class="s2">ms </span><span class="si">%6f</span><span class="s2">µs&quot;</span><span class="p">)</span>
+<span class="go">&#39;123ms 456µs&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">td_fmt</span><span class="o">=</span><span class="s2">&quot;%-S.</span><span class="si">%3f</span><span class="s2">s&quot;</span><span class="p">)</span>
+<span class="go">&#39;0.123s&#39;</span>
+
+</pre></div>
+</div>
+<p>Both <code class="docutils literal notranslate"><span class="pre">%3f</span></code> and <code class="docutils literal notranslate"><span class="pre">%6f</span></code> are zero-padded to three places:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">milliseconds</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">microseconds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">td_fmt</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%3f</span><span class="s2">ms </span><span class="si">%6f</span><span class="s2">µs&quot;</span><span class="p">)</span>
+<span class="go">&#39;001ms 002µs&#39;</span>
+
+</pre></div>
+</div>
+<p>The C/Python <code class="docutils literal notranslate"><span class="pre">%f</span></code> directive encompasses the entire sub-second range,
+zero-padded to six places:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">td_fmt</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%f</span><span class="s2">µs&quot;</span><span class="p">)</span>
+<span class="go">&#39;001002µs&#39;</span>
+
+</pre></div>
+</div>
+</li>
+<li><p>As in the C/Python [<code class="docutils literal notranslate"><span class="pre">strftime</span></code> language][], inserting the minimal-width
+flag <code class="docutils literal notranslate"><span class="pre">-</span></code> after the <code class="docutils literal notranslate"><span class="pre">%</span></code> in a directive removes zero-padding:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">td_fmt</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">d %Hh %Mm %Ss&quot;</span><span class="p">)</span>
+<span class="go">&#39;12d 00h 00m 00s&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">td_fmt</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">d %-Hh %-Mm %-Ss&quot;</span><span class="p">)</span>
+<span class="go">&#39;12d 0h 0m 0s&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">milliseconds</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">microseconds</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">td_fmt</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%3f</span><span class="s2">ms </span><span class="si">%6f</span><span class="s2">µs&quot;</span><span class="p">)</span>
+<span class="go">&#39;001ms 002µs&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">td_fmt</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%-3f</span><span class="s2">ms </span><span class="si">%-6f</span><span class="s2">µs&quot;</span><span class="p">)</span>
+<span class="go">&#39;1ms 2µs&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">td_fmt</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%f</span><span class="s2">µs&quot;</span><span class="p">)</span>
+<span class="go">&#39;001002µs&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">td_fmt</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%-f</span><span class="s2">µs&quot;</span><span class="p">)</span>
+<span class="go">&#39;1002µs&#39;</span>
+
+</pre></div>
+</div>
+</li>
+<li><p>Optional groups <code class="docutils literal notranslate"><span class="pre">[...]</span></code> let a template adapt to a
+<a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">timedelta</span></code></a>’s magnitude: a group is dropped unless
+it contains an <em>in-range</em> directive — one whose term is non-zero, or a
+zero <em>captured</em> between non-zero terms. This trims leading and trailing
+zero terms while keeping interior (“captive”) zeros:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;[</span><span class="si">%-d</span><span class="s2">d] [%-Hh] [%-Mm] [%-Ss]&quot;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">seconds</span><span class="o">=</span><span class="mi">45</span><span class="p">),</span> <span class="n">td_fmt</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
+<span class="go">&#39;1h 0m 45s&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="mi">5</span><span class="p">),</span> <span class="n">td_fmt</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
+<span class="go">&#39;5m&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">seconds</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span> <span class="n">td_fmt</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
+<span class="go">&#39;2d 0h 0m 3s&#39;</span>
+
+</pre></div>
+</div>
+<p>Groups nest, so a term can carry its own optional sub-term — here the
+fractional seconds only appear when there are milliseconds:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">secs</span> <span class="o">=</span> <span class="s2">&quot;[%-S[.</span><span class="si">%3f</span><span class="s2">]s]&quot;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">5</span><span class="p">),</span> <span class="n">td_fmt</span><span class="o">=</span><span class="n">secs</span><span class="p">)</span>
+<span class="go">&#39;5s&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">milliseconds</span><span class="o">=</span><span class="mi">500</span><span class="p">),</span> <span class="n">td_fmt</span><span class="o">=</span><span class="n">secs</span><span class="p">)</span>
+<span class="go">&#39;5.500s&#39;</span>
+
+</pre></div>
+</div>
+<p>When nothing is in-range there are two cases. A <em>true</em> zero keeps the
+least-significant whole term (a clean <code class="docutils literal notranslate"><span class="pre">0s</span></code>), while a delta too small to
+register in any whole term still reveals itself through its
+least-significant term — the fraction, if the template has one:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">timedelta</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">td_fmt</span><span class="o">=</span><span class="n">secs</span><span class="p">)</span>
+<span class="go">&#39;0s&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">timedelta</span><span class="p">(</span><span class="n">microseconds</span><span class="o">=</span><span class="mi">12</span><span class="p">),</span> <span class="n">td_fmt</span><span class="o">=</span><span class="n">secs</span><span class="p">)</span>
+<span class="go">&#39;0.000s&#39;</span>
+
+</pre></div>
+</div>
+</li>
+</ol>
+<p class="rubric" id="id5">Default Format</p>
+<p><code class="xref py py-attr docutils literal notranslate"><span class="pre">FmtOpts.td_fmt</span></code> defaults to <code class="docutils literal notranslate"><span class="pre">&quot;[%dd]</span> <span class="pre">[%H:%M:%S[.%3f]]&quot;</span></code> — a
+wall-clock <code class="docutils literal notranslate"><span class="pre">HH:MM:SS</span></code> with an optional leading <code class="docutils literal notranslate"><span class="pre">Nd</span></code> days term and an
+optional trailing <code class="docutils literal notranslate"><span class="pre">.mmm</span></code> milliseconds term, each shown only when the
+corresponding unit is in-range.</p>
+<p>Sub-minute durations still render the full clock, revealing milliseconds
+only when present:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">milliseconds</span><span class="o">=</span><span class="mi">12</span><span class="p">))</span>
+<span class="go">&#39;00:00:00.012&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span>
+<span class="go">&#39;00:00:05&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">milliseconds</span><span class="o">=</span><span class="mi">345</span><span class="p">))</span>
+<span class="go">&#39;00:00:12.345&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">seconds</span><span class="o">=</span><span class="mi">30</span><span class="p">))</span>
+<span class="go">&#39;00:05:30&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">minutes</span><span class="o">=</span><span class="mi">34</span><span class="p">,</span> <span class="n">seconds</span><span class="o">=</span><span class="mi">56</span><span class="p">,</span> <span class="n">milliseconds</span><span class="o">=</span><span class="mi">789</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">&#39;12:34:56.789&#39;</span>
+
+</pre></div>
+</div>
+<p>Days appear as a leading <code class="docutils literal notranslate"><span class="pre">Nd</span></code> term (grouped with commas past a thousand),
+and a bare day count drops the clock entirely:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<span class="go">&#39;1d&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1234</span><span class="p">))</span>
+<span class="go">&#39;1,234d&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">seconds</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<span class="go">&#39;1d 00:00:01&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">123</span><span class="p">,</span> <span class="n">milliseconds</span><span class="o">=</span><span class="mi">500</span><span class="p">))</span>
+<span class="go">&#39;123d 00:00:00.500&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">hours</span><span class="o">=</span><span class="mi">23</span><span class="p">,</span> <span class="n">minutes</span><span class="o">=</span><span class="mi">45</span><span class="p">,</span> <span class="n">seconds</span><span class="o">=</span><span class="mi">56</span><span class="p">,</span> <span class="n">milliseconds</span><span class="o">=</span><span class="mi">789</span>
+<span class="gp">... </span>    <span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="go">&#39;1d 23:45:56.789&#39;</span>
+
+</pre></div>
+</div>
+<p>Zero renders as a plain clock, and negatives keep their sign:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">())</span>
+<span class="go">&#39;00:00:00&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="o">-</span><span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">milliseconds</span><span class="o">=</span><span class="mi">500</span><span class="p">))</span>
+<span class="go">&#39;-00:00:01.500&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="o">-</span><span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">minutes</span><span class="o">=</span><span class="mi">30</span><span class="p">))</span>
+<span class="go">&#39;-02:30:00&#39;</span>
+
+</pre></div>
+</div>
+<p class="rubric" id="id6">Custom templates</p>
+<p>Set <code class="xref py py-attr docutils literal notranslate"><span class="pre">FmtOpts.td_fmt</span></code> to any template. A compact seconds template
+(<code class="docutils literal notranslate"><span class="pre">%-S</span></code> is minimal-width and thousands-grouped once it’s the leading unit)
+suits durations you expect around the seconds/milliseconds range:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">td</span><span class="p">,</span> <span class="n">secs</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">,</span> <span class="s2">&quot;%-S[.</span><span class="si">%3f</span><span class="s2">]s&quot;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">td_fmt</span><span class="o">=</span><span class="n">secs</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="p">(</span>
+<span class="gp">... </span>    <span class="n">td</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">12</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">td</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">milliseconds</span><span class="o">=</span><span class="mi">345</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">td</span><span class="p">(</span><span class="n">milliseconds</span><span class="o">=</span><span class="mi">123</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">td</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">1_234_456</span><span class="p">,</span> <span class="n">milliseconds</span><span class="o">=</span><span class="mi">789</span><span class="p">),</span>
+<span class="gp">... </span><span class="p">)]</span>
+<span class="go">[&#39;12s&#39;, &#39;12.345s&#39;, &#39;0.123s&#39;, &#39;1,234,456.789s&#39;]</span>
+
+</pre></div>
+</div>
+<p>A unit-segmented, expandable template — <code class="docutils literal notranslate"><span class="pre">%3f</span></code> and <code class="docutils literal notranslate"><span class="pre">%6f</span></code> split the
+sub-second remainder into milliseconds and microseconds:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;[%-Hh] [%-Mm] [%-Ss] [</span><span class="si">%-3f</span><span class="s2">ms] [</span><span class="si">%-6f</span><span class="s2">µs]&quot;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">td_fmt</span><span class="o">=</span><span class="n">units</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="p">(</span>
+<span class="gp">... </span>    <span class="n">td</span><span class="p">(</span><span class="n">microseconds</span><span class="o">=</span><span class="mi">12</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">td</span><span class="p">(</span><span class="n">milliseconds</span><span class="o">=</span><span class="mi">12</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">td</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">milliseconds</span><span class="o">=</span><span class="mi">345</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">td</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">seconds</span><span class="o">=</span><span class="mi">45</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">td</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1_234_567</span><span class="p">,</span> <span class="n">minutes</span><span class="o">=</span><span class="mi">23</span><span class="p">,</span> <span class="n">seconds</span><span class="o">=</span><span class="mi">45</span><span class="p">),</span>
+<span class="gp">... </span><span class="p">)]</span>
+<span class="go">[&#39;12µs&#39;, &#39;12ms&#39;, &#39;12s 345ms&#39;, &#39;1h 0m 45s&#39;, &#39;1,234,567h 23m 45s&#39;]</span>
+
+</pre></div>
+</div>
+<p>The sign is preserved. A true zero renders cleanly (its least-significant
+whole unit), while a non-zero duration too small to show still reveals
+itself through the fraction:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="o">-</span><span class="n">td</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">milliseconds</span><span class="o">=</span><span class="mi">500</span><span class="p">),</span> <span class="n">td_fmt</span><span class="o">=</span><span class="n">secs</span><span class="p">)</span>
+<span class="go">&#39;-1.500s&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">td</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">td_fmt</span><span class="o">=</span><span class="n">secs</span><span class="p">)</span>
+<span class="go">&#39;0s&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">td</span><span class="p">(</span><span class="n">microseconds</span><span class="o">=</span><span class="mi">12</span><span class="p">),</span> <span class="n">td_fmt</span><span class="o">=</span><span class="n">secs</span><span class="p">)</span>
+<span class="go">&#39;0.000s&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt_timedelta</span><span class="p">(</span><span class="n">td</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">td_fmt</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
+<span class="go">&#39;0s&#39;</span>
+
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="splatlog.lib.text.datetime.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.text.datetime</span></code></div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="splatlog.lib.text.number.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.text.number</span></code></div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 1980, nrser
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.text.timedelta</span></code></a><ul>
+<li><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+<li><a class="reference internal" href="#data">Data</a></li>
+<li><a class="reference internal" href="#api">API</a><ul>
+<li><a class="reference internal" href="#splatlog.lib.text.timedelta._TdNode"><code class="docutils literal notranslate"><span class="pre">_TdNode</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.timedelta._TD_WHOLE_UNITS"><code class="docutils literal notranslate"><span class="pre">_TD_WHOLE_UNITS</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.timedelta._TD_FRACTIONS"><code class="docutils literal notranslate"><span class="pre">_TD_FRACTIONS</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.timedelta._TD_WHOLE_WIDTHS"><code class="docutils literal notranslate"><span class="pre">_TD_WHOLE_WIDTHS</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.timedelta._TD_TOKEN_RE"><code class="docutils literal notranslate"><span class="pre">_TD_TOKEN_RE</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.timedelta._parse_td_template"><code class="docutils literal notranslate"><span class="pre">_parse_td_template()</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.timedelta._td_directive_key"><code class="docutils literal notranslate"><span class="pre">_td_directive_key()</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.timedelta._iter_td_directives"><code class="docutils literal notranslate"><span class="pre">_iter_td_directives()</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.timedelta._td_decompose"><code class="docutils literal notranslate"><span class="pre">_td_decompose()</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.timedelta._render_td_directive"><code class="docutils literal notranslate"><span class="pre">_render_td_directive()</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.timedelta._td_group_shown"><code class="docutils literal notranslate"><span class="pre">_td_group_shown()</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.timedelta._TD_SEP_CHARS"><code class="docutils literal notranslate"><span class="pre">_TD_SEP_CHARS</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.timedelta._td_literal_component"><code class="docutils literal notranslate"><span class="pre">_td_literal_component()</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.timedelta._iter_td_literal_runs"><code class="docutils literal notranslate"><span class="pre">_iter_td_literal_runs()</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.timedelta._emit_td_nodes"><code class="docutils literal notranslate"><span class="pre">_emit_td_nodes()</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.timedelta.iter_timedelta_segments"><code class="docutils literal notranslate"><span class="pre">iter_timedelta_segments()</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.timedelta.fmt_timedelta"><code class="docutils literal notranslate"><span class="pre">fmt_timedelta()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../../_static/documentation_options.js?v=cae21d13"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
+    </body>
+</html>

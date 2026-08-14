@@ -1,0 +1,1136 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html"><link rel="next" title="splatlog.lib.text.number" href="splatlog.lib.text.number.html"><link rel="prev" title="splatlog.lib.text.fmt" href="splatlog.lib.text.fmt.html">
+        <link rel="canonical" href="http://nrser.com/splatlog/apidocs/splatlog/splatlog.lib.text.formatter.html">
+
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+        <title>splatlog.lib.text.formatter - splatlog 0.5.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d75fae25" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=dcea4711" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f0f0f0;
+  --color-code-foreground: black;
+  --color-link--hover: var(--color-brand-visited);
+  --color-link--visited: var(--color-link);
+  --color-link--visited--hover: var(--color-link--hover);
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #0d1117;
+  --color-code-foreground: #e6edf3;
+  --color-link--hover: var(--color-brand-visited);
+  --color-link--visited: var(--color-link);
+  --color-link--visited--hover: var(--color-link--hover);
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #0d1117;
+  --color-code-foreground: #e6edf3;
+  --color-link--hover: var(--color-brand-visited);
+  --color-link--visited: var(--color-link);
+  --color-link--visited--hover: var(--color-link--hover);
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../index.html"><div class="brand">splatlog 0.5.3 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
+  
+  <span class="sidebar-brand-text">splatlog 0.5.3 documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../content/basic-usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/features/named-handlers.html">Named Handlers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/features/verbosity.html">Verbosity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/features/formatting-type-hints.html">Formatting Type Hints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../content/features/rich-rendering.html">Rich Rendering</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 current has-children"><a class="reference internal" href="splatlog.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog</span></code></a><input aria-label="Toggle navigation of splatlog" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l3 has-children"><a class="reference internal" href="splatlog.json.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.json</span></code></a><input aria-label="Toggle navigation of splatlog.json" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.json.formatter.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.json.formatter</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.json.reducers.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.json.reducers</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.json.encoder.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.json.encoder</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="splatlog.rich.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich</span></code></a><input aria-label="Toggle navigation of splatlog.rich" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="splatlog.rich.enrich.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.enrich</span></code></a><input aria-label="Toggle navigation of splatlog.rich.enrich" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.rich.enrich.enrichment.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.enrich.enrichment</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.rich.enrich.exception.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.enrich.exception</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.rich.enrich.number.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.enrich.number</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.rich.enrich.routine.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.enrich.routine</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.rich.enrich.typ.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.enrich.typ</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.rich.enrich.enriched.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.enrich.enriched</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.rich.enrich.datetime.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.enrich.datetime</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.rich.enrich.path.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.enrich.path</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.rich.link.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.link</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.rich.console.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.console</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.rich.handler.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.handler</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.rich.theme.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.theme</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.rich.section.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.section</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.rich.ntv_table.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.ntv_table</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.rich.framing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.rich.framing</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 current has-children"><a class="reference internal" href="splatlog.lib.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib</span></code></a><input aria-label="Toggle navigation of splatlog.lib" checked="" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="splatlog.lib.functions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.functions</span></code></a></li>
+<li class="toctree-l4 current has-children"><a class="reference internal" href="splatlog.lib.text.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.text</span></code></a><input aria-label="Toggle navigation of splatlog.lib.text" checked="" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l5"><a class="reference internal" href="splatlog.lib.text.fmt.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.text.fmt</span></code></a></li>
+<li class="toctree-l5 current current-page"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.text.formatter</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.lib.text.number.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.text.number</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.lib.text.timedelta.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.text.timedelta</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.lib.text.datetime.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.text.datetime</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="splatlog.lib.collections.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.collections</span></code></a><input aria-label="Toggle navigation of splatlog.lib.collections" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.lib.collections.classifier.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.collections.classifier</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="splatlog.lib.collections.loop.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.collections.loop</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.lib.types.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.types</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.lib.errors.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.errors</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.lib.colors.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.colors</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="splatlog.levels.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.levels</span></code></a><input aria-label="Toggle navigation of splatlog.levels" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.levels.verbosity.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.levels.verbosity</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="splatlog.levels.filter.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.levels.filter</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="splatlog.loggers.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.loggers</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="splatlog.poe.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.poe</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="splatlog.types.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.types</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="splatlog.locking.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.locking</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="splatlog.named_handlers.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.named_handlers</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="splatlog.testing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.testing</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="splatlog.reporting.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.reporting</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          
+
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section class="tex2jax_ignore mathjax_ignore" id="module-splatlog.lib.text.formatter">
+<span id="splatlog-lib-text-formatter"></span><h1><a class="reference internal" href="#module-splatlog.lib.text.formatter" title="splatlog.lib.text.formatter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.text.formatter</span></code></a><a class="headerlink" href="#module-splatlog.lib.text.formatter" title="Link to this heading">¶</a></h1>
+<p>Text formatting infrastructure:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#splatlog.lib.text.formatter.formatter" title="splatlog.lib.text.formatter.formatter"><code class="xref py py-deco docutils literal notranslate"><span class="pre">&#64;formatter</span></code></a> decorator creates text <a class="reference internal" href="#splatlog.lib.text.formatter.Formatter" title="splatlog.lib.text.formatter.Formatter"><code class="xref py py-type docutils literal notranslate"><span class="pre">Formatter</span></code></a> functions
+from <a class="reference internal" href="#splatlog.lib.text.formatter.FmtImpl" title="splatlog.lib.text.formatter.FmtImpl"><code class="xref py py-type docutils literal notranslate"><span class="pre">FmtImpl</span></code></a> implementations.</p></li>
+<li></li>
+</ul>
+<ol class="arabic simple">
+<li><p>Format function protocol <a class="reference internal" href="#splatlog.lib.text.formatter.Formatter" title="splatlog.lib.text.formatter.Formatter"><code class="xref py py-type docutils literal notranslate"><span class="pre">Formatter</span></code></a> and <a class="reference internal" href="#splatlog.lib.text.formatter.formatter" title="splatlog.lib.text.formatter.formatter"><code class="xref py py-deco docutils literal notranslate"><span class="pre">&#64;formatter</span></code></a>
+decorator,</p></li>
+<li><p>options class <a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><code class="xref py py-class docutils literal notranslate"><span class="pre">FmtOpts</span></code></a> and keyword arguments <a class="reference internal" href="#splatlog.lib.text.formatter.FmtKwds" title="splatlog.lib.text.formatter.FmtKwds"><code class="xref py py-type docutils literal notranslate"><span class="pre">FmtKwds</span></code></a>,</p></li>
+</ol>
+<p>as well as some other odds and ends.</p>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h3>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-left">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#splatlog.lib.text.formatter.FmtKwds" title="splatlog.lib.text.formatter.FmtKwds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FmtKwds</span></code></a></p></td>
+<td><p>Keyword arguments type for <a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><code class="xref py py-class docutils literal notranslate"><span class="pre">FmtOpts</span></code></a> fields.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FmtOpts</span></code></a></p></td>
+<td><p>Options controlling text formatting behavior.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#splatlog.lib.text.formatter.Formatter" title="splatlog.lib.text.formatter.Formatter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Formatter</span></code></a></p></td>
+<td><p>Type of <a class="reference internal" href="#splatlog.lib.text.formatter.formatter" title="splatlog.lib.text.formatter.formatter"><code class="xref py py-deco docutils literal notranslate"><span class="pre">&#64;formatter</span></code></a> functions, defining <code class="xref py py-meth docutils literal notranslate"><span class="pre">__call__()</span></code> over a
+<code class="docutils literal notranslate"><span class="pre">value</span></code> of parameterized type <code class="docutils literal notranslate"><span class="pre">T</span></code> and formatting options
+<a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><code class="xref py py-class docutils literal notranslate"><span class="pre">FmtOpts</span></code></a>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h3>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-left">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#splatlog.lib.text.formatter.fmt_pretty_repr" title="splatlog.lib.text.formatter.fmt_pretty_repr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fmt_pretty_repr</span></code></a></p></td>
+<td><p>Format a <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> representation of any <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a> with
+<a class="reference external" href="https://rich.readthedocs.io/en/latest/reference/pretty.html#rich.pretty.pretty_repr" title="(in Rich)"><code class="xref py py-func docutils literal notranslate"><span class="pre">rich.pretty.pretty_repr()</span></code></a>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#splatlog.lib.text.formatter.get_default_fmt_opts" title="splatlog.lib.text.formatter.get_default_fmt_opts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_default_fmt_opts</span></code></a></p></td>
+<td><p>Get the current default <a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><code class="xref py py-class docutils literal notranslate"><span class="pre">FmtOpts</span></code></a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#splatlog.lib.text.formatter.set_default_fmt_opts" title="splatlog.lib.text.formatter.set_default_fmt_opts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_default_fmt_opts</span></code></a></p></td>
+<td><p>Set the process-wide default <a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><code class="xref py py-class docutils literal notranslate"><span class="pre">FmtOpts</span></code></a>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#splatlog.lib.text.formatter.override_fmt_opts" title="splatlog.lib.text.formatter.override_fmt_opts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">override_fmt_opts</span></code></a></p></td>
+<td><p>Temporarily override the default <a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><code class="xref py py-class docutils literal notranslate"><span class="pre">FmtOpts</span></code></a> within a <code class="docutils literal notranslate"><span class="pre">with</span></code> block.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#splatlog.lib.text.formatter.formatter" title="splatlog.lib.text.formatter.formatter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">formatter</span></code></a></p></td>
+<td><p>Decorator used to define a text formatter function.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="data">
+<h3>Data<a class="headerlink" href="#data" title="Link to this heading">¶</a></h3>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-left">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#splatlog.lib.text.formatter.FmtFallback" title="splatlog.lib.text.formatter.FmtFallback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FmtFallback</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#splatlog.lib.text.formatter.Pad" title="splatlog.lib.text.formatter.Pad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Pad</span></code></a></p></td>
+<td><p>Types of newline padding that can be assigned to <a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.pad" title="splatlog.lib.text.formatter.FmtOpts.pad"><code class="xref py py-attr docutils literal notranslate"><span class="pre">FmtOpts.pad</span></code></a>:</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#splatlog.lib.text.formatter.FmtResult" title="splatlog.lib.text.formatter.FmtResult"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FmtResult</span></code></a></p></td>
+<td><p>Formatting result; either a single <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> or an
+<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterable</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, allowing
+<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> generators (<code class="docutils literal notranslate"><span class="pre">yield</span></code> functions).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#splatlog.lib.text.formatter.FmtImpl" title="splatlog.lib.text.formatter.FmtImpl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FmtImpl</span></code></a></p></td>
+<td><p>Signature for format function implementations (functions that can be
+<a class="reference internal" href="#splatlog.lib.text.formatter.formatter" title="splatlog.lib.text.formatter.formatter"><code class="xref py py-deco docutils literal notranslate"><span class="pre">&#64;formatter</span></code></a>-decorated).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#splatlog.lib.text.formatter._default_fmt_opts" title="splatlog.lib.text.formatter._default_fmt_opts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_default_fmt_opts</span></code></a></p></td>
+<td><p>Process-wide default <a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><code class="xref py py-class docutils literal notranslate"><span class="pre">FmtOpts</span></code></a>, set by <a class="reference internal" href="#splatlog.lib.text.formatter.set_default_fmt_opts" title="splatlog.lib.text.formatter.set_default_fmt_opts"><code class="xref py py-func docutils literal notranslate"><span class="pre">set_default_fmt_opts()</span></code></a>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#splatlog.lib.text.formatter._fmt_opts_ctx" title="splatlog.lib.text.formatter._fmt_opts_ctx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_fmt_opts_ctx</span></code></a></p></td>
+<td><p>Scoped override consulted before <a class="reference internal" href="#splatlog.lib.text.formatter._default_fmt_opts" title="splatlog.lib.text.formatter._default_fmt_opts"><code class="xref py py-data docutils literal notranslate"><span class="pre">_default_fmt_opts</span></code></a> (see
+<a class="reference internal" href="#splatlog.lib.text.formatter.override_fmt_opts" title="splatlog.lib.text.formatter.override_fmt_opts"><code class="xref py py-func docutils literal notranslate"><span class="pre">override_fmt_opts()</span></code></a>).</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="api">
+<h3>API<a class="headerlink" href="#api" title="Link to this heading">¶</a></h3>
+<dl class="py type">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtFallback">
+<span class="property"><span class="k"><span class="pre">type</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">splatlog.lib.text.formatter.</span></span><span class="sig-name descname"><span class="pre">FmtFallback</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><span class="pre">object</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><span class="pre">FmtOpts</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtFallback" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py type">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.Pad">
+<span class="property"><span class="k"><span class="pre">type</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">splatlog.lib.text.formatter.</span></span><span class="sig-name descname"><span class="pre">Pad</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Literal[,</span> <span class="pre">s,</span> <span class="pre">e,</span> <span class="pre">se]</span></span><a class="headerlink" href="#splatlog.lib.text.formatter.Pad" title="Link to this definition">¶</a></dt>
+<dd><p>Types of newline padding that can be assigned to <a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.pad" title="splatlog.lib.text.formatter.FmtOpts.pad"><code class="xref py py-attr docutils literal notranslate"><span class="pre">FmtOpts.pad</span></code></a>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code>: None.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;s&quot;</span></code>: Newline at the (s)tart.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;e&quot;</span></code>: Newline at the (e)nd.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;se&quot;</span></code>: Newlines at the (s)tart and (e)nd.</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py type">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtResult">
+<span class="property"><span class="k"><span class="pre">type</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">splatlog.lib.text.formatter.</span></span><span class="sig-name descname"><span class="pre">FmtResult</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable" title="(in Python v3.14)"><span class="pre">Iterable</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtResult" title="Link to this definition">¶</a></dt>
+<dd><p>Formatting result; either a single <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> or an
+<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterable</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, allowing
+<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> generators (<code class="docutils literal notranslate"><span class="pre">yield</span></code> functions).</p>
+</dd></dl>
+
+<dl class="py type">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtImpl">
+<span class="property"><span class="k"><span class="pre">type</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">splatlog.lib.text.formatter.</span></span><span class="sig-name descname"><span class="pre">FmtImpl</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">splatlog.lib.text.formatter.T</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><span class="pre">FmtOpts</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#splatlog.lib.text.formatter.FmtResult" title="splatlog.lib.text.formatter.FmtResult"><span class="pre">FmtResult</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtImpl" title="Link to this definition">¶</a></dt>
+<dd><p>Signature for format function implementations (functions that can be
+<a class="reference internal" href="#splatlog.lib.text.formatter.formatter" title="splatlog.lib.text.formatter.formatter"><code class="xref py py-deco docutils literal notranslate"><span class="pre">&#64;formatter</span></code></a>-decorated).</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtKwds">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">splatlog.lib.text.formatter.</span></span><span class="sig-name descname"><span class="pre">FmtKwds</span></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtKwds" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypedDict" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">typing.TypedDict</span></code></a></p>
+<p>Keyword arguments type for <a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><code class="xref py py-class docutils literal notranslate"><span class="pre">FmtOpts</span></code></a> fields.</p>
+<p class="rubric" id="id4">Keys</p>
+<p>Are <em>exactly</em> the attributes of <a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><code class="xref py py-class docutils literal notranslate"><span class="pre">FmtOpts</span></code></a>, and documented there.</p>
+<p>All keys are optional (via <code class="code docutils literal highlight highlight-py"><span class="n">total</span><span class="o">=</span><span class="kc">False</span></code>).</p>
+<p class="rubric" id="id5">Usage</p>
+<p>Keyword arguments of type <a class="reference internal" href="#splatlog.lib.text.formatter.FmtKwds" title="splatlog.lib.text.formatter.FmtKwds"><code class="xref py py-class docutils literal notranslate"><span class="pre">FmtKwds</span></code></a> are used to construct
+<a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><code class="xref py py-class docutils literal notranslate"><span class="pre">FmtOpts</span></code></a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">f</span><span class="p">(</span><span class="o">**</span><span class="n">kwds</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Unpack</span><span class="p">[</span><span class="n">FmtKwds</span><span class="p">]):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">FmtOpts</span><span class="p">(</span><span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
+
+</pre></div>
+</div>
+<p>This lends itself to an especially nice, concise syntax for specifying
+options:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">opts</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">q</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">i_fmt</span><span class="o">=</span><span class="s2">&quot;{:_}&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opts</span><span class="o">.</span><span class="n">q</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opts</span><span class="o">.</span><span class="n">i_fmt</span>
+<span class="go">&#39;{:_}&#39;</span>
+
+</pre></div>
+</div>
+<p class="rubric">Initialization</p>
+<p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.fmt_pretty_repr">
+<span class="sig-prename descclassname"><span class="pre">splatlog.lib.text.formatter.</span></span><span class="sig-name descname"><span class="pre">fmt_pretty_repr</span></span><span class="sig-paren">(</span>
+
+<dl>
+<dd><em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><span class="pre">object</span></a></span></em>,</dd>
+<dd><em class="sig-param"><span class="n"><span class="pre">opts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><span class="pre">FmtOpts</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>,</dd>
+<dd><em class="sig-param"><span class="positional-only-separator o"><abbr title="Positional-only parameter separator (PEP 570)"><span class="pre">/</span></abbr></span></em>,</dd>
+<dd><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Unpack" title="(in Python v3.14)"><span class="pre">Unpack</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#splatlog.lib.text.formatter.FmtKwds" title="splatlog.lib.text.formatter.FmtKwds"><span class="pre">FmtKwds</span></a><span class="p"><span class="pre">]</span></span></span></em>,</dd>
+</dl>
+
+<span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#splatlog.lib.text.formatter.fmt_pretty_repr" title="Link to this definition">¶</a></dt>
+<dd><p>Format a <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> representation of any <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a> with
+<a class="reference external" href="https://rich.readthedocs.io/en/latest/reference/pretty.html#rich.pretty.pretty_repr" title="(in Rich)"><code class="xref py py-func docutils literal notranslate"><span class="pre">rich.pretty.pretty_repr()</span></code></a>.</p>
+<p>This function satisfies the <a class="reference internal" href="#splatlog.lib.text.formatter.Formatter" title="splatlog.lib.text.formatter.Formatter"><code class="xref py py-type docutils literal notranslate"><span class="pre">Formatter</span></code></a> protocol, but is defined
+manually to facilitate use as the <a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.fallback" title="splatlog.lib.text.formatter.FmtOpts.fallback"><code class="xref py py-attr docutils literal notranslate"><span class="pre">FmtOpts.fallback</span></code></a> default.</p>
+<p class="rubric" id="id6">Examples</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt; print(fmt_pretty_repr(None))
+None
+
+&gt;&gt;&gt; fmt_pretty_repr(list(range(10)), items=3)
+&#39;[0, 1, 2, ... +7]&#39;
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">splatlog.lib.text.formatter.</span></span><span class="sig-name descname"><span class="pre">FmtOpts</span></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts" title="Link to this definition">¶</a></dt>
+<dd><p>Options controlling text formatting behavior.</p>
+<p>This is a frozen dataclass; use <a class="reference external" href="https://docs.python.org/3/library/dataclasses.html#dataclasses.replace" title="(in Python v3.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">dataclasses.replace()</span></code></a> to create
+modified copies. The <code class="xref py py-meth docutils literal notranslate"><span class="pre">provide()</span></code> decorator allows functions to
+accept these options either as a final positional argument or as keyword
+arguments.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.fallback">
+<span class="sig-name descname"><span class="pre">fallback</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#splatlog.lib.text.formatter.FmtFallback" title="splatlog.lib.text.formatter.FmtFallback"><span class="pre">FmtFallback</span></a></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.fallback" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+<p>Custom fallback formatter, or <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">None</span></code></a> to use the built-in
+<a class="reference external" href="https://rich.readthedocs.io/en/latest/reference/pretty.html#rich.pretty.pretty_repr" title="(in Rich)"><code class="xref py py-func docutils literal notranslate"><span class="pre">rich.pretty.pretty_repr()</span></code></a> fallback.</p>
+<p>When <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">None</span></code></a> (the default), <code class="xref py py-meth docutils literal notranslate"><span class="pre">format_fallback()</span></code> uses
+<a class="reference external" href="https://rich.readthedocs.io/en/latest/reference/pretty.html#rich.pretty.pretty_repr" title="(in Rich)"><code class="xref py py-func docutils literal notranslate"><span class="pre">rich.pretty.pretty_repr()</span></code></a> configured by:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.depth" title="splatlog.lib.text.formatter.FmtOpts.depth"><code class="xref py py-attr docutils literal notranslate"><span class="pre">depth</span></code></a> → <code class="docutils literal notranslate"><span class="pre">max_depth</span></code></p></li>
+<li><p><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.items" title="splatlog.lib.text.formatter.FmtOpts.items"><code class="xref py py-attr docutils literal notranslate"><span class="pre">items</span></code></a> → <code class="docutils literal notranslate"><span class="pre">max_length</span></code></p></li>
+<li><p><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.chars" title="splatlog.lib.text.formatter.FmtOpts.chars"><code class="xref py py-attr docutils literal notranslate"><span class="pre">chars</span></code></a> → <code class="docutils literal notranslate"><span class="pre">max_string</span></code></p></li>
+<li><p><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.width" title="splatlog.lib.text.formatter.FmtOpts.width"><code class="xref py py-attr docutils literal notranslate"><span class="pre">width</span></code></a> → <code class="docutils literal notranslate"><span class="pre">max_width</span></code></p></li>
+</ul>
+<p>Set to any <code class="docutils literal notranslate"><span class="pre">(object,</span> <span class="pre">FmtOpts)</span> <span class="pre">-&gt;</span> <span class="pre">str</span></code> callable to override — the options are
+passed through so custom fallbacks can use them too.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.q">
+<span class="sig-name descname"><span class="pre">q</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.q" title="Link to this definition">¶</a></dt>
+<dd><p>False</p>
+<p><code class="docutils literal notranslate"><span class="pre">q</span></code>uote — Add markdown-style backtick quotes around formatted objects,
+marking them as <code class="docutils literal notranslate"><span class="pre">&lt;code&gt;</span></code> spans</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.fqn">
+<span class="sig-name descname"><span class="pre">fqn</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.fqn" title="Link to this definition">¶</a></dt>
+<dd><p>True</p>
+<p>Whether to include module names in formatted output.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.fq_builtins">
+<span class="sig-name descname"><span class="pre">fq_builtins</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.fq_builtins" title="Link to this definition">¶</a></dt>
+<dd><p>False</p>
+<p>“Fully-Qualified Builtins” — Whether to include the <code class="docutils literal notranslate"><span class="pre">builtins</span></code> module prefix
+for built-in types.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.fq_typing">
+<span class="sig-name descname"><span class="pre">fq_typing</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.fq_typing" title="Link to this definition">¶</a></dt>
+<dd><p>False</p>
+<p>“Fully-Qualified Typing” — Whether to include the <a class="reference external" href="https://docs.python.org/3/library/typing.html#module-typing" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">typing</span></code></a> module
+prefix — e.g. <code class="docutils literal notranslate"><span class="pre">typing.Any</span></code> versus <code class="docutils literal notranslate"><span class="pre">Any</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.sym">
+<span class="sig-name descname"><span class="pre">sym</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.sym" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+<p>Include the symbol (argument or variable name) associated with the value.</p>
+<div class="highlight-md notranslate"><div class="highlight"><pre><span></span>Given <span class="sb">`name`</span> <span class="sb">`&lt;str&gt;`</span> <span class="sb">`&quot;holla&quot;`</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.t">
+<span class="sig-name descname"><span class="pre">t</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.t" title="Link to this definition">¶</a></dt>
+<dd><p>False</p>
+<p><code class="docutils literal notranslate"><span class="pre">t</span></code>ype — Add the <a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">type</span></code></a> of the value being formatted as well.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.t_start">
+<span class="sig-name descname"><span class="pre">t_start</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.t_start" title="Link to this definition">¶</a></dt>
+<dd><p>‘&lt;’</p>
+<p>Start delimiter for types and type hints.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.t_end">
+<span class="sig-name descname"><span class="pre">t_end</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.t_end" title="Link to this definition">¶</a></dt>
+<dd><p>‘&gt;’</p>
+<p>End delimiter for types and type hints.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.t_opt_q">
+<span class="sig-name descname"><span class="pre">t_opt_q</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.t_opt_q" title="Link to this definition">¶</a></dt>
+<dd><p>True</p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">?</span></code> suffix for <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">typing.Optional</span></code></a> types (including those
+defined as a <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">typing.Union</span></code></a> with <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">None</span></code></a>).</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.chars">
+<span class="sig-name descname"><span class="pre">chars</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.chars" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+<p>Maximum string length before truncating.</p>
+<p>Equivalent to the <code class="docutils literal notranslate"><span class="pre">max_string</span></code> parameter in <a class="reference external" href="https://rich.readthedocs.io/en/latest/reference/pretty.html#module-rich.pretty" title="(in Rich)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">rich.pretty</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.depth">
+<span class="sig-name descname"><span class="pre">depth</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.depth" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+<p>Maximum depth of nested data structures.</p>
+<p>Equivalent to the <code class="docutils literal notranslate"><span class="pre">max_depth</span></code> parameter in <a class="reference external" href="https://rich.readthedocs.io/en/latest/reference/pretty.html#module-rich.pretty" title="(in Rich)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">rich.pretty</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.items">
+<span class="sig-name descname"><span class="pre">items</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.items" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+<p>Maximum number of items to show in containers before abbreviating.</p>
+<p>Equivalent to the <code class="docutils literal notranslate"><span class="pre">max_length</span></code> parameter in <a class="reference external" href="https://rich.readthedocs.io/en/latest/reference/pretty.html#module-rich.pretty" title="(in Rich)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">rich.pretty</span></code></a>.</p>
+<p class="rubric" id="id7">Examples</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">FmtOpts</span><span class="p">(</span><span class="n">items</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">fallback</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)))</span>
+<span class="go">&#39;[0, 1, 2, ... +7]&#39;</span>
+
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.width">
+<span class="sig-name descname"><span class="pre">width</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.width" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+<p>Desired maximum width of the formatted string.</p>
+<p>Equivalent to the <code class="docutils literal notranslate"><span class="pre">max_width</span></code> parameter in <a class="reference external" href="https://rich.readthedocs.io/en/latest/reference/pretty.html#module-rich.pretty" title="(in Rich)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">rich.pretty</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.s_raw">
+<span class="sig-name descname"><span class="pre">s_raw</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.s_raw" title="Link to this definition">¶</a></dt>
+<dd><p>False</p>
+<p>Don’t quote <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> as <em>values</em>, just return them as the formatted
+string.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.ls_sep">
+<span class="sig-name descname"><span class="pre">ls_sep</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.ls_sep" title="Link to this definition">¶</a></dt>
+<dd><p>‘,’</p>
+<p>List separator. <code class="xref py py-func docutils literal notranslate"><span class="pre">fmt_list()</span></code> will stick this between items (along
+with a space).</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.ls_conj">
+<span class="sig-name descname"><span class="pre">ls_conj</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.ls_conj" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+<p>List conjunction. When <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">None</span></code></a> <code class="xref py py-func docutils literal notranslate"><span class="pre">fmt_list()</span></code> will use the
+<a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.ls_sep" title="splatlog.lib.text.formatter.FmtOpts.ls_sep"><code class="xref py py-attr docutils literal notranslate"><span class="pre">FmtOpts.ls_sep</span></code></a> throughout, like <code class="docutils literal notranslate"><span class="pre">A,</span> <span class="pre">B,</span> <span class="pre">C</span></code>. Configuring a
+conjunction <code class="docutils literal notranslate"><span class="pre">&quot;and&quot;</span></code> would get you <code class="docutils literal notranslate"><span class="pre">A,</span> <span class="pre">B,</span> <span class="pre">and</span> <span class="pre">C</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.ls_ox">
+<span class="sig-name descname"><span class="pre">ls_ox</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.ls_ox" title="Link to this definition">¶</a></dt>
+<dd><p>True</p>
+<p>Should <code class="xref py py-func docutils literal notranslate"><span class="pre">fmt_list()</span></code> use the [Oxford comma][] style?</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.n_inf">
+<span class="sig-name descname"><span class="pre">n_inf</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.n_inf" title="Link to this definition">¶</a></dt>
+<dd><p>‘∞’</p>
+<p>Rendering for infinite <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a> and <a class="reference external" href="https://docs.python.org/3/library/decimal.html#decimal.Decimal" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">decimal.Decimal</span></code></a>
+values, e.g. <code class="docutils literal notranslate"><span class="pre">∞</span></code> and <code class="docutils literal notranslate"><span class="pre">-∞</span></code>.</p>
+<p>If empty (<code class="code docutils literal highlight highlight-py"><span class="s2">&quot;&quot;</span></code>) falls back to <a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.f_fmt" title="splatlog.lib.text.formatter.FmtOpts.f_fmt"><code class="xref py py-attr docutils literal notranslate"><span class="pre">f_fmt</span></code></a>, which yields
+<code class="code docutils literal highlight highlight-py"><span class="s2">&quot;inf&quot;</span></code> and <code class="code docutils literal highlight highlight-py"><span class="s2">&quot;-inf&quot;</span></code>, seemingly <em>independent</em> of the format
+string.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.n_nan">
+<span class="sig-name descname"><span class="pre">n_nan</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.n_nan" title="Link to this definition">¶</a></dt>
+<dd><p>‘NaN’</p>
+<p>Rendering for <a class="reference external" href="https://en.wikipedia.org/wiki/NaN"><code class="docutils literal notranslate"><span class="pre">NaN</span></code></a> values of <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a> and
+<a class="reference external" href="https://docs.python.org/3/library/decimal.html#decimal.Decimal" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">decimal.Decimal</span></code></a>.</p>
+<p>If empty (<code class="code docutils literal highlight highlight-py"><span class="s2">&quot;&quot;</span></code>) falls back to <a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.f_fmt" title="splatlog.lib.text.formatter.FmtOpts.f_fmt"><code class="xref py py-attr docutils literal notranslate"><span class="pre">f_fmt</span></code></a>, which yields
+<code class="code docutils literal highlight highlight-py"><span class="s2">&quot;nan&quot;</span></code> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) and <code class="code docutils literal highlight highlight-py"><span class="s2">&quot;NaN&quot;</span></code>
+(<a class="reference external" href="https://docs.python.org/3/library/decimal.html#decimal.Decimal" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">decimal.Decimal</span></code></a>), seemingly <em>independent</em> of the format string.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.i_fmt">
+<span class="sig-name descname"><span class="pre">i_fmt</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.i_fmt" title="Link to this definition">¶</a></dt>
+<dd><p>‘{:,}’</p>
+<p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str.format" title="(in Python v3.14)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">str.format()</span></code></a> template for <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> values.</p>
+<p>For <code class="docutils literal notranslate"><span class="pre">i:</span> <span class="pre">int</span></code>, <code class="docutils literal notranslate"><span class="pre">fmt(i,</span> <span class="pre">i_fmt=f)</span></code> → <code class="code docutils literal highlight highlight-py"><span class="n">f</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">)</span></code>. See
+<a class="reference internal" href="splatlog.lib.text.number.html#splatlog.lib.text.number.fmt_number" title="splatlog.lib.text.number.fmt_number"><code class="xref py py-func docutils literal notranslate"><span class="pre">fmt_number()</span></code></a>.</p>
+<p>Defaults to <code class="code docutils literal highlight highlight-py"><span class="s2">&quot;</span><span class="si">{:,}</span><span class="s2">&quot;</span></code> — thousands-grouped, no decimal point (e.g.
+<code class="docutils literal notranslate"><span class="pre">1,000</span></code>).</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.f_fmt">
+<span class="sig-name descname"><span class="pre">f_fmt</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.f_fmt" title="Link to this definition">¶</a></dt>
+<dd><p>‘{:,g}’</p>
+<p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str.format" title="(in Python v3.14)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">str.format()</span></code></a> template for <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, and for
+<a class="reference external" href="https://docs.python.org/3/library/decimal.html#decimal.Decimal" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">decimal.Decimal</span></code></a> when <a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.dec_fmt" title="splatlog.lib.text.formatter.FmtOpts.dec_fmt"><code class="xref py py-attr docutils literal notranslate"><span class="pre">dec_fmt</span></code></a> is empty.</p>
+<p>By default uses <code class="code docutils literal highlight highlight-py"><span class="s2">&quot;</span><span class="si">{:,g}</span><span class="s2">&quot;</span></code> — <a class="reference external" href="https://docs.python.org/3/library/string.html#format-specification-mini-language">general format</a> (6 significant digits,
+automatic switch to scientific notation) with comma-separated thousands.</p>
+<p>Override for other needs, e.g. <code class="docutils literal notranslate"><span class="pre">f_fmt=&quot;${:,.2f}&quot;</span></code> for currency or
+<code class="docutils literal notranslate"><span class="pre">f_fmt=&quot;{:.1%}&quot;</span></code> for percent.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.dec_fmt">
+<span class="sig-name descname"><span class="pre">dec_fmt</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;Multiline-String&gt;</span></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.dec_fmt" title="Link to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str.format" title="(in Python v3.14)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">str.format()</span></code></a> template for <a class="reference external" href="https://docs.python.org/3/library/decimal.html#decimal.Decimal" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">decimal.Decimal</span></code></a>.</p>
+<p>When empty (default), <a class="reference external" href="https://docs.python.org/3/library/decimal.html#decimal.Decimal" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Decimal</span></code></a> shares <a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.f_fmt" title="splatlog.lib.text.formatter.FmtOpts.f_fmt"><code class="xref py py-attr docutils literal notranslate"><span class="pre">f_fmt</span></code></a>
+with <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>. Set this to target <a class="reference external" href="https://docs.python.org/3/library/decimal.html#decimal.Decimal" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Decimal</span></code></a>
+specifically — handy when it stands in as a “poor-man’s currency” type,
+e.g. <code class="docutils literal notranslate"><span class="pre">dec_fmt=&quot;${:,.2f}&quot;</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.Q_fmt">
+<span class="sig-name descname"><span class="pre">Q_fmt</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;Multiline-String&gt;</span></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.Q_fmt" title="Link to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str.format" title="(in Python v3.14)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">str.format()</span></code></a> template for <a class="reference external" href="https://docs.python.org/3/library/fractions.html#fractions.Fraction" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">fractions.Fraction</span></code></a>.</p>
+<p>Named after the common name for the <a class="reference external" href="https://en.wikipedia.org/wiki/Field_(mathematics)">field</a> of <a class="reference external" href="https://en.wikipedia.org/wiki/Rational_number">rational numbers</a>,
+<span class="math notranslate nohighlight">\(\mathbb{Q}\)</span>.</p>
+<p class="rubric" id="empty-fallback">Empty Fallback</p>
+<p>When empty (default), composes formatted attributes as:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>fmt(numerator) / fmt(denominator)
+</pre></div>
+</div>
+<p>As <a class="reference external" href="https://docs.python.org/3/library/fractions.html#fractions.Fraction.numerator" title="(in Python v3.14)"><code class="xref py py-attr docutils literal notranslate"><span class="pre">numerator</span></code></a> and
+<a class="reference external" href="https://docs.python.org/3/library/fractions.html#fractions.Fraction.denominator" title="(in Python v3.14)"><code class="xref py py-attr docutils literal notranslate"><span class="pre">denominator</span></code></a> are <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> they will be
+formatted per <a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.i_fmt" title="splatlog.lib.text.formatter.FmtOpts.i_fmt"><code class="xref fopt docutils literal notranslate"><span class="pre">i_fmt</span></code></a>. This allows for additional formatting
+opportunities without collapsing the fraction to a decimal, but it can also
+be surprising if unaware.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.C_fmt">
+<span class="sig-name descname"><span class="pre">C_fmt</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;Multiline-String&gt;</span></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.C_fmt" title="Link to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str.format" title="(in Python v3.14)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">str.format()</span></code></a> template for <a class="reference external" href="https://docs.python.org/3/library/functions.html#complex" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">complex</span></code></a>.</p>
+<p>Named after the common name for the <a class="reference external" href="https://en.wikipedia.org/wiki/Field_(mathematics)">field</a> of <a class="reference external" href="https://en.wikipedia.org/wiki/Complex_number">complex numbers</a>,
+<span class="math notranslate nohighlight">\(\mathbb{C}\)</span>.</p>
+<p class="rubric" id="id8">Empty Fallback</p>
+<p>When empty (default), composes formatted attributes as:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>fmt(real) ± fmt(imag)𝒊
+</pre></div>
+</div>
+<p><code class="xref py py-attr docutils literal notranslate"><span class="pre">complex.real</span></code> and <code class="xref py py-attr docutils literal notranslate"><span class="pre">complex.imag</span></code> are both
+<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, so <a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.f_fmt" title="splatlog.lib.text.formatter.FmtOpts.f_fmt"><code class="xref py py-attr docutils literal notranslate"><span class="pre">f_fmt</span></code></a> will come into play in this case.
+Together with <a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.C_i" title="splatlog.lib.text.formatter.FmtOpts.C_i"><code class="xref py py-attr docutils literal notranslate"><span class="pre">C_i</span></code></a> this allows formatting individual components.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.C_i">
+<span class="sig-name descname"><span class="pre">C_i</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.C_i" title="Link to this definition">¶</a></dt>
+<dd><p>‘𝒊’</p>
+<p>Symbol to use for the <a class="reference external" href="https://en.wikipedia.org/wiki/Imaginary_unit">Imaginary unit</a>.</p>
+<p>Defaults to a mathematics-style <span class="math notranslate nohighlight">\(\mathit{i}\)</span>. Python prefers an ASCII <code class="docutils literal notranslate"><span class="pre">j</span></code>,
+common in some sciences and engineering, so you may see that when providing
+<a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.C_fmt" title="splatlog.lib.text.formatter.FmtOpts.C_fmt"><code class="xref py py-attr docutils literal notranslate"><span class="pre">C_fmt</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.d_fmt">
+<span class="sig-name descname"><span class="pre">d_fmt</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.d_fmt" title="Link to this definition">¶</a></dt>
+<dd><p>‘%Y-%m-%d’</p>
+<p>Template for formatting <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.date" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">datetime.date</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.tm_fmt">
+<span class="sig-name descname"><span class="pre">tm_fmt</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.tm_fmt" title="Link to this definition">¶</a></dt>
+<dd><p>‘%H:%M:%S.%3f’</p>
+<p>Template for formatting <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.time" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">datetime.time</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.dt_fmt">
+<span class="sig-name descname"><span class="pre">dt_fmt</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.dt_fmt" title="Link to this definition">¶</a></dt>
+<dd><p>‘%Y-%m-%d %H:%M:%S.%3f %Z’</p>
+<p>Template for formatting <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">datetime.datetime</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.td_fmt">
+<span class="sig-name descname"><span class="pre">td_fmt</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.td_fmt" title="Link to this definition">¶</a></dt>
+<dd><p>‘[%dd] [%H:%M:%S[.%3f]]’</p>
+<p>Template for formatting <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">datetime.timedelta</span></code></a>, using the timedelta
+format language (see <a class="reference internal" href="splatlog.lib.text.timedelta.html#splatlog.lib.text.timedelta.fmt_timedelta" title="splatlog.lib.text.timedelta.fmt_timedelta"><code class="xref py py-func docutils literal notranslate"><span class="pre">fmt_timedelta()</span></code></a>).</p>
+<p>The default <code class="docutils literal notranslate"><span class="pre">&quot;[%dd]</span> <span class="pre">[%H:%M:%S[.%3f]]&quot;</span></code> renders a wall-clock <code class="docutils literal notranslate"><span class="pre">HH:MM:SS</span></code> with
+an optional leading <code class="docutils literal notranslate"><span class="pre">Nd</span></code> days term and an optional trailing <code class="docutils literal notranslate"><span class="pre">.mmm</span></code>
+milliseconds term, each included only when the corresponding unit is
+in-range.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.e_trace">
+<span class="sig-name descname"><span class="pre">e_trace</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.e_trace" title="Link to this definition">¶</a></dt>
+<dd><p>True</p>
+<p>Include tracebacks when formatting exceptions?</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.pad">
+<span class="sig-name descname"><span class="pre">pad</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#splatlog.lib.text.formatter.Pad" title="splatlog.lib.text.formatter.Pad"><span class="pre">Pad</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;Multiline-String&gt;</span></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.pad" title="Link to this definition">¶</a></dt>
+<dd><p>Newline padding to add around quoted, multi-line output (see <a class="reference internal" href="#splatlog.lib.text.formatter.Pad" title="splatlog.lib.text.formatter.Pad"><code class="xref py py-type docutils literal notranslate"><span class="pre">Pad</span></code></a>).</p>
+<p>A narrow little hack for Markdown correctness: a fenced <code class="docutils literal notranslate"><span class="pre">```py</span></code> code
+block glued directly against preceding text doesn’t render as a code block,
+so a blank line must separate them. This field lets a caller request that
+separation on the formatted result.</p>
+<p>Only honored by <a class="reference internal" href="#splatlog.lib.text.formatter.fmt_pretty_repr" title="splatlog.lib.text.formatter.fmt_pretty_repr"><code class="xref py py-func docutils literal notranslate"><span class="pre">fmt_pretty_repr()</span></code></a> when quoting (<code class="code docutils literal highlight highlight-py"><span class="n">q</span><span class="o">=</span><span class="kc">True</span></code>) a
+value that pretty-reprs to more than one line — the sole case that emits a
+fenced block. <code class="docutils literal notranslate"><span class="pre">&quot;s&quot;</span></code> prepends a blank line, <code class="docutils literal notranslate"><span class="pre">&quot;e&quot;</span></code> appends one, <code class="docutils literal notranslate"><span class="pre">&quot;se&quot;</span></code> does
+both, and <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code> (the default) leaves it untouched. Single-line quoting uses
+inline <code class="docutils literal notranslate"><span class="pre">`code`</span></code> spans and ignores this field.</p>
+<p>Currently the only caller that sets it is
+<a class="reference internal" href="splatlog.lib.text.fmt.html#splatlog.lib.text.fmt.fmt_type_value" title="splatlog.lib.text.fmt.fmt_type_value"><code class="xref py py-func docutils literal notranslate"><span class="pre">fmt_type_value()</span></code></a>, which uses <code class="code docutils literal highlight highlight-py"><span class="n">pad</span><span class="o">=</span><span class="s2">&quot;s&quot;</span></code>
+so a <code class="docutils literal notranslate"><span class="pre">&lt;type&gt;</span> <span class="pre">value</span></code> whose value spans multiple lines is preceded by a blank
+line (and a <code class="docutils literal notranslate"><span class="pre">:</span></code> separator instead of a space).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.__rich_repr__">
+<span class="sig-name descname"><span class="pre">__rich_repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">rich.repr.Result</span></span></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.__rich_repr__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.FmtOpts.replace">
+<span class="sig-name descname"><span class="pre">replace</span></span><span class="sig-paren">(</span>
+
+<dl>
+<dd><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Unpack" title="(in Python v3.14)"><span class="pre">Unpack</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#splatlog.lib.text.formatter.FmtKwds" title="splatlog.lib.text.formatter.FmtKwds"><span class="pre">FmtKwds</span></a><span class="p"><span class="pre">]</span></span></span></em>,</dd>
+</dl>
+
+<span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Self" title="(in Python v3.14)"><span class="pre">Self</span></a></span></span><a class="headerlink" href="#splatlog.lib.text.formatter.FmtOpts.replace" title="Link to this definition">¶</a></dt>
+<dd><p>Return a new object replacing specified fields with new values
+(immutable update).</p>
+<p>Just calls <a class="reference external" href="https://docs.python.org/3/library/dataclasses.html#dataclasses.replace" title="(in Python v3.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">dataclasses.replace()</span></code></a>, but also types the keyword
+arguments with <a class="reference internal" href="#splatlog.lib.text.formatter.FmtKwds" title="splatlog.lib.text.formatter.FmtKwds"><code class="xref py py-type docutils literal notranslate"><span class="pre">FmtKwds</span></code></a> so type checking and IDE suggestions
+work.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter._default_fmt_opts">
+<span class="sig-prename descclassname"><span class="pre">splatlog.lib.text.formatter.</span></span><span class="sig-name descname"><span class="pre">_default_fmt_opts</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><span class="pre">FmtOpts</span></a></span><a class="headerlink" href="#splatlog.lib.text.formatter._default_fmt_opts" title="Link to this definition">¶</a></dt>
+<dd><p>‘FmtOpts(…)’</p>
+<p>Process-wide default <a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><code class="xref py py-class docutils literal notranslate"><span class="pre">FmtOpts</span></code></a>, set by <a class="reference internal" href="#splatlog.lib.text.formatter.set_default_fmt_opts" title="splatlog.lib.text.formatter.set_default_fmt_opts"><code class="xref py py-func docutils literal notranslate"><span class="pre">set_default_fmt_opts()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter._fmt_opts_ctx">
+<span class="sig-prename descclassname"><span class="pre">splatlog.lib.text.formatter.</span></span><span class="sig-name descname"><span class="pre">_fmt_opts_ctx</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/contextvars.html#contextvars.ContextVar" title="(in Python v3.14)"><span class="pre">ContextVar</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><span class="pre">FmtOpts</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#splatlog.lib.text.formatter._fmt_opts_ctx" title="Link to this definition">¶</a></dt>
+<dd><p>‘ContextVar(…)’</p>
+<p>Scoped override consulted before <a class="reference internal" href="#splatlog.lib.text.formatter._default_fmt_opts" title="splatlog.lib.text.formatter._default_fmt_opts"><code class="xref py py-data docutils literal notranslate"><span class="pre">_default_fmt_opts</span></code></a> (see
+<a class="reference internal" href="#splatlog.lib.text.formatter.override_fmt_opts" title="splatlog.lib.text.formatter.override_fmt_opts"><code class="xref py py-func docutils literal notranslate"><span class="pre">override_fmt_opts()</span></code></a>).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.get_default_fmt_opts">
+<span class="sig-prename descclassname"><span class="pre">splatlog.lib.text.formatter.</span></span><span class="sig-name descname"><span class="pre">get_default_fmt_opts</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><span class="pre">FmtOpts</span></a></span></span><a class="headerlink" href="#splatlog.lib.text.formatter.get_default_fmt_opts" title="Link to this definition">¶</a></dt>
+<dd><p>Get the current default <a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><code class="xref py py-class docutils literal notranslate"><span class="pre">FmtOpts</span></code></a>.</p>
+<p>Returns the scoped override set by <a class="reference internal" href="#splatlog.lib.text.formatter.override_fmt_opts" title="splatlog.lib.text.formatter.override_fmt_opts"><code class="xref py py-func docutils literal notranslate"><span class="pre">override_fmt_opts()</span></code></a> if one is
+active, otherwise the process-wide default set by
+<a class="reference internal" href="#splatlog.lib.text.formatter.set_default_fmt_opts" title="splatlog.lib.text.formatter.set_default_fmt_opts"><code class="xref py py-func docutils literal notranslate"><span class="pre">set_default_fmt_opts()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.set_default_fmt_opts">
+<span class="sig-prename descclassname"><span class="pre">splatlog.lib.text.formatter.</span></span><span class="sig-name descname"><span class="pre">set_default_fmt_opts</span></span><span class="sig-paren">(</span>
+
+<dl>
+<dd><em class="sig-param"><span class="n"><span class="pre">opts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><span class="pre">FmtOpts</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>,</dd>
+<dd><em class="sig-param"><span class="positional-only-separator o"><abbr title="Positional-only parameter separator (PEP 570)"><span class="pre">/</span></abbr></span></em>,</dd>
+<dd><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Unpack" title="(in Python v3.14)"><span class="pre">Unpack</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#splatlog.lib.text.formatter.FmtKwds" title="splatlog.lib.text.formatter.FmtKwds"><span class="pre">FmtKwds</span></a><span class="p"><span class="pre">]</span></span></span></em>,</dd>
+</dl>
+
+<span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#splatlog.lib.text.formatter.set_default_fmt_opts" title="Link to this definition">¶</a></dt>
+<dd><p>Set the process-wide default <a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><code class="xref py py-class docutils literal notranslate"><span class="pre">FmtOpts</span></code></a>.</p>
+<p><a class="reference internal" href="#splatlog.lib.text.formatter.formatter" title="splatlog.lib.text.formatter.formatter"><code class="xref py py-deco docutils literal notranslate"><span class="pre">&#64;formatter</span></code></a> functions (e.g. <a class="reference internal" href="splatlog.lib.text.fmt.html#module-splatlog.lib.text.fmt" title="splatlog.lib.text.fmt"><code class="xref py py-func docutils literal notranslate"><span class="pre">fmt()</span></code></a>)
+consult this whenever they’re called without explicit options.</p>
+<p class="rubric" id="id9">Parameters</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">opts</span></code>: Replace the default with this instance. When <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">None</span></code></a>
+(default), the current default is used as the base.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">kwds</span></code>: <a class="reference internal" href="#splatlog.lib.text.formatter.FmtKwds" title="splatlog.lib.text.formatter.FmtKwds"><code class="xref py py-class docutils literal notranslate"><span class="pre">FmtKwds</span></code></a> merged over the base (see
+<a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.replace" title="splatlog.lib.text.formatter.FmtOpts.replace"><code class="xref py py-meth docutils literal notranslate"><span class="pre">FmtOpts.replace()</span></code></a>).</p></li>
+</ul>
+<p class="rubric" id="id10">Examples</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">splatlog.lib.text</span><span class="w"> </span><span class="kn">import</span> <span class="n">fmt</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">set_default_fmt_opts</span><span class="p">(</span><span class="n">i_fmt</span><span class="o">=</span><span class="s2">&quot;{:_}&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt</span><span class="p">(</span><span class="mi">1234567</span><span class="p">)</span>
+<span class="go">&#39;1_234_567&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">set_default_fmt_opts</span><span class="p">(</span><span class="n">FmtOpts</span><span class="p">())</span>  <span class="c1"># restore the default</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt</span><span class="p">(</span><span class="mi">1234567</span><span class="p">)</span>
+<span class="go">&#39;1,234,567&#39;</span>
+
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.override_fmt_opts">
+<span class="sig-prename descclassname"><span class="pre">splatlog.lib.text.formatter.</span></span><span class="sig-name descname"><span class="pre">override_fmt_opts</span></span><span class="sig-paren">(</span>
+
+<dl>
+<dd><em class="sig-param"><span class="n"><span class="pre">opts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><span class="pre">FmtOpts</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>,</dd>
+<dd><em class="sig-param"><span class="positional-only-separator o"><abbr title="Positional-only parameter separator (PEP 570)"><span class="pre">/</span></abbr></span></em>,</dd>
+<dd><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Unpack" title="(in Python v3.14)"><span class="pre">Unpack</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#splatlog.lib.text.formatter.FmtKwds" title="splatlog.lib.text.formatter.FmtKwds"><span class="pre">FmtKwds</span></a><span class="p"><span class="pre">]</span></span></span></em>,</dd>
+</dl>
+
+<span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator" title="(in Python v3.14)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><span class="pre">FmtOpts</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#splatlog.lib.text.formatter.override_fmt_opts" title="Link to this definition">¶</a></dt>
+<dd><p>Temporarily override the default <a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><code class="xref py py-class docutils literal notranslate"><span class="pre">FmtOpts</span></code></a> within a <code class="docutils literal notranslate"><span class="pre">with</span></code> block.</p>
+<p>The override applies only to the current context (thread/async task) and is
+restored on exit, leaving the process-wide default (see
+<a class="reference internal" href="#splatlog.lib.text.formatter.set_default_fmt_opts" title="splatlog.lib.text.formatter.set_default_fmt_opts"><code class="xref py py-func docutils literal notranslate"><span class="pre">set_default_fmt_opts()</span></code></a>) untouched.</p>
+<p class="rubric" id="id11">Parameters</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">opts</span></code>: Base for the override. When <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">None</span></code></a> (default), the
+current effective default (<a class="reference internal" href="#splatlog.lib.text.formatter.get_default_fmt_opts" title="splatlog.lib.text.formatter.get_default_fmt_opts"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_default_fmt_opts()</span></code></a>) is used.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">kwds</span></code>: <a class="reference internal" href="#splatlog.lib.text.formatter.FmtKwds" title="splatlog.lib.text.formatter.FmtKwds"><code class="xref py py-class docutils literal notranslate"><span class="pre">FmtKwds</span></code></a> merged over the base.</p></li>
+</ul>
+<p class="rubric" id="id12">Examples</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">splatlog.lib.text</span><span class="w"> </span><span class="kn">import</span> <span class="n">fmt</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">override_fmt_opts</span><span class="p">(</span><span class="n">i_fmt</span><span class="o">=</span><span class="s2">&quot;{:_}&quot;</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">fmt</span><span class="p">(</span><span class="mi">1234567</span><span class="p">)</span>
+<span class="go">&#39;1_234_567&#39;</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fmt</span><span class="p">(</span><span class="mi">1234567</span><span class="p">)</span>
+<span class="go">&#39;1,234,567&#39;</span>
+
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.Formatter">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">splatlog.lib.text.formatter.</span></span><span class="sig-name descname"><span class="pre">Formatter</span></span><a class="headerlink" href="#splatlog.lib.text.formatter.Formatter" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Protocol" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">typing.Protocol</span></code></a></p>
+<p>Type of <a class="reference internal" href="#splatlog.lib.text.formatter.formatter" title="splatlog.lib.text.formatter.formatter"><code class="xref py py-deco docutils literal notranslate"><span class="pre">&#64;formatter</span></code></a> functions, defining <a class="reference internal" href="#splatlog.lib.text.formatter.Formatter.__call__" title="splatlog.lib.text.formatter.Formatter.__call__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__call__()</span></code></a> over a
+<code class="docutils literal notranslate"><span class="pre">value</span></code> of parameterized type <code class="docutils literal notranslate"><span class="pre">T</span></code> and formatting options
+<a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><code class="xref py py-class docutils literal notranslate"><span class="pre">FmtOpts</span></code></a>.</p>
+<p>Formatting options can be provided as:</p>
+<ol class="arabic simple">
+<li><p>A unified <a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><code class="xref py py-class docutils literal notranslate"><span class="pre">FmtOpts</span></code></a> instance in the second position,</p></li>
+<li><p>attribute-wise as keyword arguments from <a class="reference internal" href="#splatlog.lib.text.formatter.FmtKwds" title="splatlog.lib.text.formatter.FmtKwds"><code class="xref py py-type docutils literal notranslate"><span class="pre">FmtKwds</span></code></a>,</p></li>
+<li><p>or both, with keyword arguments replacing attributes in the
+<a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><code class="xref py py-class docutils literal notranslate"><span class="pre">FmtOpts</span></code></a> instance.</p></li>
+</ol>
+<p>(1) is handy when passing options between <a class="reference internal" href="#splatlog.lib.text.formatter.formatter" title="splatlog.lib.text.formatter.formatter"><code class="xref py py-deco docutils literal notranslate"><span class="pre">&#64;formatter</span></code></a> calls, easing
+formatter composition. (2) is typically used at the entry-point, and when
+overriding specific attribute during formatter composition.</p>
+<p>Option merging is taken care of in <a class="reference internal" href="#splatlog.lib.text.formatter.formatter" title="splatlog.lib.text.formatter.formatter"><code class="xref py py-deco docutils literal notranslate"><span class="pre">&#64;formatter</span></code></a>. Format function
+implementations always receive a single <a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><code class="xref py py-class docutils literal notranslate"><span class="pre">FmtOpts</span></code></a> instance to
+reference, as visible in the implementation type <a class="reference internal" href="#splatlog.lib.text.formatter.FmtImpl" title="splatlog.lib.text.formatter.FmtImpl"><code class="xref py py-type docutils literal notranslate"><span class="pre">FmtImpl</span></code></a>.</p>
+<p><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><code class="xref py py-class docutils literal notranslate"><span class="pre">FmtOpts</span></code></a> instance are <em>immutable</em>; attribute replacement creates
+a new instance for the format function implementation to consume.</p>
+<p class="rubric" id="id13">See Also</p>
+<ol class="arabic simple">
+<li><p><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FmtOpts</span></code></a></p></li>
+<li><p><a class="reference internal" href="#splatlog.lib.text.formatter.FmtKwds" title="splatlog.lib.text.formatter.FmtKwds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FmtKwds</span></code></a></p></li>
+<li><p><a class="reference internal" href="#splatlog.lib.text.formatter.FmtImpl" title="splatlog.lib.text.formatter.FmtImpl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FmtImpl</span></code></a></p></li>
+</ol>
+<dl class="py method">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.Formatter.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span>
+
+<dl>
+<dd><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">splatlog.lib.text.formatter.T</span></span></em>,</dd>
+<dd><em class="sig-param"><span class="n"><span class="pre">opts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts" title="splatlog.lib.text.formatter.FmtOpts"><span class="pre">FmtOpts</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>,</dd>
+<dd><em class="sig-param"><span class="positional-only-separator o"><abbr title="Positional-only parameter separator (PEP 570)"><span class="pre">/</span></abbr></span></em>,</dd>
+<dd><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Unpack" title="(in Python v3.14)"><span class="pre">Unpack</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#splatlog.lib.text.formatter.FmtKwds" title="splatlog.lib.text.formatter.FmtKwds"><span class="pre">FmtKwds</span></a><span class="p"><span class="pre">]</span></span></span></em>,</dd>
+</dl>
+
+<span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#splatlog.lib.text.formatter.Formatter.__call__" title="Link to this definition">¶</a></dt>
+<dd><p>Formats <code class="docutils literal notranslate"><span class="pre">value</span></code> with options given in <code class="docutils literal notranslate"><span class="pre">opts</span></code> and <code class="docutils literal notranslate"><span class="pre">kwds</span></code>, with <code class="docutils literal notranslate"><span class="pre">kwds</span></code>
+taking precedence, returning the formatted <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>.</p>
+<p>See <a class="reference internal" href="#splatlog.lib.text.formatter.Formatter" title="splatlog.lib.text.formatter.Formatter"><code class="xref py py-class docutils literal notranslate"><span class="pre">Formatter</span></code></a> for details.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="splatlog.lib.text.formatter.formatter">
+<span class="sig-prename descclassname"><span class="pre">splatlog.lib.text.formatter.</span></span><span class="sig-name descname"><span class="pre">formatter</span></span><span class="sig-paren">(</span>
+
+<dl>
+<dd><em class="sig-param"><span class="n"><span class="pre">fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#splatlog.lib.text.formatter.FmtImpl" title="splatlog.lib.text.formatter.FmtImpl"><span class="pre">FmtImpl</span></a><span class="p"><span class="pre">[</span></span><span class="pre">splatlog.lib.text.formatter.formatter.T</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>,</dd>
+<dd><em class="sig-param"><span class="positional-only-separator o"><abbr title="Positional-only parameter separator (PEP 570)"><span class="pre">/</span></abbr></span></em>,</dd>
+<dd><em class="sig-param"><span class="n"><span class="pre">auto_quote</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>,</dd>
+<dd><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">defaults</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Unpack" title="(in Python v3.14)"><span class="pre">Unpack</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#splatlog.lib.text.formatter.FmtKwds" title="splatlog.lib.text.formatter.FmtKwds"><span class="pre">FmtKwds</span></a><span class="p"><span class="pre">]</span></span></span></em>,</dd>
+</dl>
+
+<span class="sig-paren">)</span><a class="headerlink" href="#splatlog.lib.text.formatter.formatter" title="Link to this definition">¶</a></dt>
+<dd><p>Decorator used to define a text formatter function.</p>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="splatlog.lib.text.number.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.text.number</span></code></div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="splatlog.lib.text.fmt.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.text.fmt</span></code></div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 1980, nrser
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splatlog.lib.text.formatter</span></code></a><ul>
+<li><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li><a class="reference internal" href="#classes">Classes</a></li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+<li><a class="reference internal" href="#data">Data</a></li>
+<li><a class="reference internal" href="#api">API</a><ul>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtFallback"><code class="docutils literal notranslate"><span class="pre">FmtFallback</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.Pad"><code class="docutils literal notranslate"><span class="pre">Pad</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtResult"><code class="docutils literal notranslate"><span class="pre">FmtResult</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtImpl"><code class="docutils literal notranslate"><span class="pre">FmtImpl</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtKwds"><code class="docutils literal notranslate"><span class="pre">FmtKwds</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.fmt_pretty_repr"><code class="docutils literal notranslate"><span class="pre">fmt_pretty_repr()</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts"><code class="docutils literal notranslate"><span class="pre">FmtOpts</span></code></a><ul>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.fallback"><code class="docutils literal notranslate"><span class="pre">FmtOpts.fallback</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.q"><code class="docutils literal notranslate"><span class="pre">FmtOpts.q</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.fqn"><code class="docutils literal notranslate"><span class="pre">FmtOpts.fqn</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.fq_builtins"><code class="docutils literal notranslate"><span class="pre">FmtOpts.fq_builtins</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.fq_typing"><code class="docutils literal notranslate"><span class="pre">FmtOpts.fq_typing</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.sym"><code class="docutils literal notranslate"><span class="pre">FmtOpts.sym</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.t"><code class="docutils literal notranslate"><span class="pre">FmtOpts.t</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.t_start"><code class="docutils literal notranslate"><span class="pre">FmtOpts.t_start</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.t_end"><code class="docutils literal notranslate"><span class="pre">FmtOpts.t_end</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.t_opt_q"><code class="docutils literal notranslate"><span class="pre">FmtOpts.t_opt_q</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.chars"><code class="docutils literal notranslate"><span class="pre">FmtOpts.chars</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.depth"><code class="docutils literal notranslate"><span class="pre">FmtOpts.depth</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.items"><code class="docutils literal notranslate"><span class="pre">FmtOpts.items</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.width"><code class="docutils literal notranslate"><span class="pre">FmtOpts.width</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.s_raw"><code class="docutils literal notranslate"><span class="pre">FmtOpts.s_raw</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.ls_sep"><code class="docutils literal notranslate"><span class="pre">FmtOpts.ls_sep</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.ls_conj"><code class="docutils literal notranslate"><span class="pre">FmtOpts.ls_conj</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.ls_ox"><code class="docutils literal notranslate"><span class="pre">FmtOpts.ls_ox</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.n_inf"><code class="docutils literal notranslate"><span class="pre">FmtOpts.n_inf</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.n_nan"><code class="docutils literal notranslate"><span class="pre">FmtOpts.n_nan</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.i_fmt"><code class="docutils literal notranslate"><span class="pre">FmtOpts.i_fmt</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.f_fmt"><code class="docutils literal notranslate"><span class="pre">FmtOpts.f_fmt</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.dec_fmt"><code class="docutils literal notranslate"><span class="pre">FmtOpts.dec_fmt</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.Q_fmt"><code class="docutils literal notranslate"><span class="pre">FmtOpts.Q_fmt</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.C_fmt"><code class="docutils literal notranslate"><span class="pre">FmtOpts.C_fmt</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.C_i"><code class="docutils literal notranslate"><span class="pre">FmtOpts.C_i</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.d_fmt"><code class="docutils literal notranslate"><span class="pre">FmtOpts.d_fmt</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.tm_fmt"><code class="docutils literal notranslate"><span class="pre">FmtOpts.tm_fmt</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.dt_fmt"><code class="docutils literal notranslate"><span class="pre">FmtOpts.dt_fmt</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.td_fmt"><code class="docutils literal notranslate"><span class="pre">FmtOpts.td_fmt</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.e_trace"><code class="docutils literal notranslate"><span class="pre">FmtOpts.e_trace</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.pad"><code class="docutils literal notranslate"><span class="pre">FmtOpts.pad</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.__rich_repr__"><code class="docutils literal notranslate"><span class="pre">FmtOpts.__rich_repr__()</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.FmtOpts.replace"><code class="docutils literal notranslate"><span class="pre">FmtOpts.replace()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter._default_fmt_opts"><code class="docutils literal notranslate"><span class="pre">_default_fmt_opts</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter._fmt_opts_ctx"><code class="docutils literal notranslate"><span class="pre">_fmt_opts_ctx</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.get_default_fmt_opts"><code class="docutils literal notranslate"><span class="pre">get_default_fmt_opts()</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.set_default_fmt_opts"><code class="docutils literal notranslate"><span class="pre">set_default_fmt_opts()</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.override_fmt_opts"><code class="docutils literal notranslate"><span class="pre">override_fmt_opts()</span></code></a></li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.Formatter"><code class="docutils literal notranslate"><span class="pre">Formatter</span></code></a><ul>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.Formatter.__call__"><code class="docutils literal notranslate"><span class="pre">Formatter.__call__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#splatlog.lib.text.formatter.formatter"><code class="docutils literal notranslate"><span class="pre">formatter()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../../_static/documentation_options.js?v=cae21d13"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    </body>
+</html>
